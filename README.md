@@ -25,6 +25,7 @@
     - [Kill PUMA](#kill-puma)
   - [Redis](#redis)
     - [Check Redis status](#check-redis-status)
+  - [Starting Redis with specific flags](#starting-redis-with-specific-flags)
     - [Restarting Redis](#restarting-redis)
   - [GraphQL](#graphql)
     - [Adding gem `graphiql-rails`](#adding-gem-graphiql-rails)
@@ -237,7 +238,6 @@ OR
 
 ```shell
 sudo snap install redis
-redis-server --port 6380 --daemonize yes
 ```
 
 ### Check Redis status
@@ -245,6 +245,12 @@ redis-server --port 6380 --daemonize yes
 ```shell
 redis-cli ping
 systemctl status redis
+```
+
+## Starting Redis with specific flags
+
+```shell
+redis-server --port 6380 --daemonize yes
 ```
 
 ### Restarting Redis
