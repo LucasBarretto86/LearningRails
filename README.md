@@ -41,7 +41,7 @@
     - [Installing Rspec](#installing-rspec)
   - [Apollo](#apollo)
   - [MailCatcher](#mailcatcher)
-  - [Snippets](#snippets)
+  - [Gists](#gists)
     - [Digest Images](#digest-images)
     - [Generate unique BLOB Token](#generate-unique-blob-token)
     - [Testing REST API](#testing-rest-api)
@@ -435,7 +435,12 @@ MailCatcher runs a super simple SMTP server which catches any message sent to it
 gem install mailcatcher
 ```
 
-## Snippets
+## Gists
+
+- [Rubocop from Festalab](https://gist.github.com/LucasBarretto86/0b32b58384c94d8fd02a6c3f5f59ae46)
+- [JS utils by Breno](https://gist.github.com/LucasBarretto86/3c85ed4a63ff4a77247562b72f8edce3)
+- [Basic Profile for Foreman](https://gist.github.com/LucasBarretto86/9d05ece22f05d204cce4fb905e41343e#Procfile)
+- [Basic Rubocop config](https://gist.github.com/LucasBarretto86/05dea799fdee07851d4b7c308032497b)
 
 ### Digest Images
 
