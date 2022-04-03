@@ -11,7 +11,7 @@
       - [Models generator](#models-generator)
     - [Helpers](#helpers)
       - [ApplicationHelper](#applicationhelper)
-    - [Current class and ActiveSupport::CurrentAttributes](#current-class-and-activesupportcurrentattributes)
+    - [Current class and ActiveSupport::CurrentAttributes implementation](#current-class-and-activesupportcurrentattributes-implementation)
       - [Basic Implementation](#basic-implementation)
       - [Create `current.rb` class](#create-currentrb-class)
       - [Create controller concern `set_current_attributes.rb` to load attributes](#create-controller-concern-set_current_attributesrb-to-load-attributes)
@@ -42,9 +42,8 @@
   - [Apollo](#apollo)
   - [MailCatcher](#mailcatcher)
   - [Gists](#gists)
-    - [Digest Images](#digest-images)
-    - [Generate unique BLOB Token](#generate-unique-blob-token)
-    - [Testing REST API](#testing-rest-api)
+    - [Private](#private)
+    - [Public](#public)
   - [References](#references)
 
 ## Rails
@@ -120,22 +119,19 @@ rails g model Review title:string description:string score:integer airline:belon
 #### ApplicationHelper
 
 ```rb
-def view_class_dom_tag(options = {})
-  classes = []
-  classes << "grid wrapper" if controller_name.eql?("appointments") && %w[new create].include?(action_name)
-  classes << "wrapper-#{controller_name}"
-  options.merge!({ class: classes.compact.join(" ") })
-  "class=#{options[:class]}"
+def dom_id_for_view(prefix: nil, suffix: nil)
+  "id=#{[prefix || controller_name, suffix || action_name].compact.join("-")}"
 end
 
-def view_id_dom_tag(prefix: nil, suffix: nil)
-  "id=#{[prefix || controller_name, suffix || action_name].compact.join("-")}"
+def dom_class_for_view(options = {})
+  default_class = "#{[options[:prefix] || controller_name, options[:suffix] || action_name].compact.join("-")}"
+  "class=#{options[:class] || default_class }"
 end
 ```
 
-### Current class and ActiveSupport::CurrentAttributes
+### Current class and ActiveSupport::CurrentAttributes implementation
 
-CurrentAttributes came out on Rails 5.2 allow us to control session variables, bellow follow steps
+CurrentAttributes came out on Rails 5.2 allow us to control session variables, follow steps bellow
 
 #### Basic Implementation
 
@@ -172,9 +168,7 @@ end
 #### Include concern to the `application_controller.rb`
 
 ```rb
-class ApplicationController < ActionController::Base
-  ...
-  
+class ApplicationController < ActionController::Base 
   include SetCurrentAttributes
 end
 
@@ -437,31 +431,18 @@ gem install mailcatcher
 
 ## Gists
 
-- [Rubocop from Festalab](https://gist.github.com/LucasBarretto86/0b32b58384c94d8fd02a6c3f5f59ae46)
-- [JS utils by Breno](https://gist.github.com/LucasBarretto86/3c85ed4a63ff4a77247562b72f8edce3)
+### Private
+
+These links only will work for the project owner
+
+- [Rubocop configs](https://gist.github.com/LucasBarretto86/0b32b58384c94d8fd02a6c3f5f59ae46)
+- [JS utils](https://gist.github.com/LucasBarretto86/3c85ed4a63ff4a77247562b72f8edce3)
 - [Basic Profile for Foreman](https://gist.github.com/LucasBarretto86/9d05ece22f05d204cce4fb905e41343e#Procfile)
 - [Basic Rubocop config](https://gist.github.com/LucasBarretto86/05dea799fdee07851d4b7c308032497b)
 
-### Digest Images
+### Public
 
-```rb
-Digest::MD5.file('test/fixtures/files/groomsman.jpg').base64digest
-```
-
-### Generate unique BLOB Token
-
-```rb
-ActiveStorage::Blob.generate_unique_secure_token
-```
-
-### Testing REST API
-
-```shell
-curl -u marcondesv:a24d4e50c2c4298e34789fa84b0296f330ab7bdd 'https://api.name.com/v4/domains:checkAvailability' -X POST -H 'Content-Type: application/json' --data '{"domainNames":["marcosemariaw.us"]},'
-{"results":[{"domainName":"marcosemariaw.us","sld":"marcosemariaw","tld":"us","purchasable":true,"purchasePrice":8.99,"purchaseType":"registration","renewalPrice":10.99},]},
-
-]
-```
+- [RubyOnRails Snippets](https://gist.github.com/LucasBarretto86/06abfb8a034fc43be29df34ebeb85bab)
 
 ## References
 
