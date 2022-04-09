@@ -6,6 +6,8 @@
       - [For older Rails versions](#for-older-rails-versions)
       - [Configured as API app](#configured-as-api-app)
       - [Configured with React lilbs (Rails 6 or above)](#configured-with-react-lilbs-rails-6-or-above)
+      - [Configuring database representation](#configuring-database-representation)
+        - [Moving from schema to structure](#moving-from-schema-to-structure)
     - [Dependecies setup](#dependecies-setup)
       - [Webpacker](#webpacker)
     - [Generators](#generators)
@@ -26,6 +28,7 @@
           - [how to precompile assets to test locally](#how-to-precompile-assets-to-test-locally)
       - [Helpers](#helpers)
         - [ApplicationHelper](#applicationhelper)
+      - [locale dynamic configs](#locale-dynamic-configs)
   - [Postgres](#postgres)
     - [Fixing PG Error for new rails apps](#fixing-pg-error-for-new-rails-apps)
   - [PUMA](#puma)
@@ -53,6 +56,10 @@
     - [Private](#private)
     - [Public](#public)
   - [References](#references)
+  - [Learning Projects](#learning-projects)
+    - [Calendar table](#calendar-table)
+      - [Migrations table structure](#migrations-table-structure)
+      - [Create Table](#create-table)
 
 ## Rails
 
@@ -78,6 +85,33 @@ rails new my_api -d=postgresql -T --api
 
 ```shell
 rails new my-app --webpack=react --database=postgresql
+```
+
+#### Configuring database representation
+
+`schema.rb`
+
+Basic database representation
+
+- It is a Ruby representation of your database; schema.rb is created by inspecting the database and expressing its structure using Ruby.
+- It is database-agnostic (i.e. whether you use SQLite, PostgreSQL, MySQL or any other database that Rails supports, the syntax and structure will remain largely the same)
+
+`structure.sql`
+
+Mature database representation
+
+- It allows for an exact copy of the database structure. This is important when working with a team, as well as if you need to rapidly generate a new database in production from a rails db:setup task.
+- It allows preserving information of advanced database features. For example, if you are using PostgreSQL, it enables the use of views, materialized views, functions, constraints and so on.
+
+##### Moving from schema to structure
+
+```rb
+# config/application.rb
+
+  class Application < Rails::Application
+  # ...
+    config.active_record.schema_format = :sql
+  end
 ```
 
 ### Dependecies setup
@@ -255,6 +289,23 @@ def dom_class_for_view(options = {})
   default_class = "#{[options[:prefix] || controller_name, options[:suffix] || action_name].compact.join("-")}"
   "class=#{options[:class] || default_class }"
 end
+```
+
+#### locale dynamic configs
+
+Within the locale folder on the project it's possible to create an additional file to assist dynamic formatting for the class `I18n.t` and `I18n.l`
+
+```rb
+## config/locales/en.rb
+{
+  en: {
+    date: {
+      formats: {
+        short_month_day_year: lambda { "%b, #{ _1.day.ordinalize} %Y" }
+      }
+    }
+  }
+}
 ```
 
 ## Postgres
@@ -921,4 +972,47 @@ These links only will work for the project owner
 - [Foreman](https://www.theforeman.org/introduction.html)
 - [Rubocop](https://docs.rubocop.org/rubocop/installation.html)
 - [brakeman.org](https://brakemanscanner.org/)
-- [Create Rails App with GraphQL](https://www.digitalocean.com/community/tutorials/how-to-set-up-a-ruby-on-rails-graphql-ap>)
+- [Create Rails App with GraphQL](https://www.digitalocean.com/community/tutorials/how-to-set-up-a-ruby-on-rails-graphql-api)
+- [Pros and Cons of Using structure.sql in Your Ruby on Rails Application](https://blog.appsignal.com/2020/01/15/the-pros-and-cons-of-using-structure-sql-in-your-ruby-on-rails-application.html)
+
+## Learning Projects
+
+### Calendar table
+
+#### Migrations table structure
+
+| Field                                                              | Description                                                                     |
+|:-------------------------------------------------------------------|:--------------------------------------------------------------------------------|
+| t.date       :date, null:false                                     | The date addressed in this row.                                                 |
+| t.integer    :day, null:false                                      | Number from 1 through 31                                                        |
+| t.integer    :day_of_week, null:false                              | Number from 1-7 (1 = Sunday)git                                                 |
+| t.integer    :day_of_quarter, null:false                           | Number from 1-92, indicates the day # in the quarter.                           |
+| t.integer    :day_of_year, null:false                              | Number from 1-366                                                               |
+| t.string     :day_of_week_literal, null:false                      | Name of the day of the week, Sunday...Saturday                                  |
+| t.integer    :day_of_week_in_month, null:false                     | Number from 1-5, indicates for example that it's the Nth saturday of the month. |
+| t.integer    :day_of_week_in_year, null:false                      | Number from 1-53, indicates for example that it's the Nth saturday of the year. |
+| t.integer    :week_of_month, null:false                            | Number from 1-6, indicates the number of week within the current month.         |
+| t.integer    :week_of_year, null:false                             | Number from 1-53, indicates the number of week within the current year.         |
+| t.integer    :week_of_quarter, null:false                          | Number from 1-14, indicates the number of week within the current quarter.      |
+| t.integer    :month, null:false                                    | Number from 1-12                                                                |
+| t.string     :month_literal, null:false                            | January-December                                                                |
+| t.integer    :year, null:false                                     | Current year, eg: 2017, 2025, 1984.                                             |
+| t.integer    :quarter, null:false                                  | 1-4, indicates quarter within the current year.                                 |
+| t.date       :beginning_of_week, null:false                        | Date of the first day of this week.                                             |
+| t.date       :end_of_week, null:false                              | Date of the last day of this week.                                              |
+| t.date       :beginning_of_month, null:false                       | Date of the first day of this month.                                            |
+| t.date       :end_of_month, null:false                             | Date of the last day of this month.                                             |
+| t.date       :beginning_of_quarter, null:false                     | Date of the first day of this quarter.                                          |
+| t.date       :end_of_quarter, null:false                           | Date of the last day of this quarter.                                           |
+| t.date       :beginning_of_year, null:false                        | Date of the first day of this year.                                             |
+| t.date       :end_of_year, null:false                              | Date of the last day of this year.                                              |
+| t.boolean    :is_holiday, null:false                               | 1 if a holiday                                                                  |
+| t.boolean    :is_holiday_season, null:false                        | 1 if part of a holiday season                                                   |
+| t.string     :holiday_name, null:false, length:{maximum:50}        | Name of holiday, if Is_Holiday = 1                                              |
+| t.string     :holiday_season_name, null:false, length:{maximum:50} | Name of holiday season, if Is_Holiday_Season = 1                                |
+| t.boolean    :is_weekday, null:false                               | 1 if Monday-->Friday, 0 for Saturday/Sunday                                     |
+| t.boolean    :is_business_day, null:false                          | 1 if a workday, otherwise 0.                                                    |
+| t.boolean    :is_leap_year, null:false                             | 1 if current year is a leap year.                                               |
+| t.integer    :days_in_month, null:false                            | Number of days in the current month.                                            |
+
+#### Create Table
