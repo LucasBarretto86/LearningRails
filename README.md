@@ -7,17 +7,25 @@
       - [Configured as API app](#configured-as-api-app)
       - [Configured with React lilbs (Rails 6 or above)](#configured-with-react-lilbs-rails-6-or-above)
     - [Dependecies setup](#dependecies-setup)
+      - [Webpacker](#webpacker)
     - [Generators](#generators)
       - [Models generator](#models-generator)
-    - [Helpers](#helpers)
-      - [ApplicationHelper](#applicationhelper)
-    - [Current class and ActiveSupport::CurrentAttributes implementation](#current-class-and-activesupportcurrentattributes-implementation)
-      - [Basic Implementation](#basic-implementation)
-      - [Create `current.rb` class](#create-currentrb-class)
-      - [Create controller concern `set_current_attributes.rb` to load attributes](#create-controller-concern-set_current_attributesrb-to-load-attributes)
-      - [Include concern to the `application_controller.rb`](#include-concern-to-the-application_controllerrb)
-      - [Adding Current variables on Mailer previews](#adding-current-variables-on-mailer-previews)
-        - [Basic implementation for mailer initializer `config/initializers/action_mailer.rb`](#basic-implementation-for-mailer-initializer-configinitializersaction_mailerrb)
+    - [Implentations and snippets quick access](#implentations-and-snippets-quick-access)
+      - [Current class and ActiveSupport::CurrentAttributes implementation](#current-class-and-activesupportcurrentattributes-implementation)
+        - [Basic Implementation](#basic-implementation)
+        - [Create `current.rb` class](#create-currentrb-class)
+        - [Create controller concern `set_current_attributes.rb` to load attributes](#create-controller-concern-set_current_attributesrb-to-load-attributes)
+        - [Include concern to the `application_controller.rb`](#include-concern-to-the-application_controllerrb)
+        - [Adding Current variables on Mailer previews](#adding-current-variables-on-mailer-previews)
+          - [Basic implementation for mailer initializer `config/initializers/action_mailer.rb`](#basic-implementation-for-mailer-initializer-configinitializersaction_mailerrb)
+      - [Allowing local fonts in assets pipeline and CORS](#allowing-local-fonts-in-assets-pipeline-and-cors)
+        - [Adjusting `assets.rb` initializer to add fonts as part of pipeline](#adjusting-assetsrb-initializer-to-add-fonts-as-part-of-pipeline)
+        - [Install gem `rack-cors`](#install-gem-rack-cors)
+        - [Adding `Rack::Cors` as middleware initializer](#adding-rackcors-as-middleware-initializer)
+        - [How to call fonts on `css.erb` or `html.erb`](#how-to-call-fonts-on-csserb-or-htmlerb)
+          - [how to precompile assets to test locally](#how-to-precompile-assets-to-test-locally)
+      - [Helpers](#helpers)
+        - [ApplicationHelper](#applicationhelper)
   - [Postgres](#postgres)
     - [Fixing PG Error for new rails apps](#fixing-pg-error-for-new-rails-apps)
   - [PUMA](#puma)
@@ -25,7 +33,7 @@
     - [Kill PUMA](#kill-puma)
   - [Redis](#redis)
     - [Check Redis status](#check-redis-status)
-  - [Starting Redis with specific flags](#starting-redis-with-specific-flags)
+    - [Starting Redis with specific flags](#starting-redis-with-specific-flags)
     - [Restarting Redis](#restarting-redis)
   - [GraphQL](#graphql)
     - [Adding gem `graphiql-rails`](#adding-gem-graphiql-rails)
@@ -74,9 +82,11 @@ rails new my-app --webpack=react --database=postgresql
 
 ### Dependecies setup
 
+#### Webpacker
+
 With the new app folder
 
-Add Webpacker (DEPRECATED USED ONLY FOR Rails 5 or bellow)
+Add Webpacker (DEPRECATED USED ONLY FOR Rails 5 or below)
 
 ```shell
 rails  webpacker:install
@@ -114,28 +124,15 @@ Model with reference:
 rails g model Review title:string description:string score:integer airline:belongs_to
 ```
 
-### Helpers
+### Implentations and snippets quick access
 
-#### ApplicationHelper
+#### Current class and ActiveSupport::CurrentAttributes implementation
 
-```rb
-def dom_id_for_view(prefix: nil, suffix: nil)
-  "id=#{[prefix || controller_name, suffix || action_name].compact.join("-")}"
-end
+CurrentAttributes came out on Rails 5.2 allow us to control session variables, follow steps below
 
-def dom_class_for_view(options = {})
-  default_class = "#{[options[:prefix] || controller_name, options[:suffix] || action_name].compact.join("-")}"
-  "class=#{options[:class] || default_class }"
-end
-```
+##### Basic Implementation
 
-### Current class and ActiveSupport::CurrentAttributes implementation
-
-CurrentAttributes came out on Rails 5.2 allow us to control session variables, follow steps bellow
-
-#### Basic Implementation
-
-#### Create `current.rb` class
+##### Create `current.rb` class
 
 ```rb
 # frozen_string_literal: true
@@ -145,7 +142,7 @@ class Current < ActiveSupport::CurrentAttributes
 end
 ```
 
-#### Create controller concern `set_current_attributes.rb` to load attributes
+##### Create controller concern `set_current_attributes.rb` to load attributes
 
 ```rb
 # frozen_string_literal: true
@@ -165,7 +162,7 @@ end
 
 ```
 
-#### Include concern to the `application_controller.rb`
+##### Include concern to the `application_controller.rb`
 
 ```rb
 class ApplicationController < ActionController::Base 
@@ -174,11 +171,11 @@ end
 
 ```
 
-#### Adding Current variables on Mailer previews
+##### Adding Current variables on Mailer previews
 
 Since mailer preview uses Rails classes and itself is required to add initializer configs to be able to set data coming from session request
 
-##### Basic implementation for mailer initializer `config/initializers/action_mailer.rb`
+###### Basic implementation for mailer initializer `config/initializers/action_mailer.rb`
 
 ```rb
 # frozen_string_literal: true
@@ -193,6 +190,70 @@ Rails.application.reloader.to_prepare do
       Current.clinic = Clinic.find_by(subdomain: request.subdomain)
     end
   end
+end
+```
+
+#### Allowing local fonts in assets pipeline and CORS
+
+##### Adjusting `assets.rb` initializer to add fonts as part of pipeline
+
+```rb
+# /\.(?:svg|eot|woff|ttf)$/ to allow fonts to be precompiled to enabled it to be referenced by asset_path after CORS is allowed
+
+Rails.application.config.assets.precompile  += %w(/\.(?:svg|eot|woff|ttf)$/) 
+
+Rails.application.config.assets.paths << Rails.root.join('app', 'assets', 'fonts')
+```
+
+##### Install gem `rack-cors`
+
+```gemfile
+# Rails middleware
+gem "rack-cors"
+```
+
+##### Adding `Rack::Cors` as middleware initializer
+
+```rb
+Rails.application.config.middleware.insert_before 0, Rack::Cors do
+  allow do
+    origins '*'
+    resource '/assets/*', headers: :any, methods: [:get, :post, :patch, :put]
+  end
+end
+```
+
+##### How to call fonts on `css.erb` or `html.erb`
+
+```css
+  @font-face {
+    font-family: 'ValueSansPro';
+    src: url(<%= asset_path('ValueSansPro-Regular.ttf') %>) format('truetype'),
+    url(<%= asset_path('ValueSansPro-Regular.woff') %>) format('woff'),
+    url(<%= asset_path('ValueSansPro-Regular.woff2') %>) format('woff2');
+    font-weight: 300;
+    font-style: normal;
+  }
+```
+
+###### how to precompile assets to test locally
+
+```shell
+rails assets:precompile
+```
+
+#### Helpers
+
+##### ApplicationHelper
+
+```rb
+def dom_id_for_view(prefix: nil, suffix: nil)
+  "id=#{[prefix || controller_name, suffix || action_name].compact.join("-")}"
+end
+
+def dom_class_for_view(options = {})
+  default_class = "#{[options[:prefix] || controller_name, options[:suffix] || action_name].compact.join("-")}"
+  "class=#{options[:class] || default_class }"
 end
 ```
 
@@ -241,7 +302,7 @@ redis-cli ping
 systemctl status redis
 ```
 
-## Starting Redis with specific flags
+### Starting Redis with specific flags
 
 ```shell
 redis-server --port 6380 --daemonize yes
@@ -347,10 +408,420 @@ Custom configs for rubocop
 
 You can add custom rules for cops, for that be sure to create a `.rubocop.yml` file inside the project
 
-Check the default configs bellow
+Check the default configs below
 [RuboCop’s default configuration](https://github.com/rubocop/rubocop/blob/master/config/default.yml)
 
-Simple referece:
+Custom config:
+
+```yml
+require:
+  - rubocop-performance
+  - rubocop-rails
+  - rubocop-minitest
+
+
+AllCops:
+  TargetRubyVersion: 3.0
+  # RuboCop has a bunch of cops enabled by default. This setting tells RuboCop
+  # to ignore them, so only the ones explicitly set in this file are enabled.
+  DisabledByDefault: true
+  SuggestExtensions: false
+  Exclude:
+    - 'db/**/*'
+    - 'config/**/*'
+    - 'script/**/*'
+    - 'bin/**/*'
+    - 'node_modules/**/*'
+    - '*'
+
+Performance:
+  Exclude:
+    - '**/test/**/*'
+
+# Prefer assert_not over assert !
+Rails/AssertNot:
+  Include:
+    - '**/test/**/*'
+
+# Prefer assert_not_x over refute_x
+Rails/RefuteMethods:
+  Include:
+    - '**/test/**/*'
+
+Rails/IndexBy:
+  Enabled: true
+
+Rails/IndexWith:
+  Enabled: true
+
+# Prefer &&/|| over and/or.
+Style/AndOr:
+  Enabled: true
+
+# Align `when` with `case`.
+Layout/CaseIndentation:
+  Enabled: true
+
+Layout/ClosingHeredocIndentation:
+  Enabled: true
+
+Layout/ClosingParenthesisIndentation:
+  Enabled: true
+
+# Align comments with method definitions.
+Layout/CommentIndentation:
+  Enabled: true
+
+Layout/ElseAlignment:
+  Enabled: true
+
+# Align `end` with the matching keyword or starting expression except for
+# assignments, where it should be aligned with the LHS.
+Layout/EndAlignment:
+  Enabled: true
+  EnforcedStyleAlignWith: variable
+  AutoCorrect: true
+
+Layout/EndOfLine:
+  Enabled: true
+
+Layout/EmptyLineAfterMagicComment:
+  Enabled: true
+
+Layout/EmptyLinesAroundAccessModifier:
+  Enabled: true
+  EnforcedStyle: only_before
+
+Layout/EmptyLinesAroundBlockBody:
+  Enabled: true
+
+# In a regular class definition, no empty lines around the body.
+Layout/EmptyLinesAroundClassBody:
+  Enabled: true
+
+# In a regular method definition, no empty lines around the body.
+Layout/EmptyLinesAroundMethodBody:
+  Enabled: true
+
+# In a regular module definition, no empty lines around the body.
+Layout/EmptyLinesAroundModuleBody:
+  Enabled: true
+
+# Use Ruby >= 1.9 syntax for hashes. Prefer { a: :b } over { :a => :b }.
+Style/HashSyntax:
+  Enabled: true
+
+# Method definitions after `private` or `protected` isolated calls need one
+# extra level of indentation.
+Layout/IndentationConsistency:
+  Enabled: true
+  EnforcedStyle: indented_internal_methods
+
+# Two spaces, no tabs (for indentation).
+Layout/IndentationWidth:
+  Enabled: true
+
+Layout/LeadingCommentSpace:
+  Enabled: true
+
+Layout/SpaceAfterColon:
+  Enabled: true
+
+Layout/SpaceAfterComma:
+  Enabled: true
+
+Layout/SpaceAfterSemicolon:
+  Enabled: true
+
+Layout/SpaceAroundEqualsInParameterDefault:
+  Enabled: true
+
+Layout/SpaceAroundKeyword:
+  Enabled: true
+
+Layout/SpaceAroundOperators:
+  Enabled: true
+
+Layout/SpaceBeforeComma:
+  Enabled: true
+
+Layout/SpaceBeforeComment:
+  Enabled: true
+
+Layout/SpaceBeforeFirstArg:
+  Enabled: true
+
+Style/DefWithParentheses:
+  Enabled: true
+
+# Defining a method with parameters needs parentheses.
+Style/MethodDefParentheses:
+  Enabled: true
+
+Style/ExplicitBlockArgument:
+  Enabled: true
+
+Style/FrozenStringLiteralComment:
+  Enabled: true
+  EnforcedStyle: always
+  Exclude:
+    - 'db/migrate/**/*.rb'
+
+Style/MapToHash:
+  Enabled: true
+
+Style/RedundantFreeze:
+  Enabled: true
+
+# Use `foo {}` not `foo{}`.
+Layout/SpaceBeforeBlockBraces:
+  Enabled: true
+
+# Use `foo { bar }` not `foo {bar}`.
+Layout/SpaceInsideBlockBraces:
+  Enabled: true
+  EnforcedStyleForEmptyBraces: space
+
+# Use `{ a: 1 }` not `{a:1}`.
+Layout/SpaceInsideHashLiteralBraces:
+  Enabled: true
+
+Layout/SpaceInsideParens:
+  Enabled: true
+
+# Check quotes usage according to lint rule below.
+Style/StringLiterals:
+  Enabled: true
+  EnforcedStyle: double_quotes
+
+# Detect hard tabs, no hard tabs.
+Layout/IndentationStyle:
+  Enabled: true
+
+# Empty lines should not have any spaces.
+Layout/TrailingEmptyLines:
+  Enabled: true
+
+# No trailing whitespace.
+Layout/TrailingWhitespace:
+  Enabled: true
+
+# Use quotes for string literals when they are enough.
+Style/RedundantPercentQ:
+  Enabled: true
+
+Lint/AmbiguousOperator:
+  Enabled: true
+
+Lint/AmbiguousRegexpLiteral:
+  Enabled: true
+
+Lint/DuplicateRequire:
+  Enabled: true
+
+Lint/ErbNewArguments:
+  Enabled: true
+
+# Use my_method(my_arg) not my_method( my_arg ) or my_method my_arg.
+Lint/RequireParentheses:
+  Enabled: true
+
+Lint/RedundantStringCoercion:
+  Enabled: true
+
+Lint/UriEscapeUnescape:
+  Enabled: true
+
+Lint/UselessAssignment:
+  Enabled: true
+
+Lint/DeprecatedClassMethods:
+  Enabled: true
+
+Style/ParenthesesAroundCondition:
+  Enabled: true
+
+Style/HashTransformKeys:
+  Enabled: true
+
+Style/HashTransformValues:
+  Enabled: true
+
+Style/RedundantBegin:
+  Enabled: true
+
+Style/RedundantReturn:
+  Enabled: true
+  AllowMultipleReturnValues: true
+
+Style/RedundantRegexpEscape:
+  Enabled: true
+
+Style/Semicolon:
+  Enabled: true
+  AllowAsExpressionSeparator: true
+
+# Prefer Foo.method over Foo::method
+Style/ColonMethodCall:
+  Enabled: true
+
+Style/TrivialAccessors:
+  Enabled: true
+
+Performance/BindCall:
+  Enabled: true
+
+Performance/FlatMap:
+  Enabled: true
+
+Performance/MapCompact:
+  Enabled: true
+
+Performance/SelectMap:
+  Enabled: true
+
+Performance/RedundantMerge:
+  Enabled: true
+
+Performance/StartWith:
+  Enabled: true
+
+Performance/EndWith:
+  Enabled: true
+
+Performance/RegexpMatch:
+  Enabled: true
+
+Performance/ReverseEach:
+  Enabled: true
+
+Performance/StringReplacement:
+  Enabled: true
+
+Performance/UnfreezeString:
+  Enabled: true
+
+Performance/DeletePrefix:
+  Enabled: true
+
+Performance/DeleteSuffix:
+  Enabled: true
+
+Lint/SymbolConversion:
+  Enabled: true
+
+Style/StringLiteralsInInterpolation:
+  Enabled: true
+  EnforcedStyle: double_quotes
+
+Style/RescueStandardError:
+  Enabled: true
+
+Style/RedundantSelf:
+  Enabled: true
+
+Style/TrailingCommaInHashLiteral:
+  Enabled: true
+
+Layout/SpaceInsidePercentLiteralDelimiters:
+  Enabled: true
+
+Lint/LiteralInInterpolation:
+  Enabled: true
+
+Rails/PluralizationGrammar:
+  Enabled: true
+
+Style/RaiseArgs:
+  Enabled: true
+
+Style/HashEachMethods:
+  Enabled: true
+
+Rails/Blank:
+  Enabled: true
+
+Rails/Present:
+  Enabled: true
+
+Layout/EmptyComment:
+  Enabled: true
+
+Layout/SpaceInsideArrayLiteralBrackets:
+  Enabled: true
+
+Performance/Count:
+  Enabled: true
+
+Rails/LinkToBlank:
+  Enabled: true
+
+Style/BlockDelimiters:
+  Enabled: true
+
+Style/MultilineWhenThen:
+  Enabled: true
+
+Style/TrailingCommaInArrayLiteral:
+  Enabled: true
+
+Performance/Detect:
+  Enabled: true
+
+Rails/FindEach:
+  Enabled: true
+
+Style/NegatedIfElseCondition:
+  Enabled: true
+
+Style/RedundantFetchBlock:
+  Enabled: true
+
+Rails/Presence:
+  Enabled: true
+
+Style/InverseMethods:
+  Enabled: true
+
+Performance/CompareWithBlock:
+  Enabled: true
+
+Style/EmptyCaseCondition:
+  Enabled: true
+
+Style/RedundantCondition:
+  Enabled: true
+
+Layout/SpaceAfterNot:
+  Enabled: true
+
+Lint/DuplicateCaseCondition:
+  Enabled: true
+
+Lint/DuplicateElsifCondition:
+  Enabled: true
+
+Lint/EmptyBlock:
+  Enabled: true
+
+Lint/EmptyFile:
+  Enabled: true
+
+Lint/RedundantWithIndex:
+  Enabled: true
+
+Rails/ActiveRecordCallbacksOrder:
+  Enabled: true
+
+Rails/Pluck:
+  Enabled: True
+
+Style/SymbolLiteral:
+  Enabled: True
+
+Minitest/UnreachableAssertion:
+  Enabled: true
+```
 
 ## Brakeman
 
@@ -443,12 +914,11 @@ These links only will work for the project owner
 ### Public
 
 - [RubyOnRails Snippets](https://gist.github.com/LucasBarretto86/06abfb8a034fc43be29df34ebeb85bab)
+- [Local fonts in `asset_path` and CORS adjustment](https://gist.github.com/LucasBarretto86/e1699059e596b7ebffb5b40ac6909d6b)
 
 ## References
 
-| Ruby on Rails |
-| :---- |
-|[Foreman](https://www.theforeman.org/introduction.html)|
-|[Rubocop](https://docs.rubocop.org/rubocop/installation.html)|
-|[brakeman.org](https://brakemanscanner.org/)|
-| [Create Rails App with GraphQL](https://www.digitalocean.com/community/tutorials/how-to-set-up-a-ruby-on-rails-graphql-ap>) |
+- [Foreman](https://www.theforeman.org/introduction.html)
+- [Rubocop](https://docs.rubocop.org/rubocop/installation.html)
+- [brakeman.org](https://brakemanscanner.org/)
+- [Create Rails App with GraphQL](https://www.digitalocean.com/community/tutorials/how-to-set-up-a-ruby-on-rails-graphql-ap>)
