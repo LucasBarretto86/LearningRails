@@ -59,7 +59,7 @@
   - [Learning Projects](#learning-projects)
     - [Calendar table](#calendar-table)
       - [Migrations table structure](#migrations-table-structure)
-      - [Create Table](#create-table)
+      - [Migration to create table](#migration-to-create-table)
 
 ## Rails
 
@@ -1015,4 +1015,50 @@ These links only will work for the project owner
 | t.boolean    :is_leap_year, null:false                             | 1 if current year is a leap year.                                               |
 | t.integer    :days_in_month, null:false                            | Number of days in the current month.                                            |
 
-#### Create Table
+#### Migration to create table
+
+```rb
+class GenerateAndPopulateCalendarTable < ActiveRecord::Migration[7.0]
+  def up
+    create_table :calendars do |t|
+      t.date :date, null: false
+      t.integer :day, null: false
+      t.integer :day_of_week, null: false
+      t.integer :day_of_quarter, null: false
+      t.integer :day_of_year, null: false
+      t.string :day_of_week_literal, null: false
+      t.integer :day_of_week_in_month, null: false
+      t.integer :day_of_week_in_year, null: false
+      t.integer :week_of_month, null: false
+      t.integer :week_of_year, null: false
+      t.integer :week_of_quarter, null: false
+      t.integer :month, null: false
+      t.string :month_literal, null: false
+      t.integer :year, null: false
+      t.integer :quarter, null: false
+      t.date :beginning_of_week, null: false
+      t.date :end_of_week, null: false
+      t.date :beginning_of_month, null: false
+      t.date :end_of_month, null: false
+      t.date :beginning_of_quarter, null: false
+      t.date :end_of_quarter, null: false
+      t.date :beginning_of_year, null: false
+      t.date :end_of_year, null: false
+      t.boolean :is_holiday, null: false
+      t.boolean :is_holiday_season, null: false
+      t.string :holiday_name, null: false, length: { maximum: 50 }
+      t.string :holiday_season_name, null: false, length: { maximum: 50 }
+      t.boolean :is_weekday, null: false
+      t.boolean :is_business_day, null: false
+      t.boolean :is_leap_year, null: false
+      t.integer :days_in_month, null: false
+      t.index :date, unique: true, name: 'index_dates_on_calendars'
+    end
+  end
+
+  def down
+    execute "DROP TABLE calendars;"
+  end
+end
+
+```
