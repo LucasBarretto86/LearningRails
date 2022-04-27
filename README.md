@@ -44,22 +44,26 @@
     - [Mounting GraphQl engine to routes](#mounting-graphql-engine-to-routes)
     - [Generating ObjectTypes](#generating-objecttypes)
   - [RSPEC](#rspec)
+    - [Installing Rspec](#installing-rspec)
   - [Webpack](#webpack)
   - [Rubocop](#rubocop)
   - [Brakeman](#brakeman)
   - [Foreman](#foreman)
   - [React](#react)
-    - [Installing Rspec](#installing-rspec)
+    - [Configuration](#configuration)
+      - [Installing react into the project with webpacker](#installing-react-into-the-project-with-webpacker)
+      - [Dealing with routes](#dealing-with-routes)
+      - [Create js pack within the application](#create-js-pack-within-the-application)
+      - [Update application layout or espefic layout](#update-application-layout-or-espefic-layout)
+      - [Implement a component within a view folder](#implement-a-component-within-a-view-folder)
+      - [Tree for pack folders folders views](#tree-for-pack-folders-folders-views)
+      - [Import to the app pack an external component](#import-to-the-app-pack-an-external-component)
   - [Apollo](#apollo)
   - [MailCatcher](#mailcatcher)
   - [Gists](#gists)
     - [Private](#private)
     - [Public](#public)
   - [References](#references)
-  - [Learning Projects](#learning-projects)
-    - [Calendar table](#calendar-table)
-      - [Migrations table structure](#migrations-table-structure)
-      - [Migration to create table](#migration-to-create-table)
 
 ## Rails
 
@@ -120,16 +124,16 @@ Mature database representation
 
 With the new app folder
 
-Add Webpacker (DEPRECATED USED ONLY FOR Rails 5 or below)
+Add Webpacker (DEPRECATED USE FOR Rails 7 check importmaps)
 
 ```shell
-rails  webpacker:install
+rails webpacker:install
 ```
 
 Adding Stimulus
 
 ```shell
-rails  webpacker:install:stimulus
+rails webpacker:install:stimulus
 ```
 
 ### Generators
@@ -424,6 +428,31 @@ rails generate graphql:object Note id:ID! title:String! body:String!
 
 ## RSPEC
 
+### Installing Rspec
+
+```shell
+gem install rspec
+```
+
+Adding to the project
+
+Add on gem file and run bundle
+
+```Gemfile
+group :test do
+  ...
+
+  gem "rspec"
+  gem "rspec-rails"
+end
+```
+
+Generate Rspect required files
+
+```shell
+rails g rspec:install
+```
+
 ## Webpack
 
 with application directory
@@ -461,418 +490,6 @@ You can add custom rules for cops, for that be sure to create a `.rubocop.yml` f
 
 Check the default configs below
 [RuboCop’s default configuration](https://github.com/rubocop/rubocop/blob/master/config/default.yml)
-
-Custom config:
-
-```yml
-require:
-  - rubocop-performance
-  - rubocop-rails
-  - rubocop-minitest
-
-
-AllCops:
-  TargetRubyVersion: 3.0
-  # RuboCop has a bunch of cops enabled by default. This setting tells RuboCop
-  # to ignore them, so only the ones explicitly set in this file are enabled.
-  DisabledByDefault: true
-  SuggestExtensions: false
-  Exclude:
-    - 'db/**/*'
-    - 'config/**/*'
-    - 'script/**/*'
-    - 'bin/**/*'
-    - 'node_modules/**/*'
-    - '*'
-
-Performance:
-  Exclude:
-    - '**/test/**/*'
-
-# Prefer assert_not over assert !
-Rails/AssertNot:
-  Include:
-    - '**/test/**/*'
-
-# Prefer assert_not_x over refute_x
-Rails/RefuteMethods:
-  Include:
-    - '**/test/**/*'
-
-Rails/IndexBy:
-  Enabled: true
-
-Rails/IndexWith:
-  Enabled: true
-
-# Prefer &&/|| over and/or.
-Style/AndOr:
-  Enabled: true
-
-# Align `when` with `case`.
-Layout/CaseIndentation:
-  Enabled: true
-
-Layout/ClosingHeredocIndentation:
-  Enabled: true
-
-Layout/ClosingParenthesisIndentation:
-  Enabled: true
-
-# Align comments with method definitions.
-Layout/CommentIndentation:
-  Enabled: true
-
-Layout/ElseAlignment:
-  Enabled: true
-
-# Align `end` with the matching keyword or starting expression except for
-# assignments, where it should be aligned with the LHS.
-Layout/EndAlignment:
-  Enabled: true
-  EnforcedStyleAlignWith: variable
-  AutoCorrect: true
-
-Layout/EndOfLine:
-  Enabled: true
-
-Layout/EmptyLineAfterMagicComment:
-  Enabled: true
-
-Layout/EmptyLinesAroundAccessModifier:
-  Enabled: true
-  EnforcedStyle: only_before
-
-Layout/EmptyLinesAroundBlockBody:
-  Enabled: true
-
-# In a regular class definition, no empty lines around the body.
-Layout/EmptyLinesAroundClassBody:
-  Enabled: true
-
-# In a regular method definition, no empty lines around the body.
-Layout/EmptyLinesAroundMethodBody:
-  Enabled: true
-
-# In a regular module definition, no empty lines around the body.
-Layout/EmptyLinesAroundModuleBody:
-  Enabled: true
-
-# Use Ruby >= 1.9 syntax for hashes. Prefer { a: :b } over { :a => :b }.
-Style/HashSyntax:
-  Enabled: true
-
-# Method definitions after `private` or `protected` isolated calls need one
-# extra level of indentation.
-Layout/IndentationConsistency:
-  Enabled: true
-  EnforcedStyle: indented_internal_methods
-
-# Two spaces, no tabs (for indentation).
-Layout/IndentationWidth:
-  Enabled: true
-
-Layout/LeadingCommentSpace:
-  Enabled: true
-
-Layout/SpaceAfterColon:
-  Enabled: true
-
-Layout/SpaceAfterComma:
-  Enabled: true
-
-Layout/SpaceAfterSemicolon:
-  Enabled: true
-
-Layout/SpaceAroundEqualsInParameterDefault:
-  Enabled: true
-
-Layout/SpaceAroundKeyword:
-  Enabled: true
-
-Layout/SpaceAroundOperators:
-  Enabled: true
-
-Layout/SpaceBeforeComma:
-  Enabled: true
-
-Layout/SpaceBeforeComment:
-  Enabled: true
-
-Layout/SpaceBeforeFirstArg:
-  Enabled: true
-
-Style/DefWithParentheses:
-  Enabled: true
-
-# Defining a method with parameters needs parentheses.
-Style/MethodDefParentheses:
-  Enabled: true
-
-Style/ExplicitBlockArgument:
-  Enabled: true
-
-Style/FrozenStringLiteralComment:
-  Enabled: true
-  EnforcedStyle: always
-  Exclude:
-    - 'db/migrate/**/*.rb'
-
-Style/MapToHash:
-  Enabled: true
-
-Style/RedundantFreeze:
-  Enabled: true
-
-# Use `foo {}` not `foo{}`.
-Layout/SpaceBeforeBlockBraces:
-  Enabled: true
-
-# Use `foo { bar }` not `foo {bar}`.
-Layout/SpaceInsideBlockBraces:
-  Enabled: true
-  EnforcedStyleForEmptyBraces: space
-
-# Use `{ a: 1 }` not `{a:1}`.
-Layout/SpaceInsideHashLiteralBraces:
-  Enabled: true
-
-Layout/SpaceInsideParens:
-  Enabled: true
-
-# Check quotes usage according to lint rule below.
-Style/StringLiterals:
-  Enabled: true
-  EnforcedStyle: double_quotes
-
-# Detect hard tabs, no hard tabs.
-Layout/IndentationStyle:
-  Enabled: true
-
-# Empty lines should not have any spaces.
-Layout/TrailingEmptyLines:
-  Enabled: true
-
-# No trailing whitespace.
-Layout/TrailingWhitespace:
-  Enabled: true
-
-# Use quotes for string literals when they are enough.
-Style/RedundantPercentQ:
-  Enabled: true
-
-Lint/AmbiguousOperator:
-  Enabled: true
-
-Lint/AmbiguousRegexpLiteral:
-  Enabled: true
-
-Lint/DuplicateRequire:
-  Enabled: true
-
-Lint/ErbNewArguments:
-  Enabled: true
-
-# Use my_method(my_arg) not my_method( my_arg ) or my_method my_arg.
-Lint/RequireParentheses:
-  Enabled: true
-
-Lint/RedundantStringCoercion:
-  Enabled: true
-
-Lint/UriEscapeUnescape:
-  Enabled: true
-
-Lint/UselessAssignment:
-  Enabled: true
-
-Lint/DeprecatedClassMethods:
-  Enabled: true
-
-Style/ParenthesesAroundCondition:
-  Enabled: true
-
-Style/HashTransformKeys:
-  Enabled: true
-
-Style/HashTransformValues:
-  Enabled: true
-
-Style/RedundantBegin:
-  Enabled: true
-
-Style/RedundantReturn:
-  Enabled: true
-  AllowMultipleReturnValues: true
-
-Style/RedundantRegexpEscape:
-  Enabled: true
-
-Style/Semicolon:
-  Enabled: true
-  AllowAsExpressionSeparator: true
-
-# Prefer Foo.method over Foo::method
-Style/ColonMethodCall:
-  Enabled: true
-
-Style/TrivialAccessors:
-  Enabled: true
-
-Performance/BindCall:
-  Enabled: true
-
-Performance/FlatMap:
-  Enabled: true
-
-Performance/MapCompact:
-  Enabled: true
-
-Performance/SelectMap:
-  Enabled: true
-
-Performance/RedundantMerge:
-  Enabled: true
-
-Performance/StartWith:
-  Enabled: true
-
-Performance/EndWith:
-  Enabled: true
-
-Performance/RegexpMatch:
-  Enabled: true
-
-Performance/ReverseEach:
-  Enabled: true
-
-Performance/StringReplacement:
-  Enabled: true
-
-Performance/UnfreezeString:
-  Enabled: true
-
-Performance/DeletePrefix:
-  Enabled: true
-
-Performance/DeleteSuffix:
-  Enabled: true
-
-Lint/SymbolConversion:
-  Enabled: true
-
-Style/StringLiteralsInInterpolation:
-  Enabled: true
-  EnforcedStyle: double_quotes
-
-Style/RescueStandardError:
-  Enabled: true
-
-Style/RedundantSelf:
-  Enabled: true
-
-Style/TrailingCommaInHashLiteral:
-  Enabled: true
-
-Layout/SpaceInsidePercentLiteralDelimiters:
-  Enabled: true
-
-Lint/LiteralInInterpolation:
-  Enabled: true
-
-Rails/PluralizationGrammar:
-  Enabled: true
-
-Style/RaiseArgs:
-  Enabled: true
-
-Style/HashEachMethods:
-  Enabled: true
-
-Rails/Blank:
-  Enabled: true
-
-Rails/Present:
-  Enabled: true
-
-Layout/EmptyComment:
-  Enabled: true
-
-Layout/SpaceInsideArrayLiteralBrackets:
-  Enabled: true
-
-Performance/Count:
-  Enabled: true
-
-Rails/LinkToBlank:
-  Enabled: true
-
-Style/BlockDelimiters:
-  Enabled: true
-
-Style/MultilineWhenThen:
-  Enabled: true
-
-Style/TrailingCommaInArrayLiteral:
-  Enabled: true
-
-Performance/Detect:
-  Enabled: true
-
-Rails/FindEach:
-  Enabled: true
-
-Style/NegatedIfElseCondition:
-  Enabled: true
-
-Style/RedundantFetchBlock:
-  Enabled: true
-
-Rails/Presence:
-  Enabled: true
-
-Style/InverseMethods:
-  Enabled: true
-
-Performance/CompareWithBlock:
-  Enabled: true
-
-Style/EmptyCaseCondition:
-  Enabled: true
-
-Style/RedundantCondition:
-  Enabled: true
-
-Layout/SpaceAfterNot:
-  Enabled: true
-
-Lint/DuplicateCaseCondition:
-  Enabled: true
-
-Lint/DuplicateElsifCondition:
-  Enabled: true
-
-Lint/EmptyBlock:
-  Enabled: true
-
-Lint/EmptyFile:
-  Enabled: true
-
-Lint/RedundantWithIndex:
-  Enabled: true
-
-Rails/ActiveRecordCallbacksOrder:
-  Enabled: true
-
-Rails/Pluck:
-  Enabled: True
-
-Style/SymbolLiteral:
-  Enabled: True
-
-Minitest/UnreachableAssertion:
-  Enabled: true
-```
 
 ## Brakeman
 
@@ -916,29 +533,107 @@ foreman start
 
 ## React
 
-### Installing Rspec
+### Configuration
+
+#### Installing react into the project with webpacker
 
 ```shell
-gem install rspec
+rails webpacker:install:react
 ```
 
-Adding to the project
+#### Dealing with routes
 
-Add on gem file and run bundle
+By doing this you allow the react app to handle it's own routes, since we only have a single rails controller to render o app due to the fact that it react operates all in frontend
 
-```Gemfile
-group :test do
-  ...
+```rb
+# routes.rb
 
-  gem "rspec"
-  gem "rspec-rails"
+  get "/(/*in_app_path)", to: "my_flights_app#index"
+```
+
+```rb
+# my_flights_app_controller.rb
+
+class MyFlightsAppController < ApplicationController
+  def index
+    render html: nil, layout: true
+  end
 end
 ```
 
-Generate Rspect required files
+#### Create js pack within the application
 
-```shell
-rails g rspec:install
+```js
+import React from 'react'
+import ReactDOM from 'react-dom'
+
+// Simple example component
+const Hello = props => { <h1>Hello {name}</h1>}
+
+Hello.defaultProps {
+  name: 'Lucas'
+}
+
+// Required method to render components
+document.addEventListener('DOMContentLoaded', () => {
+  ReactDOM.render(
+    <Hello />,
+    document.body.appendchild(document.createElement('div')))
+})
+```
+
+#### Update application layout or espefic layout
+
+```erb
+<!-- views/layouts/application.html.erb -->
+
+<head>
+  ...
+
+  <%= javascript_pack_tag 'my_flights_app' %>
+</head>
+```
+
+#### Implement a component within a view folder
+
+```jsx
+import React from 'react'
+
+const Airlines = props => (
+    <h1> My Flights App - version: {props.version}</h1>
+)
+
+Airlines.defaultProps = {
+  version: 0.1
+}
+
+export default Airlines
+```
+
+#### Tree for pack folders folders views
+
+```tree
+app/javascript/packs/
+
+├── application.js
+├── my_flights_app
+│   └── views
+│       └── Airlines.jsx
+└── my_flights_app.js
+```
+
+#### Import to the app pack an external component
+
+```js
+import React from 'react'
+import ReactDOM from 'react-dom'
+import Airlines from './my_flights_app/views/Airlines'
+
+document.addEventListener('DOMContentLoaded', () => {
+  ReactDOM.render(
+    <Airlines/>,
+    document.body.appendchild(document.createElement('div')))
+})
 ```
 
 ## Apollo
@@ -961,6 +656,7 @@ These links only will work for the project owner
 - [JS utils](https://gist.github.com/LucasBarretto86/3c85ed4a63ff4a77247562b72f8edce3)
 - [Basic Profile for Foreman](https://gist.github.com/LucasBarretto86/9d05ece22f05d204cce4fb905e41343e#Procfile)
 - [Basic Rubocop config](https://gist.github.com/LucasBarretto86/05dea799fdee07851d4b7c308032497b)
+- [Calendar Table](https://gist.github.com/LucasBarretto86/893986ef5a2d9ae2219725de0a53bc3b)
 
 ### Public
 
@@ -974,91 +670,3 @@ These links only will work for the project owner
 - [brakeman.org](https://brakemanscanner.org/)
 - [Create Rails App with GraphQL](https://www.digitalocean.com/community/tutorials/how-to-set-up-a-ruby-on-rails-graphql-api)
 - [Pros and Cons of Using structure.sql in Your Ruby on Rails Application](https://blog.appsignal.com/2020/01/15/the-pros-and-cons-of-using-structure-sql-in-your-ruby-on-rails-application.html)
-
-## Learning Projects
-
-### Calendar table
-
-#### Migrations table structure
-
-| Field                                                              | Description                                                                     |
-|:-------------------------------------------------------------------|:--------------------------------------------------------------------------------|
-| t.date       :date, null:false                                     | The date addressed in this row.                                                 |
-| t.integer    :day, null:false                                      | Number from 1 through 31                                                        |
-| t.integer    :day_of_week, null:false                              | Number from 1-7 (1 = Sunday)git                                                 |
-| t.integer    :day_of_quarter, null:false                           | Number from 1-92, indicates the day # in the quarter.                           |
-| t.integer    :day_of_year, null:false                              | Number from 1-366                                                               |
-| t.string     :day_of_week_literal, null:false                      | Name of the day of the week, Sunday...Saturday                                  |
-| t.integer    :day_of_week_in_month, null:false                     | Number from 1-5, indicates for example that it's the Nth saturday of the month. |
-| t.integer    :day_of_week_in_year, null:false                      | Number from 1-53, indicates for example that it's the Nth saturday of the year. |
-| t.integer    :week_of_month, null:false                            | Number from 1-6, indicates the number of week within the current month.         |
-| t.integer    :week_of_year, null:false                             | Number from 1-53, indicates the number of week within the current year.         |
-| t.integer    :week_of_quarter, null:false                          | Number from 1-14, indicates the number of week within the current quarter.      |
-| t.integer    :month, null:false                                    | Number from 1-12                                                                |
-| t.string     :month_literal, null:false                            | January-December                                                                |
-| t.integer    :year, null:false                                     | Current year, eg: 2017, 2025, 1984.                                             |
-| t.integer    :quarter, null:false                                  | 1-4, indicates quarter within the current year.                                 |
-| t.date       :beginning_of_week, null:false                        | Date of the first day of this week.                                             |
-| t.date       :end_of_week, null:false                              | Date of the last day of this week.                                              |
-| t.date       :beginning_of_month, null:false                       | Date of the first day of this month.                                            |
-| t.date       :end_of_month, null:false                             | Date of the last day of this month.                                             |
-| t.date       :beginning_of_quarter, null:false                     | Date of the first day of this quarter.                                          |
-| t.date       :end_of_quarter, null:false                           | Date of the last day of this quarter.                                           |
-| t.date       :beginning_of_year, null:false                        | Date of the first day of this year.                                             |
-| t.date       :end_of_year, null:false                              | Date of the last day of this year.                                              |
-| t.boolean    :is_holiday, null:false                               | 1 if a holiday                                                                  |
-| t.boolean    :is_holiday_season, null:false                        | 1 if part of a holiday season                                                   |
-| t.string     :holiday_name, null:false, length:{maximum:50}        | Name of holiday, if Is_Holiday = 1                                              |
-| t.string     :holiday_season_name, null:false, length:{maximum:50} | Name of holiday season, if Is_Holiday_Season = 1                                |
-| t.boolean    :is_weekday, null:false                               | 1 if Monday-->Friday, 0 for Saturday/Sunday                                     |
-| t.boolean    :is_business_day, null:false                          | 1 if a workday, otherwise 0.                                                    |
-| t.boolean    :is_leap_year, null:false                             | 1 if current year is a leap year.                                               |
-| t.integer    :days_in_month, null:false                            | Number of days in the current month.                                            |
-
-#### Migration to create table
-
-```rb
-class GenerateAndPopulateCalendarTable < ActiveRecord::Migration[7.0]
-  def up
-    create_table :calendars do |t|
-      t.date :date, null: false
-      t.integer :day, null: false
-      t.integer :day_of_week, null: false
-      t.integer :day_of_quarter, null: false
-      t.integer :day_of_year, null: false
-      t.string :day_of_week_literal, null: false
-      t.integer :day_of_week_in_month, null: false
-      t.integer :day_of_week_in_year, null: false
-      t.integer :week_of_month, null: false
-      t.integer :week_of_year, null: false
-      t.integer :week_of_quarter, null: false
-      t.integer :month, null: false
-      t.string :month_literal, null: false
-      t.integer :year, null: false
-      t.integer :quarter, null: false
-      t.date :beginning_of_week, null: false
-      t.date :end_of_week, null: false
-      t.date :beginning_of_month, null: false
-      t.date :end_of_month, null: false
-      t.date :beginning_of_quarter, null: false
-      t.date :end_of_quarter, null: false
-      t.date :beginning_of_year, null: false
-      t.date :end_of_year, null: false
-      t.boolean :is_holiday, null: false
-      t.boolean :is_holiday_season, null: false
-      t.string :holiday_name, null: false, length: { maximum: 50 }
-      t.string :holiday_season_name, null: false, length: { maximum: 50 }
-      t.boolean :is_weekday, null: false
-      t.boolean :is_business_day, null: false
-      t.boolean :is_leap_year, null: false
-      t.integer :days_in_month, null: false
-      t.index :date, unique: true, name: 'index_dates_on_calendars'
-    end
-  end
-
-  def down
-    execute "DROP TABLE calendars;"
-  end
-end
-
-```
