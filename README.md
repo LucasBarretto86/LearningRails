@@ -2,17 +2,16 @@
 
 - [Ruby Language Learning](#ruby-language-learning)
   - [Rails](#rails)
+    - [Install Rails version](#install-rails-version)
     - [Creating new Rails App](#creating-new-rails-app)
       - [For older Rails versions](#for-older-rails-versions)
       - [Configured as API app](#configured-as-api-app)
-      - [Configured with React lilbs (Rails 6 or above)](#configured-with-react-lilbs-rails-6-or-above)
+      - [Configured with React libs (Rails 6 or above)](#configured-with-react-libs-rails-6-or-above)
       - [Configuring database representation](#configuring-database-representation)
         - [Moving from schema to structure](#moving-from-schema-to-structure)
-    - [Dependecies setup](#dependecies-setup)
-      - [Webpacker](#webpacker)
     - [Generators](#generators)
       - [Models generator](#models-generator)
-    - [Implentations and snippets quick access](#implentations-and-snippets-quick-access)
+    - [Implementations and snippets quick access](#implementations-and-snippets-quick-access)
       - [Current class and ActiveSupport::CurrentAttributes implementation](#current-class-and-activesupportcurrentattributes-implementation)
         - [Basic Implementation](#basic-implementation)
         - [Create `current.rb` class](#create-currentrb-class)
@@ -46,19 +45,25 @@
   - [RSPEC](#rspec)
     - [Installing Rspec](#installing-rspec)
   - [Webpack](#webpack)
+    - [Run dev server](#run-dev-server)
+  - [Webpacker](#webpacker)
+    - [Add Webpacker with default configs](#add-webpacker-with-default-configs)
+    - [Adding Stimulus (Webpacker 5 or below)](#adding-stimulus-webpacker-5-or-below)
+    - [Rake tasks that allow checking Webpacker installation](#rake-tasks-that-allow-checking-webpacker-installation)
+      - [To check available commands](#to-check-available-commands)
+        - [Most important commands to check webpacker health](#most-important-commands-to-check-webpacker-health)
   - [Rubocop](#rubocop)
   - [Brakeman](#brakeman)
   - [Foreman](#foreman)
-  - [React](#react)
+  - [React with in Rails project](#react-with-in-rails-project)
     - [Configuration](#configuration)
       - [Installing react into the project with webpacker](#installing-react-into-the-project-with-webpacker)
       - [Dealing with routes](#dealing-with-routes)
       - [Create js pack within the application](#create-js-pack-within-the-application)
-      - [Update application layout or espefic layout](#update-application-layout-or-espefic-layout)
+      - [Update application layout or specific layout](#update-application-layout-or-specific-layout)
       - [Implement a component within a view folder](#implement-a-component-within-a-view-folder)
       - [Tree for pack folders folders views](#tree-for-pack-folders-folders-views)
       - [Import to the app pack an external component](#import-to-the-app-pack-an-external-component)
-  - [Apollo](#apollo)
   - [MailCatcher](#mailcatcher)
   - [Gists](#gists)
     - [Private](#private)
@@ -66,6 +71,12 @@
   - [References](#references)
 
 ## Rails
+
+### Install Rails version
+
+```shell
+gem install rails -v 6.1.5
+```
 
 ### Creating new Rails App
 
@@ -85,7 +96,7 @@ rails _5.2.7_ new my-flights-app --webpack=react --database=postgresql
 rails new my_api -d=postgresql -T --api
 ```
 
-#### Configured with React lilbs (Rails 6 or above)
+#### Configured with React libs (Rails 6 or above)
 
 ```shell
 rails new my-app --webpack=react --database=postgresql
@@ -118,24 +129,6 @@ Mature database representation
   end
 ```
 
-### Dependecies setup
-
-#### Webpacker
-
-With the new app folder
-
-Add Webpacker (DEPRECATED USE FOR Rails 7 check importmaps)
-
-```shell
-rails webpacker:install
-```
-
-Adding Stimulus
-
-```shell
-rails webpacker:install:stimulus
-```
-
 ### Generators
 
 To check available generators native and from dependecies
@@ -162,7 +155,7 @@ Model with reference:
 rails g model Review title:string description:string score:integer airline:belongs_to
 ```
 
-### Implentations and snippets quick access
+### Implementations and snippets quick access
 
 #### Current class and ActiveSupport::CurrentAttributes implementation
 
@@ -455,11 +448,52 @@ rails g rspec:install
 
 ## Webpack
 
-with application directory
+Implementing webpack-cli and dev-server
+
+```shell
+yarn add webpack-cli
+yarn add -D @webpack-cli/serve webpack-dev-server
+```
+
+### Run dev server
 
 ```shell
 ./bin/webpack-dev-server
 ```
+
+## Webpacker
+
+Webpacker basically is a interface between a webpack project between a rails project, it was set as default to handle javascript files on Rails  however Rails seven moved for other stuff (Check importmaps, jsbuildings and esbuild)
+
+### Add Webpacker with default configs
+
+```shell
+rails webpacker:install
+```
+
+### Adding Stimulus (Webpacker 5 or below)
+
+```shell
+rails webpacker:install:stimulus
+```
+
+### Rake tasks that allow checking Webpacker installation
+
+#### To check available commands
+
+```shell
+rails webpacker
+```
+
+##### Most important commands to check webpacker health
+
+| Command                 | Description                                     |
+| :---------------------- | :---------------------------------------------- |
+|webpacker:info           | Provides information on Webpacker's environment |
+|webpacker:binstubs       | Installs Webpacker binstubs in this application |
+|webpacker:verify_install | Verifies if Webpacker is installed              |
+|webpacker:clean          | Remove old compiled webpacks                    |
+|webpacker:clobber        | Removes the webpack compiled output directory   |
 
 ## Rubocop
 
@@ -531,7 +565,7 @@ To start Foreman simple run the command
 foreman start
 ```
 
-## React
+## React with in Rails project
 
 ### Configuration
 
@@ -582,7 +616,7 @@ document.addEventListener('DOMContentLoaded', () => {
 })
 ```
 
-#### Update application layout or espefic layout
+#### Update application layout or specific layout
 
 ```erb
 <!-- views/layouts/application.html.erb -->
@@ -635,8 +669,6 @@ document.addEventListener('DOMContentLoaded', () => {
     document.body.appendchild(document.createElement('div')))
 })
 ```
-
-## Apollo
 
 ## MailCatcher
 
