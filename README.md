@@ -68,7 +68,10 @@
   - [Gists](#gists)
     - [Private](#private)
     - [Public](#public)
+  - [Error and fixes](#error-and-fixes)
+    - [cannot load such file -- coffee_script](#cannot-load-such-file----coffee_script)
   - [References](#references)
+  - [Rails Credentials](#rails-credentials)
 
 ## Rails
 
@@ -440,7 +443,7 @@ group :test do
 end
 ```
 
-Generate Rspect required files
+Generate Rspec required files
 
 ```shell
 rails g rspec:install
@@ -451,7 +454,7 @@ rails g rspec:install
 Implementing webpack-cli and dev-server
 
 ```shell
-yarn add webpack-cli
+yarn add webpack webpack-cli
 yarn add -D @webpack-cli/serve webpack-dev-server
 ```
 
@@ -695,6 +698,16 @@ These links only will work for the project owner
 - [RubyOnRails Snippets](https://gist.github.com/LucasBarretto86/06abfb8a034fc43be29df34ebeb85bab)
 - [Local fonts in `asset_path` and CORS adjustment](https://gist.github.com/LucasBarretto86/e1699059e596b7ebffb5b40ac6909d6b)
 
+## Error and fixes
+
+### cannot load such file -- coffee_script
+
+Fix:
+
+```shell
+rails tmp:cache:clear
+```
+
 ## References
 
 - [Foreman](https://www.theforeman.org/introduction.html)
@@ -702,3 +715,8 @@ These links only will work for the project owner
 - [brakeman.org](https://brakemanscanner.org/)
 - [Create Rails App with GraphQL](https://www.digitalocean.com/community/tutorials/how-to-set-up-a-ruby-on-rails-graphql-api)
 - [Pros and Cons of Using structure.sql in Your Ruby on Rails Application](https://blog.appsignal.com/2020/01/15/the-pros-and-cons-of-using-structure-sql-in-your-ruby-on-rails-application.html)
+
+
+## Rails Credentials
+
+  
