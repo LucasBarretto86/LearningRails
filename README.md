@@ -70,8 +70,17 @@
     - [Public](#public)
   - [Error and fixes](#error-and-fixes)
     - [cannot load such file -- coffee_script](#cannot-load-such-file----coffee_script)
-  - [References](#references)
   - [Rails Credentials](#rails-credentials)
+    - [Generate credentials](#generate-credentials)
+      - [Setup EDITOR](#setup-editor)
+        - [Master key setup](#master-key-setup)
+        - [Environment based key setup](#environment-based-key-setup)
+      - [credentials file created, content initial state](#credentials-file-created-content-initial-state)
+    - [Editing  credentials](#editing--credentials)
+      - [Master key for all environments](#master-key-for-all-environments)
+      - [Specific keys based on environment](#specific-keys-based-on-environment)
+    - [Using credentials](#using-credentials)
+  - [References](#references)
 
 ## Rails
 
@@ -706,6 +715,62 @@ Fix:
 
 ```shell
 rails tmp:cache:clear
+
+```
+
+## Rails Credentials
+
+### Generate credentials
+
+#### Setup EDITOR
+
+If you don't have a editor setup it, it can be any editor as long as it's alias is configured, to define it type the command below
+
+##### Master key setup
+
+```shell
+EDITOR="nano" rails credentials:edit
+```
+
+##### Environment based key setup
+
+```shell
+EDITOR="nano" rails credentials:edit --environment development
+```
+
+#### credentials file created, content initial state
+
+```yml
+# .credentials.yml
+
+# aws:
+#   access_key_id: 123
+#   secret_access_key: 345
+
+# Used as the base secret for all MessageVerifiers in Rails, including the one protecting cookies.
+secret_key_base: dd21f3b9e7d9daabab940d815e70e51fee47e5914315e46af6e741f96c8522818543c07805a322d582a340b33bba0d08af971e214b044d72d0623dfc70ec647a
+```
+
+### Editing  credentials
+
+#### Master key for all environments
+
+```shell
+rails credentials:edit
+```
+
+#### Specific keys based on environment
+
+```shell
+rails credentials:edit --environment development
+```
+
+### Using credentials
+
+Within the project
+
+```rb
+Rails.application.credentials.aws[:access_key_id]
 ```
 
 ## References
@@ -715,8 +780,3 @@ rails tmp:cache:clear
 - [brakeman.org](https://brakemanscanner.org/)
 - [Create Rails App with GraphQL](https://www.digitalocean.com/community/tutorials/how-to-set-up-a-ruby-on-rails-graphql-api)
 - [Pros and Cons of Using structure.sql in Your Ruby on Rails Application](https://blog.appsignal.com/2020/01/15/the-pros-and-cons-of-using-structure-sql-in-your-ruby-on-rails-application.html)
-
-
-## Rails Credentials
-
-  
