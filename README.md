@@ -11,6 +11,15 @@
         - [Moving from schema to structure](#moving-from-schema-to-structure)
     - [Generators](#generators)
       - [Models generator](#models-generator)
+    - [validations](#validations)
+      - [Validate with custom method](#validate-with-custom-method)
+      - [Validate with context](#validate-with-context)
+      - [Validate associations](#validate-associations)
+      - [Save based on context](#save-based-on-context)
+    - [Routes](#routes)
+      - [Members](#members)
+      - [Constraints](#constraints)
+      - [Extending router](#extending-router)
     - [Implementations and snippets quick access](#implementations-and-snippets-quick-access)
       - [Current class and ActiveSupport::CurrentAttributes implementation](#current-class-and-activesupportcurrentattributes-implementation)
         - [Basic Implementation](#basic-implementation)
@@ -165,6 +174,148 @@ Model with reference:
 
 ```shell
 rails g model Review title:string description:string score:integer airline:belongs_to
+```
+
+### validations
+
+#### Validate with custom method
+
+```rb
+class Example < ApplicationRecord
+  validate :custom_validation
+
+  private
+    def custom_validation
+         errors.add(:custom_validation, "There's some custom error message you created here") if some_condition_are_not_fulfilled
+    end
+end
+```
+
+#### Validate with context
+
+```rb
+class Example < ApplicationRecord
+    validates :name, presence: true, on: :custom_context
+end
+
+class Example::NamesController < ApplicationController
+  def create
+    @example = Example.assign_attributes(example_names_params)
+    if @example.valid?(:custom_context)
+      @example.save!
+    end 
+    
+    private
+      def example_names_params
+        params.require(:example).permit(:name)
+      end
+  end
+end
+```
+
+#### Validate associations
+
+```rb
+class Exercise < ApplicationRecord
+    has_one :example
+
+    validates_associated :example
+end
+
+class ExercisesController < ApplicationController
+  def new
+    @example = @exercise.build_example
+  end
+
+  def create
+    @exercise.build_example(example_params) 
+
+    if @exercise.valid?(:custom_context)
+      @exercise.save!
+    else
+      render :new, status: :not_acceptable
+    end 
+    
+    private
+      def example_params
+        params.require(:example).permit(:name, :description, :etc)
+      end
+  end
+end
+```
+
+#### Save based on context
+
+```rb
+class Example < ApplicationRecord
+    validates :name, presence: true, on: :custom_context
+end
+
+class Example::NamesController < ApplicationController
+  def new
+    @example = Example.new
+  end
+
+  def create
+    @example = Example.assign_attributes(example_names_params)
+
+    if @example.save!(on: :custom_context)
+      redirect_to example_path(@example)
+    else
+      render :new, status: :not_acceptable
+    end 
+    
+    private
+      def example_names_params
+        params.require(:example).permit(:name)
+      end
+  end
+end
+```
+
+### Routes
+
+#### Members
+
+```rb
+resource :availability, only: [:new, :create] do
+  member do
+    get "/:booking_appointment_cache_id/edit", to: "availabilities#edit", as: :edit
+    patch "/:booking_appointment_cache_id", to: "availabilities#update"
+  end
+end
+```
+
+#### Constraints
+
+```rb
+constraints lambda { |request| Clinic.exists? subdomain: request.subdomain } do
+  devise_for :staff_members, controllers: {
+    registrations: 'staff_members/registrations',
+    passwords: 'staff_members/passwords',
+  }
+
+  scope module: :public do
+    get 'c/:token', to: 'appointments/confirms#show', as: :confirmed_appointment
+    post 'c/:token', to: 'appointments/confirms#update', as: :confirm_appointment
+  end
+
+  resources :appointments, only: [] do
+    scope module: :appointments do
+        resource :export, only: [:show]
+      end
+    end
+end
+```
+
+#### Extending router
+
+```rb
+module LegacyRoutes
+  def self.extended(router)
+    router.instance_exec do
+  end
+end
 ```
 
 ### Implementations and snippets quick access
@@ -499,13 +650,13 @@ rails webpacker
 
 ##### Most important commands to check webpacker health
 
-| Command                 | Description                                     |
-| :---------------------- | :---------------------------------------------- |
-|webpacker:info           | Provides information on Webpacker's environment |
-|webpacker:binstubs       | Installs Webpacker binstubs in this application |
-|webpacker:verify_install | Verifies if Webpacker is installed              |
-|webpacker:clean          | Remove old compiled webpacks                    |
-|webpacker:clobber        | Removes the webpack compiled output directory   |
+| Command                        | Description                                     |
+| :----------------------------- | :---------------------------------------------- |
+| rails webpacker:info           | Provides information on Webpacker's environment |
+| rails webpacker:binstubs       | Installs Webpacker binstubs in this application |
+| rails webpacker:verify_install | Verifies if Webpacker is installed              |
+| rails webpacker:clean          | Remove old compiled webpacks                    |
+| rails webpacker:clobber        | Removes the webpack compiled output directory   |
 
 ## Rubocop
 
@@ -684,7 +835,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 ## MailCatcher
 
-MailCatcher runs a super simple SMTP server which catches any message sent to it to display in a web interface. Run mailcatcher, set your favourite app to deliver to smtp://127.0.0.1:1025 instead of your default SMTP server, then check out <http://127.0.0.1:1080> to see the mail.
+MailCatcher runs a super simple SMTP server which catches any message sent to it to display in a web interface. Run mailcatcher, set your favorite app to deliver to smtp://127.0.0.1:1025 instead of your default SMTP server, then check out <http://127.0.0.1:1080> to see the mail.
 
 ```shell
 gem install mailcatcher
