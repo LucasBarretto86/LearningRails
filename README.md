@@ -9,6 +9,16 @@
       - [Configured with React libs (Rails 6 or above)](#configured-with-react-libs-rails-6-or-above)
       - [Configuring database representation](#configuring-database-representation)
         - [Moving from schema to structure](#moving-from-schema-to-structure)
+    - [Rails Credentials](#rails-credentials)
+      - [Generate credentials](#generate-credentials)
+        - [Setup EDITOR](#setup-editor)
+          - [Master key setup](#master-key-setup)
+          - [Environment based key setup](#environment-based-key-setup)
+        - [Credentials file created, content initial state](#credentials-file-created-content-initial-state)
+      - [Editing  credentials](#editing--credentials)
+        - [Master key for all environments](#master-key-for-all-environments)
+        - [Specific keys based on environment](#specific-keys-based-on-environment)
+      - [Using credentials](#using-credentials)
     - [Generators](#generators)
       - [Models generator](#models-generator)
       - [executing SQL](#executing-sql)
@@ -40,8 +50,6 @@
       - [Helpers](#helpers)
         - [ApplicationHelper](#applicationhelper)
       - [locale dynamic configs](#locale-dynamic-configs)
-  - [Postgres](#postgres)
-    - [Fixing PG Error for new rails apps](#fixing-pg-error-for-new-rails-apps)
   - [PUMA](#puma)
     - [Check PUMA PORTS](#check-puma-ports)
     - [Kill PUMA](#kill-puma)
@@ -57,6 +65,7 @@
     - [Redis as cache](#redis-as-cache)
     - [View usage](#view-usage)
     - [Monitoring Redis](#monitoring-redis)
+  - [Kredis](#kredis)
   - [GraphQL](#graphql)
     - [Adding gem `graphiql-rails`](#adding-gem-graphiql-rails)
     - [`graphiql-rails` initial configuration](#graphiql-rails-initial-configuration)
@@ -89,17 +98,8 @@
     - [Private](#private)
     - [Public](#public)
   - [Error and fixes](#error-and-fixes)
+    - [Postgres - Fixing PG Error for new rails apps](#postgres---fixing-pg-error-for-new-rails-apps)
     - [cannot load such file -- coffee_script](#cannot-load-such-file----coffee_script)
-  - [Rails Credentials](#rails-credentials)
-    - [Generate credentials](#generate-credentials)
-      - [Setup EDITOR](#setup-editor)
-        - [Master key setup](#master-key-setup)
-        - [Environment based key setup](#environment-based-key-setup)
-      - [credentials file created, content initial state](#credentials-file-created-content-initial-state)
-    - [Editing  credentials](#editing--credentials)
-      - [Master key for all environments](#master-key-for-all-environments)
-      - [Specific keys based on environment](#specific-keys-based-on-environment)
-    - [Using credentials](#using-credentials)
   - [References](#references)
 
 ## Rails
@@ -159,6 +159,61 @@ Mature database representation
   # ...
     config.active_record.schema_format = :sql
   end
+```
+
+### Rails Credentials
+
+#### Generate credentials
+
+##### Setup EDITOR
+
+If you don't have a editor setup it, it can be any editor as long as it's alias is configured, to define it type the command below
+
+###### Master key setup
+
+```shell
+EDITOR="nano" rails credentials:edit
+```
+
+###### Environment based key setup
+
+```shell
+EDITOR="nano" rails credentials:edit --environment development
+```
+
+##### Credentials file created, content initial state
+
+```yml
+# .credentials.yml
+
+# aws:
+#   access_key_id: 123
+#   secret_access_key: 345
+
+# Used as the base secret for all MessageVerifiers in Rails, including the one protecting cookies.
+secret_key_base: dd21f3b9e7d9daabab940d815e70e51fee47e5914315e46af6e741f96c8522818543c07805a322d582a340b33bba0d08af971e214b044d72d0623dfc70ec647a
+```
+
+#### Editing  credentials
+
+##### Master key for all environments
+
+```shell
+rails credentials:edit
+```
+
+##### Specific keys based on environment
+
+```shell
+rails credentials:edit --environment development
+```
+
+#### Using credentials
+
+Within the project
+
+```rb
+Rails.application.credentials.aws[:access_key_id]
 ```
 
 ### Generators
@@ -509,10 +564,6 @@ Within the locale folder on the project it's possible to create an additional fi
 }
 ```
 
-## Postgres
-
-### Fixing PG Error for new rails apps
-
 An error occurred while installing pg (1.2.3), and Bundler cannot continue.
 
 ```shell
@@ -672,6 +723,8 @@ to have an monitor to check redis log we use the CLI
 ```shell
 redis-cli monitor
 ```
+
+## Kredis
 
 ## GraphQL
 
@@ -1008,6 +1061,8 @@ These links only will work for the project owner
 
 ## Error and fixes
 
+### Postgres - Fixing PG Error for new rails apps
+
 ### cannot load such file -- coffee_script
 
 Fix:
@@ -1015,61 +1070,6 @@ Fix:
 ```shell
 rails tmp:cache:clear
 
-```
-
-## Rails Credentials
-
-### Generate credentials
-
-#### Setup EDITOR
-
-If you don't have a editor setup it, it can be any editor as long as it's alias is configured, to define it type the command below
-
-##### Master key setup
-
-```shell
-EDITOR="nano" rails credentials:edit
-```
-
-##### Environment based key setup
-
-```shell
-EDITOR="nano" rails credentials:edit --environment development
-```
-
-#### credentials file created, content initial state
-
-```yml
-# .credentials.yml
-
-# aws:
-#   access_key_id: 123
-#   secret_access_key: 345
-
-# Used as the base secret for all MessageVerifiers in Rails, including the one protecting cookies.
-secret_key_base: dd21f3b9e7d9daabab940d815e70e51fee47e5914315e46af6e741f96c8522818543c07805a322d582a340b33bba0d08af971e214b044d72d0623dfc70ec647a
-```
-
-### Editing  credentials
-
-#### Master key for all environments
-
-```shell
-rails credentials:edit
-```
-
-#### Specific keys based on environment
-
-```shell
-rails credentials:edit --environment development
-```
-
-### Using credentials
-
-Within the project
-
-```rb
-Rails.application.credentials.aws[:access_key_id]
 ```
 
 ## References
