@@ -11,7 +11,10 @@
         - [Moving from schema to structure](#moving-from-schema-to-structure)
     - [Generators](#generators)
       - [Models generator](#models-generator)
-    - [validations](#validations)
+      - [executing SQL](#executing-sql)
+        - [executing](#executing)
+        - [Getting values, Select Value](#getting-values-select-value)
+    - [Validations](#validations)
       - [Validate with custom method](#validate-with-custom-method)
       - [Validate with context](#validate-with-context)
       - [Validate associations](#validate-associations)
@@ -43,9 +46,17 @@
     - [Check PUMA PORTS](#check-puma-ports)
     - [Kill PUMA](#kill-puma)
   - [Redis](#redis)
+    - [Install](#install)
     - [Check Redis status](#check-redis-status)
     - [Starting Redis with specific flags](#starting-redis-with-specific-flags)
     - [Restarting Redis](#restarting-redis)
+    - [Redis on console](#redis-on-console)
+    - [Usage](#usage)
+      - [Set](#set)
+      - [Get](#get)
+    - [Redis as cache](#redis-as-cache)
+    - [View usage](#view-usage)
+    - [Monitoring Redis](#monitoring-redis)
   - [GraphQL](#graphql)
     - [Adding gem `graphiql-rails`](#adding-gem-graphiql-rails)
     - [`graphiql-rails` initial configuration](#graphiql-rails-initial-configuration)
@@ -152,7 +163,7 @@ Mature database representation
 
 ### Generators
 
-To check available generators native and from dependecies
+To check available generators native and from dependencies
 
 ```shell
 rails generate
@@ -176,7 +187,37 @@ Model with reference:
 rails g model Review title:string description:string score:integer airline:belongs_to
 ```
 
-### validations
+#### executing SQL
+
+Rails allow us to execute or get values from SQL
+
+##### executing
+
+```rb
+ActiveRecord::Base.connection.execute('SELECT NOW();')
+```
+
+```bash
+irb(main):003:0> ActiveRecord::Base.connection.execute('SELECT NOW();')
+   (0.3ms)  SELECT NOW();
+=> #<PG::Result:0x00007f5129693e18 status=PGRES_TUPLES_OK ntuples=1 nfields=1 cmd_tuples=1>   
+```
+
+##### Getting values, Select Value
+
+```rb
+ActiveRecord::Base.connection.select_value("SQL QUERY")
+```
+
+**Output:**
+
+```bash
+irb(main):001:0> ActiveRecord::Base.connection.select_value("SELECT EXTRACT (QUARTER FROM TIMESTAMP '#{Date.current}')")
+   (0.7ms)  SELECT EXTRACT (QUARTER FROM TIMESTAMP '2022-11-10')
+=> 4.0  
+```
+
+### Validations
 
 #### Validate with custom method
 
@@ -494,16 +535,11 @@ lsof -wni tcp:3000
 
 ## Redis
 
-```shell
-sudo add-apt-repository ppa:redislabs/redis
-sudo apt-get update
-sudo apt-get install redis
-```
-
-OR
+### Install
 
 ```shell
-sudo snap install redis
+sudo apt install redis-server
+gem install redis
 ```
 
 ### Check Redis status
@@ -523,6 +559,118 @@ redis-server --port 6380 --daemonize yes
 
 ```shell
 /etc/init.d/redis-server restart
+```
+
+### Redis on console
+
+```rb
+# irb
+require 'redis'
+
+redis = Redis.new # Default pararms
+
+OR
+
+redis = Redis.new(host: "10.0.1.1", port: 6380, db: 15) # Optional params
+```
+
+### Usage
+
+redis.set "KEY_NAME", "VALUE"
+
+#### Set
+
+```rb
+redis.set "Test", "This is a test string"
+```
+
+#### Get
+
+```rb
+redis.get "Test"
+```
+
+### Redis as cache
+
+**Within the gemfile add:**
+
+```gemfile
+gem "redis-rails"
+```
+
+**Config Redis on project:**
+
+- Original:
+
+```rb
+# config/environments/development.rb
+
+# Enable/disable caching. By default caching is disabled.
+# Run rails dev:cache to toggle caching.
+  if Rails.root.join('tmp', 'caching-dev.txt').exist?
+    config.action_controller.perform_caching = true
+
+    config.cache_store = :memory_store
+    config.public_file_server.headers = {
+      'Cache-Control' => "public, max-age=#{2.days.to_i}"
+    }
+  else
+    config.action_controller.perform_caching = false
+
+    config.cache_store = :null_store
+  end
+```
+
+- Modified:
+
+```rb
+config.action_controller.perform_caching = true
+
+config.cache_store = :redis_store, {
+ host: "localhost",
+ port: 6379,
+ db: 15,
+ namespace: "028redis"
+}
+
+```
+
+- `memory_store` limits the amount of cache to the server cache limitations, therefore it won't allow usage of multiple host and multiple processes
+- `host` will be the address corresponding to the server and localhost on development
+- `namespace` allow us to segregate the usage of database usage in different applications, lets says you have multiple apps using the `db: 0` so in that case needs to use namespace to avoid problems
+
+**Festalab config in prod:**
+
+```rb
+  # Use a different cache store in production.
+
+  config.cache_store = :redis_cache_store, {
+    url: ENV['AWS_REDIS_CACHE_URL'],
+    read_timeout: 0.2,
+    connect_timeout: 30,
+    write_timeout: 0.2
+  }
+```
+
+### View usage
+
+```erb
+<h1>Test redis</h1>
+<p>Here there's a cache test to explain redis usage as cache</p>
+
+<% cache 'testing-cache-key', expire_in: Time.now + 1.hour do %>
+  <%= w%[ testing_value_01, testing_value_02, testing_value_03, testing_value_04].sample %>
+<% end %>
+```
+
+- On that example we gonna create a cache that expires in one hour, if no value is assigned or expired it will assign a random sample value form the array
+
+### Monitoring Redis
+
+to have an monitor to check redis log we use the CLI
+
+```shell
+redis-cli monitor
 ```
 
 ## GraphQL
