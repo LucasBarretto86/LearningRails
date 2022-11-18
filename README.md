@@ -1063,6 +1063,12 @@ These links only will work for the project owner
 
 ### Postgres - Fixing PG Error for new rails apps
 
+An error occurred while installing pg (1.2.3), and Bundler cannot continue.
+
+```shell
+sudo apt-get install postgresql-contrib libpq-dev
+```
+
 ### cannot load such file -- coffee_script
 
 Fix:
