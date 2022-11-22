@@ -33,27 +33,14 @@
       - [Members](#members)
       - [Constraints](#constraints)
       - [Extending router](#extending-router)
-    - [Implementations and snippets quick access](#implementations-and-snippets-quick-access)
-      - [Current class and ActiveSupport::CurrentAttributes implementation](#current-class-and-activesupportcurrentattributes-implementation)
-        - [Basic Implementation](#basic-implementation)
-        - [Create `current.rb` class](#create-currentrb-class)
-        - [Create controller concern `set_current_attributes.rb` to load attributes](#create-controller-concern-set_current_attributesrb-to-load-attributes)
-        - [Include concern to the `application_controller.rb`](#include-concern-to-the-application_controllerrb)
-        - [Adding Current variables on Mailer previews](#adding-current-variables-on-mailer-previews)
-          - [Basic implementation for mailer initializer `config/initializers/action_mailer.rb`](#basic-implementation-for-mailer-initializer-configinitializersaction_mailerrb)
-      - [Allowing local fonts in assets pipeline and CORS](#allowing-local-fonts-in-assets-pipeline-and-cors)
-        - [Adjusting `assets.rb` initializer to add fonts as part of pipeline](#adjusting-assetsrb-initializer-to-add-fonts-as-part-of-pipeline)
-        - [Install gem `rack-cors`](#install-gem-rack-cors)
-        - [Adding `Rack::Cors` as middleware initializer](#adding-rackcors-as-middleware-initializer)
-        - [How to call fonts on `css.erb` or `html.erb`](#how-to-call-fonts-on-csserb-or-htmlerb)
-          - [how to precompile assets to test locally](#how-to-precompile-assets-to-test-locally)
-      - [Helpers](#helpers)
-        - [ApplicationHelper](#applicationhelper)
-      - [locale dynamic configs](#locale-dynamic-configs)
+    - [Testing](#testing)
+      - [Accessing test console](#accessing-test-console)
+      - [Setup database on test environment](#setup-database-on-test-environment)
   - [PUMA](#puma)
     - [Check PUMA PORTS](#check-puma-ports)
     - [Kill PUMA](#kill-puma)
   - [Redis](#redis)
+    - [Concept](#concept)
     - [Install](#install)
     - [Check Redis status](#check-redis-status)
     - [Starting Redis with specific flags](#starting-redis-with-specific-flags)
@@ -97,9 +84,27 @@
   - [Gists](#gists)
     - [Private](#private)
     - [Public](#public)
+  - [Snippets](#snippets)
+    - [Implementations and snippets quick access](#implementations-and-snippets-quick-access)
+    - [Current class and ActiveSupport::CurrentAttributes implementation](#current-class-and-activesupportcurrentattributes-implementation)
+      - [Basic Implementation](#basic-implementation)
+      - [Create `current.rb` class](#create-currentrb-class)
+      - [Create controller concern `set_current_attributes.rb` to load attributes](#create-controller-concern-set_current_attributesrb-to-load-attributes)
+      - [Include concern to the `application_controller.rb`](#include-concern-to-the-application_controllerrb)
+      - [Adding Current variables on Mailer previews](#adding-current-variables-on-mailer-previews)
+        - [Basic implementation for mailer initializer `config/initializers/action_mailer.rb`](#basic-implementation-for-mailer-initializer-configinitializersaction_mailerrb)
+    - [Allowing local fonts in assets pipeline and CORS](#allowing-local-fonts-in-assets-pipeline-and-cors)
+      - [Adjusting `assets.rb` initializer to add fonts as part of pipeline](#adjusting-assetsrb-initializer-to-add-fonts-as-part-of-pipeline)
+      - [Install gem `rack-cors`](#install-gem-rack-cors)
+      - [Adding `Rack::Cors` as middleware initializer](#adding-rackcors-as-middleware-initializer)
+      - [How to call fonts on `css.erb` or `html.erb`](#how-to-call-fonts-on-csserb-or-htmlerb)
+        - [how to precompile assets to test locally](#how-to-precompile-assets-to-test-locally)
+    - [Helpers](#helpers)
+      - [ApplicationHelper](#applicationhelper)
+    - [locale dynamic configs](#locale-dynamic-configs)
   - [Error and fixes](#error-and-fixes)
     - [Postgres - Fixing PG Error for new rails apps](#postgres---fixing-pg-error-for-new-rails-apps)
-    - [cannot load such file -- coffee_script](#cannot-load-such-file----coffee_script)
+    - [cannot load such file -- coffee\_script](#cannot-load-such-file----coffee_script)
   - [References](#references)
 
 ## Rails
@@ -410,164 +415,26 @@ end
 module LegacyRoutes
   def self.extended(router)
     router.instance_exec do
-  end
-end
-```
-
-### Implementations and snippets quick access
-
-#### Current class and ActiveSupport::CurrentAttributes implementation
-
-CurrentAttributes came out on Rails 5.2 allow us to control session variables, follow steps below
-
-##### Basic Implementation
-
-##### Create `current.rb` class
-
-```rb
-# frozen_string_literal: true
-
-class Current < ActiveSupport::CurrentAttributes
-  attribute :request_id, :user_agent, :ip_address, :user, :request, :clinic
-end
-```
-
-##### Create controller concern `set_current_attributes.rb` to load attributes
-
-```rb
-# frozen_string_literal: true
-
-module SetCurrentAttributes
-  extend ActiveSupport::Concern
-
-  included do
-    before_action do
-      Current.request_id = request.uuid
-      Current.user_agent = request.user_agent
-      Current.ip_address = request.ip
-      Current.request = request
-    end
-  end
-end
-
-```
-
-##### Include concern to the `application_controller.rb`
-
-```rb
-class ApplicationController < ActionController::Base 
-  include SetCurrentAttributes
-end
-
-```
-
-##### Adding Current variables on Mailer previews
-
-Since mailer preview uses Rails classes and itself is required to add initializer configs to be able to set data coming from session request
-
-###### Basic implementation for mailer initializer `config/initializers/action_mailer.rb`
-
-```rb
-# frozen_string_literal: true
-
-Rails.application.reloader.to_prepare do
-  class Rails::MailersController
-    before_action :set_current_clinic
-
-    private
-
-    def set_current_clinic
-      Current.clinic = Clinic.find_by(subdomain: request.subdomain)
     end
   end
 end
 ```
 
-#### Allowing local fonts in assets pipeline and CORS
+### Testing
 
-##### Adjusting `assets.rb` initializer to add fonts as part of pipeline
-
-```rb
-# /\.(?:svg|eot|woff|ttf)$/ to allow fonts to be precompiled to enabled it to be referenced by asset_path after CORS is allowed
-
-Rails.application.config.assets.precompile  += %w(/\.(?:svg|eot|woff|ttf)$/) 
-
-Rails.application.config.assets.paths << Rails.root.join('app', 'assets', 'fonts')
-```
-
-##### Install gem `rack-cors`
-
-```gemfile
-# Rails middleware
-gem "rack-cors"
-```
-
-##### Adding `Rack::Cors` as middleware initializer
-
-```rb
-Rails.application.config.middleware.insert_before 0, Rack::Cors do
-  allow do
-    origins '*'
-    resource '/assets/*', headers: :any, methods: [:get, :post, :patch, :put]
-  end
-end
-```
-
-##### How to call fonts on `css.erb` or `html.erb`
-
-```css
-  @font-face {
-    font-family: 'ValueSansPro';
-    src: url(<%= asset_path('ValueSansPro-Regular.ttf') %>) format('truetype'),
-    url(<%= asset_path('ValueSansPro-Regular.woff') %>) format('woff'),
-    url(<%= asset_path('ValueSansPro-Regular.woff2') %>) format('woff2');
-    font-weight: 300;
-    font-style: normal;
-  }
-```
-
-###### how to precompile assets to test locally
+#### Accessing test console
 
 ```shell
-rails assets:precompile
+rails c -e test
 ```
 
-#### Helpers
-
-##### ApplicationHelper
-
-```rb
-def dom_id_for_view(prefix: nil, suffix: nil)
-  "id=#{[prefix || controller_name, suffix || action_name].compact.join("-")}"
-end
-
-def dom_class_for_view(options = {})
-  default_class = "#{[options[:prefix] || controller_name, options[:suffix] || action_name].compact.join("-")}"
-  "class=#{options[:class] || default_class }"
-end
-```
-
-#### locale dynamic configs
-
-Within the locale folder on the project it's possible to create an additional file to assist dynamic formatting for the class `I18n.t` and `I18n.l`
-
-```rb
-## config/locales/en.rb
-{
-  en: {
-    date: {
-      formats: {
-        short_month_day_year: lambda { "%b, #{ _1.day.ordinalize} %Y" }
-      }
-    }
-  }
-}
-```
-
-An error occurred while installing pg (1.2.3), and Bundler cannot continue.
+#### Setup database on test environment
 
 ```shell
-sudo apt install postgresql-contrib libpq-dev
+rails db:drop RAILS_ENV=test
+rails db:create RAILS_ENV=test
+rails db:migrate RAILS_ENV=test
+rails db:seed RAILS_ENV=test
 ```
 
 ## PUMA
@@ -585,6 +452,8 @@ lsof -wni tcp:3000
 ```
 
 ## Redis
+
+### Concept
 
 ### Install
 
@@ -618,7 +487,7 @@ redis-server --port 6380 --daemonize yes
 # irb
 require 'redis'
 
-redis = Redis.new # Default pararms
+redis = Redis.new # Default params
 
 OR
 
@@ -1058,6 +927,164 @@ These links only will work for the project owner
 
 - [RubyOnRails Snippets](https://gist.github.com/LucasBarretto86/06abfb8a034fc43be29df34ebeb85bab)
 - [Local fonts in `asset_path` and CORS adjustment](https://gist.github.com/LucasBarretto86/e1699059e596b7ebffb5b40ac6909d6b)
+
+## Snippets
+
+### Implementations and snippets quick access
+
+### Current class and ActiveSupport::CurrentAttributes implementation
+
+CurrentAttributes came out on Rails 5.2 allow us to control session variables, follow steps below
+
+#### Basic Implementation
+
+#### Create `current.rb` class
+
+```rb
+# frozen_string_literal: true
+
+class Current < ActiveSupport::CurrentAttributes
+  attribute :request_id, :user_agent, :ip_address, :user, :request, :clinic
+end
+```
+
+#### Create controller concern `set_current_attributes.rb` to load attributes
+
+```rb
+# frozen_string_literal: true
+
+module SetCurrentAttributes
+  extend ActiveSupport::Concern
+
+  included do
+    before_action do
+      Current.request_id = request.uuid
+      Current.user_agent = request.user_agent
+      Current.ip_address = request.ip
+      Current.request = request
+    end
+  end
+end
+
+```
+
+#### Include concern to the `application_controller.rb`
+
+```rb
+class ApplicationController < ActionController::Base 
+  include SetCurrentAttributes
+end
+
+```
+
+#### Adding Current variables on Mailer previews
+
+Since mailer preview uses Rails classes and itself is required to add initializer configs to be able to set data coming from session request
+
+##### Basic implementation for mailer initializer `config/initializers/action_mailer.rb`
+
+```rb
+# frozen_string_literal: true
+
+Rails.application.reloader.to_prepare do
+  class Rails::MailersController
+    before_action :set_current_clinic
+
+    private
+
+    def set_current_clinic
+      Current.clinic = Clinic.find_by(subdomain: request.subdomain)
+    end
+  end
+end
+```
+
+### Allowing local fonts in assets pipeline and CORS
+
+#### Adjusting `assets.rb` initializer to add fonts as part of pipeline
+
+```rb
+# /\.(?:svg|eot|woff|ttf)$/ to allow fonts to be precompiled to enabled it to be referenced by asset_path after CORS is allowed
+
+Rails.application.config.assets.precompile  += %w(/\.(?:svg|eot|woff|ttf)$/) 
+
+Rails.application.config.assets.paths << Rails.root.join('app', 'assets', 'fonts')
+```
+
+#### Install gem `rack-cors`
+
+```gemfile
+# Rails middleware
+gem "rack-cors"
+```
+
+#### Adding `Rack::Cors` as middleware initializer
+
+```rb
+Rails.application.config.middleware.insert_before 0, Rack::Cors do
+  allow do
+    origins '*'
+    resource '/assets/*', headers: :any, methods: [:get, :post, :patch, :put]
+  end
+end
+```
+
+#### How to call fonts on `css.erb` or `html.erb`
+
+```css
+  @font-face {
+    font-family: 'ValueSansPro';
+    src: url(<%= asset_path('ValueSansPro-Regular.ttf') %>) format('truetype'),
+    url(<%= asset_path('ValueSansPro-Regular.woff') %>) format('woff'),
+    url(<%= asset_path('ValueSansPro-Regular.woff2') %>) format('woff2');
+    font-weight: 300;
+    font-style: normal;
+  }
+```
+
+##### how to precompile assets to test locally
+
+```shell
+rails assets:precompile
+```
+
+### Helpers
+
+#### ApplicationHelper
+
+```rb
+def dom_id_for_view(prefix: nil, suffix: nil)
+  "id=#{[prefix || controller_name, suffix || action_name].compact.join("-")}"
+end
+
+def dom_class_for_view(options = {})
+  default_class = "#{[options[:prefix] || controller_name, options[:suffix] || action_name].compact.join("-")}"
+  "class=#{options[:class] || default_class }"
+end
+```
+
+### locale dynamic configs
+
+Within the locale folder on the project it's possible to create an additional file to assist dynamic formatting for the class `I18n.t` and `I18n.l`
+
+```rb
+## config/locales/en.rb
+{
+  en: {
+    date: {
+      formats: {
+        short_month_day_year: lambda { "%b, #{ _1.day.ordinalize} %Y" }
+      }
+    }
+  }
+}
+```
+
+An error occurred while installing pg (1.2.3), and Bundler cannot continue.
+
+```shell
+sudo apt install postgresql-contrib libpq-dev
+```
 
 ## Error and fixes
 
