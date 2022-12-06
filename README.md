@@ -59,7 +59,11 @@
     - [Mounting GraphQl engine to routes](#mounting-graphql-engine-to-routes)
     - [Generating ObjectTypes](#generating-objecttypes)
   - [RSPEC](#rspec)
-    - [Installing Rspec](#installing-rspec)
+    - [Installing RSPEC](#installing-rspec)
+      - [Generate RSPEC required files](#generate-rspec-required-files)
+    - [Mock and Doubles](#mock-and-doubles)
+      - [Doubles](#doubles)
+        - [Method stubs](#method-stubs)
   - [Webpack](#webpack)
     - [Run dev server](#run-dev-server)
   - [Webpacker](#webpacker)
@@ -654,7 +658,7 @@ rails generate graphql:object Note id:ID! title:String! body:String!
 
 ## RSPEC
 
-### Installing Rspec
+### Installing RSPEC
 
 ```shell
 gem install rspec
@@ -673,11 +677,94 @@ group :test do
 end
 ```
 
-Generate Rspec required files
+rubocop has a lib for rspec
+
+```shell
+gem install rubocop-rspec
+```
+
+#### Generate RSPEC required files
 
 ```shell
 rails g rspec:install
 ```
+
+### Mock and Doubles
+
+Mocking with RSpec is done with the `rspec-mocks` gem. If you have rspec as a dependency in your Gemfile, you already have rspec-mocks available.
+
+#### Doubles
+
+A double is a simplified object that take place from an actual model
+
+```rb
+feed = double
+```
+
+Or you can give your double a identifier
+
+```rb
+feed = double("feed")
+```
+
+##### Method stubs
+
+To stub methods in RSPEC is used `allow()` and `receive()` methods
+
+```rb
+allow(feed).to receive(:fetch).and_return("imagine I'm a JSON string")
+```
+
+**Output:**
+
+```shell
+feed.fetch
+=> "imagine I'm a JSON string"
+```
+
+The `and_return()` method is optional, if not added the method stubbed will return `nil`
+
+On stubs you can also use real objects
+
+```rb
+comment = double("comment")
+expect(Comment).to receive(:find).and_return(comment)
+```
+
+**Stub a method within another method:**
+
+```rb
+# method
+  def sync_balance
+    ..
+    
+    [available, pending] = Balance.retrieve(account_id)
+
+    update_columns(
+      available: cents_to_dollars(available),
+      pending: cents_to_dollars(pending)
+    )
+  end
+```
+
+```rb
+# Tests 
+it "#sync_balance" do
+  allow(Thorn::Stripe::Balance).to receive(:retrieve).and_return(
+    {
+      amount_available: 10000,
+      amount_pending: 5000
+    }
+  )
+
+  ledger.sync_balance
+
+  expect(ledger.reload.gateway_available.to_i).to eq 100
+  expect(ledger.reload.gateway_pending.to_i).to eq 50
+end
+```
+
+> In that scenario we the method `retrieve` from the class `Thorn::Stripe::Balance` is called within the method we are testing from the `ledger` object `sync_balance`.
 
 ## Webpack
 
@@ -1112,3 +1199,4 @@ rails tmp:cache:clear
 - [brakeman.org](https://brakemanscanner.org/)
 - [Create Rails App with GraphQL](https://www.digitalocean.com/community/tutorials/how-to-set-up-a-ruby-on-rails-graphql-api)
 - [Pros and Cons of Using structure.sql in Your Ruby on Rails Application](https://blog.appsignal.com/2020/01/15/the-pros-and-cons-of-using-structure-sql-in-your-ruby-on-rails-application.html)
+- [SemaphoreCI tutorials - Mocking with RSPEC](https://semaphoreci.com/community/tutorials/mocking-with-rspec-doubles-and-expectations)
