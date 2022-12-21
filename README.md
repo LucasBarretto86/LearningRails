@@ -1,6 +1,14 @@
 # Ruby Language Learning
 
 - [Ruby Language Learning](#ruby-language-learning)
+  - [Ruby](#ruby)
+    - [Multiline string](#multiline-string)
+      - [Special character `\` or `+`](#special-character--or-)
+        - [using `\`](#using-)
+        - [Using `+`](#using--1)
+      - [HEREDOC, maintaining the original indentation \& formatting](#heredoc-maintaining-the-original-indentation--formatting)
+        - [Operator `<<-`](#operator--)
+        - [Operator `<<~`](#operator-)
   - [Rails](#rails)
     - [Install Rails version](#install-rails-version)
     - [Creating new Rails App](#creating-new-rails-app)
@@ -110,6 +118,76 @@
     - [Postgres - Fixing PG Error for new rails apps](#postgres---fixing-pg-error-for-new-rails-apps)
     - [cannot load such file -- coffee\_script](#cannot-load-such-file----coffee_script)
   - [References](#references)
+
+## Ruby
+
+### Multiline string
+
+There's few ways to handle multiline strings on ruby
+
+#### Special character `\` or `+`
+
+##### using `\`
+
+```rb
+"Something needs to be "\
+"done so maybe, just maybe "\
+"this might work"
+```
+
+**Output:**
+
+```shell
+"Something needs to bed one so maybe, just maybe this might work"
+```
+
+##### Using `+`
+
+```rb
+"Something needs to be " +
+"done so maybe, just maybe " +
+"this might work"
+```
+
+**Output:**
+
+```shell
+"Something needs to bed one so maybe, just maybe this might work"
+```
+
+#### HEREDOC, maintaining the original indentation & formatting
+
+##### Operator `<<-`
+
+```rb
+<<-TXT 
+  Something needs to be
+  done so maybe, just maybe
+  this might work
+TXT
+```
+
+**Output:**
+
+```shell
+"  Something needs to be\n  done so maybe, just maybe\n  this might work\n"
+```
+
+##### Operator `<<~`
+
+```rb
+<<~TXT 
+  Something needs to be
+  done so maybe, just maybe
+  this might work
+TXT
+```
+
+**Output:**
+
+```shell
+"Something needs to be\ndone so maybe, just maybe\nthis might work\n"
+```
 
 ## Rails
 
