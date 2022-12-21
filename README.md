@@ -9,6 +9,8 @@
       - [HEREDOC, maintaining the original indentation \& formatting](#heredoc-maintaining-the-original-indentation--formatting)
         - [Operator `<<-`](#operator--)
         - [Operator `<<~`](#operator-)
+          - [HEREDOC with Interpolation](#heredoc-with-interpolation)
+          - [String methods](#string-methods)
   - [Rails](#rails)
     - [Install Rails version](#install-rails-version)
     - [Creating new Rails App](#creating-new-rails-app)
@@ -187,6 +189,54 @@ TXT
 
 ```shell
 "Something needs to be\ndone so maybe, just maybe\nthis might work\n"
+```
+
+###### HEREDOC with Interpolation
+
+Here docs also can have string interpolation
+
+```rb
+<<~HEREDOC
+  Current time is #{Time.now}
+HEREDOC
+```
+
+**Output:**
+
+```shell
+"Current time is 2022-12-21 17:12:42 -0300\n"
+```
+
+and still it could be used with a trickier interpolation
+
+```rb
+@patient = Patient.last
+
+<<~HEREDOC
+  Current time is #{@patient.first_name}
+HEREDOC
+```
+
+**Output:**
+
+```shell
+"Current time is Lucas\n"
+```
+
+###### String methods
+
+HEREDOC also accept string methods, like `strip`, `chomp` and etc...
+
+```rb
+<<~HEREDOC.strip
+  Current time is #{@patient.first_name}
+HEREDOC
+```
+
+**Output:**
+
+```shell
+"Current time is Lucas"
 ```
 
 ## Rails
