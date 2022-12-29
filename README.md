@@ -50,11 +50,12 @@
     - [Check PUMA PORTS](#check-puma-ports)
     - [Kill PUMA](#kill-puma)
   - [Redis](#redis)
-    - [Concept](#concept)
-    - [Install](#install)
+    - [Install Redis](#install-redis)
     - [Check Redis status](#check-redis-status)
-    - [Starting Redis with specific flags](#starting-redis-with-specific-flags)
+    - [Starting Redis with specific Port](#starting-redis-with-specific-port)
     - [Restarting Redis](#restarting-redis)
+    - [Stop Redis](#stop-redis)
+    - [Redis Configuration File](#redis-configuration-file)
     - [Redis on console](#redis-on-console)
     - [Usage](#usage)
       - [Set](#set)
@@ -585,12 +586,14 @@ lsof -wni tcp:3000
 
 ## Redis
 
-### Concept
+Developers often look for systems that would increase the speed and performance of their projects. One popular system like that is Redis. It is an open-source, in-memory database used as a cache and message broker. It is also known as a data structure server.
 
-### Install
+What makes it unique compared to relational database systems is the ability to store high-level data types, such as maps, lists, and sets. It also offers an easy-to-use interface, atomic manipulation of data, and exceptional performance.
+
+### Install Redis
 
 ```shell
-sudo apt install redis-server
+sudo apt install redis
 gem install redis
 ```
 
@@ -598,10 +601,13 @@ gem install redis
 
 ```shell
 redis-cli ping
+```
+
+```shell
 systemctl status redis
 ```
 
-### Starting Redis with specific flags
+### Starting Redis with specific Port
 
 ```shell
 redis-server --port 6380 --daemonize yes
@@ -611,6 +617,72 @@ redis-server --port 6380 --daemonize yes
 
 ```shell
 /etc/init.d/redis-server restart
+```
+
+OR
+
+```shell
+sudo systemctl restart redis-server
+```
+
+### Stop Redis
+
+```shell
+sudo systemctl stop redis
+```
+
+### Redis Configuration File
+
+The default Redis configuration file is located in `/etc/redis/redis.conf` directory. To change Redis server to listen a particular IP address, you need to edit the `/etc/redis/redis.conf` file.
+
+```shell
+sudo nano /etc/redis/redis.conf
+```
+
+> Locate the line `bind 127.0.0.1 ::1`.
+
+```txt
+################################## NETWORK #####################################
+
+# By default, if no "bind" configuration directive is specified, Redis listens
+# for connections from all available network interfaces on the host machine.
+# It is possible to listen to just one or multiple selected interfaces using
+# the "bind" configuration directive, followed by one or more IP addresses.
+# Each address can be prefixed by "-", which means that redis will not fail to
+# start if the address is not available. Being not available only refers to
+# addresses that does not correspond to any network interface. Addresses that
+# are already in use will always fail, and unsupported protocols will always BE
+# silently skipped.
+#
+# Examples:
+#
+# bind 192.168.1.100 10.0.0.1     # listens on two specific IPv4 addresses
+# bind 127.0.0.1 ::1              # listens on loopback IPv4 and IPv6
+# bind * -::*                     # like the default, all available interfaces
+#
+# ~~~ WARNING ~~~ If the computer running Redis is directly exposed to the
+# internet, binding to all the interfaces is dangerous and will expose the
+# instance to everybody on the internet. So by default we uncomment the
+# following bind directive, that will force Redis to listen only on the
+# IPv4 and IPv6 (if available) loopback interface addresses (this means Redis
+# will only be able to accept client connections from the same host that it is
+# running on).
+#
+# IF YOU ARE SURE YOU WANT YOUR INSTANCE TO LISTEN TO ALL THE INTERFACES
+# COMMENT OUT THE FOLLOWING LINE.
+#
+# You will also need to set a password unless you explicitly disable protected
+# mode.
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+bind 127.0.0.1 -::1
+```
+
+Change the IP address by entering the values of the connections you want the Redis server to listen for.
+
+To add multiple IP addresses, simply separate the IP addresses with a single space:
+
+```txt
+bind 70.25.220.238 70.25.220.239
 ```
 
 ### Redis on console
