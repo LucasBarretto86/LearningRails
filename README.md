@@ -96,6 +96,13 @@
       - [Tree for pack folders folders views](#tree-for-pack-folders-folders-views)
       - [Import to the app pack an external component](#import-to-the-app-pack-an-external-component)
   - [MailCatcher](#mailcatcher)
+  - [Specific GEMS](#specific-gems)
+    - [Flipper](#flipper)
+      - [Add Flipper to gemfile](#add-flipper-to-gemfile)
+      - [run Flipper generator](#run-flipper-generator)
+      - [Flipper Usage](#flipper-usage)
+    - [SimpleCov](#simplecov)
+  - [Rails Template](#rails-template)
   - [Gists](#gists)
     - [Private](#private)
     - [Public](#public)
@@ -1197,6 +1204,50 @@ MailCatcher runs a super simple SMTP server which catches any message sent to it
 ```shell
 gem install mailcatcher
 ```
+
+## Specific GEMS
+
+### Flipper
+
+#### Add Flipper to gemfile
+
+```gemfile
+gem "flipper-cloud"
+gem "flipper-active_record"
+```
+
+#### run Flipper generator
+
+```shell
+bin/rails g flipper:active_record
+bin/rails db:migrate
+```
+
+> Remember to set you ENV variable: `FLIPPER_CLOUD_TOKEN=<your-token-here>`
+
+#### Flipper Usage
+
+```rb
+# Enable a feature for everyone
+Flipper.enable :search
+
+# Enable a feature for a specific actor
+Flipper.enable_actor :search, current_user
+
+# Enable a feature for a group of actors
+Flipper.enable_group :search, :admin
+
+# Enable a feature for a percentage of actors
+Flipper.enable_percentage_of_actors :search, 2
+```
+
+> For more specifications for usage, see: <https://www.flippercloud.io/docs>
+
+### SimpleCov
+
+## Rails Template
+
+<https://railsbytes.com/public/templates>
 
 ## Gists
 
