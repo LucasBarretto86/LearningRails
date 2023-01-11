@@ -1,16 +1,6 @@
-# Ruby Language Learning
+# Learning Ruby On Rails
 
-- [Ruby Language Learning](#ruby-language-learning)
-  - [Ruby](#ruby)
-    - [Multiline string](#multiline-string)
-      - [Special character `\` or `+`](#special-character--or-)
-        - [using `\`](#using-)
-        - [Using `+`](#using--1)
-      - [HEREDOC, maintaining the original indentation \& formatting](#heredoc-maintaining-the-original-indentation--formatting)
-        - [Operator `<<-`](#operator--)
-        - [Operator `<<~`](#operator-)
-          - [HEREDOC with Interpolation](#heredoc-with-interpolation)
-          - [String methods](#string-methods)
+- [Learning Ruby On Rails](#learning-ruby-on-rails)
   - [Rails](#rails)
     - [Install Rails version](#install-rails-version)
     - [Creating new Rails App](#creating-new-rails-app)
@@ -46,8 +36,10 @@
     - [Testing](#testing)
       - [Accessing test console](#accessing-test-console)
       - [Setup database on test environment](#setup-database-on-test-environment)
-  - [PUMA](#puma)
-    - [Check PUMA PORTS](#check-puma-ports)
+    - [Initializers](#initializers)
+      - [Inflections](#inflections)
+        - [Allowing a Acronym](#allowing-a-acronym)
+        - [Allowing irregular plural](#allowing-irregular-plural)
     - [Kill PUMA](#kill-puma)
   - [Redis](#redis)
     - [Install Redis](#install-redis)
@@ -128,124 +120,6 @@
     - [Postgres - Fixing PG Error for new rails apps](#postgres---fixing-pg-error-for-new-rails-apps)
     - [cannot load such file -- coffee\_script](#cannot-load-such-file----coffee_script)
   - [References](#references)
-
-## Ruby
-
-### Multiline string
-
-There's few ways to handle multiline strings on ruby
-
-#### Special character `\` or `+`
-
-##### using `\`
-
-```rb
-"Something needs to be "\
-"done so maybe, just maybe "\
-"this might work"
-```
-
-**Output:**
-
-```shell
-"Something needs to bed one so maybe, just maybe this might work"
-```
-
-##### Using `+`
-
-```rb
-"Something needs to be " +
-"done so maybe, just maybe " +
-"this might work"
-```
-
-**Output:**
-
-```shell
-"Something needs to bed one so maybe, just maybe this might work"
-```
-
-#### HEREDOC, maintaining the original indentation & formatting
-
-##### Operator `<<-`
-
-```rb
-<<-TXT 
-  Something needs to be
-  done so maybe, just maybe
-  this might work
-TXT
-```
-
-**Output:**
-
-```shell
-"  Something needs to be\n  done so maybe, just maybe\n  this might work\n"
-```
-
-##### Operator `<<~`
-
-```rb
-<<~TXT 
-  Something needs to be
-  done so maybe, just maybe
-  this might work
-TXT
-```
-
-**Output:**
-
-```shell
-"Something needs to be\ndone so maybe, just maybe\nthis might work\n"
-```
-
-###### HEREDOC with Interpolation
-
-Here docs also can have string interpolation
-
-```rb
-<<~HEREDOC
-  Current time is #{Time.now}
-HEREDOC
-```
-
-**Output:**
-
-```shell
-"Current time is 2022-12-21 17:12:42 -0300\n"
-```
-
-and still it could be used with a trickier interpolation
-
-```rb
-@patient = Patient.last
-
-<<~HEREDOC
-  Current time is #{@patient.first_name}
-HEREDOC
-```
-
-**Output:**
-
-```shell
-"Current time is Lucas\n"
-```
-
-###### String methods
-
-HEREDOC also accept string methods, like `strip`, `chomp` and etc...
-
-```rb
-<<~HEREDOC.strip
-  Current time is #{@patient.first_name}
-HEREDOC
-```
-
-**Output:**
-
-```shell
-"Current time is Lucas"
-```
 
 ## Rails
 
@@ -576,6 +450,31 @@ rails db:create RAILS_ENV=test
 rails db:migrate RAILS_ENV=test
 rails db:seed RAILS_ENV=test
 ```
+
+### Initializers
+
+#### Inflections
+
+The inflection initializer allow you to define terminologies, plurals and etc..
+
+##### Allowing a Acronym
+
+```rb
+# config/initializers/inflections.rb
+
+ActiveSupport::Inflector.inflections(:en) do |inflect|
+  inflect.acronym 'SMS'
+end
+```
+
+##### Allowing irregular plural
+
+```rb
+# config/initializers/inflections.rb
+
+ActiveSupport::Inflector.inflections(:en) do |inflect|
+  inflect.irregular 'person', 'people'
+end
 
 ## PUMA
 

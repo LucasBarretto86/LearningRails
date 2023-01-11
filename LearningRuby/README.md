@@ -1,0 +1,193 @@
+# Learning Ruby
+
+- [Learning Ruby](#learning-ruby)
+  - [Strings](#strings)
+    - [Multiline](#multiline)
+      - [Special character `\` or `+`](#special-character--or-)
+        - [using `\`](#using-)
+        - [Using `+`](#using--1)
+    - [HEREDOC](#heredoc)
+      - [Operator `<<-`, ignoring indentation](#operator---ignoring-indentation)
+      - [Operator `<<~`, keep indentation](#operator--keep-indentation)
+      - [HEREDOC data Interpolation](#heredoc-data-interpolation)
+      - [HEREDOC using string  core methods](#heredoc-using-string--core-methods)
+    - [Slice string](#slice-string)
+      - [`.slice`](#slice)
+      - [`.slice!`](#slice-1)
+    - [removing prefix and suffix](#removing-prefix-and-suffix)
+      - [`delete_prefix`](#delete_prefix)
+      - [`delete_suffix`](#delete_suffix)
+
+## Strings
+
+### Multiline
+
+There's few ways to handle multiline strings on ruby
+
+#### Special character `\` or `+`
+
+##### using `\`
+
+```rb
+"Something needs to be "\
+"done so maybe, just maybe "\
+"this might work"
+```
+
+**Output:**
+
+```shell
+"Something needs to bed one so maybe, just maybe this might work"
+```
+
+##### Using `+`
+
+```rb
+"Something needs to be " +
+"done so maybe, just maybe " +
+"this might work"
+```
+
+**Output:**
+
+```shell
+"Something needs to bed one so maybe, just maybe this might work"
+```
+
+### HEREDOC
+
+#### Operator `<<-`, ignoring indentation
+
+```rb
+<<-TXT 
+  Something needs to be
+  done so maybe, just maybe
+  this might work
+TXT
+```
+
+**Output:**
+
+```shell
+"  Something needs to be\n  done so maybe, just maybe\n  this might work\n"
+```
+
+#### Operator `<<~`, keep indentation
+
+```rb
+<<~TXT 
+  Something needs to be
+  done so maybe, just maybe
+  this might work
+TXT
+```
+
+**Output:**
+
+```shell
+"Something needs to be\ndone so maybe, just maybe\nthis might work\n"
+```
+
+#### HEREDOC data Interpolation
+
+Here docs also can have string interpolation
+
+```rb
+<<~HEREDOC
+  Current time is #{Time.now}
+HEREDOC
+```
+
+**Output:**
+
+```shell
+"Current time is 2022-12-21 17:12:42 -0300\n"
+```
+
+and still it could be used with a more complex interpolation
+
+```rb
+@patient = Patient.last
+
+<<~HEREDOC
+  Current time is #{@patient.first_name}
+HEREDOC
+```
+
+**Output:**
+
+```shell
+"Current time is Lucas\n"
+```
+
+#### HEREDOC using string  core methods
+
+HEREDOC also accept string methods, like `strip`, `chomp` and etc...
+
+```rb
+<<~HEREDOC.strip
+  Current time is #{@patient.first_name}
+HEREDOC
+```
+
+**Output:**
+
+```shell
+"Current time is Lucas"
+```
+
+### Slice string
+
+#### `.slice`
+
+```shell
+irb(main):001:0> string = "prefix-content-suffix"
+=> "prefix-content-suffix"
+irb(main):002:0> string.slice("prefix-")
+=> "prefix-"
+irb(main):003:0> string
+=> "prefix-content-suffix"
+```
+
+#### `.slice!`
+
+```shell
+irb(main):001:0> string = "prefix-content-suffix"
+=> "prefix-content-suffix"
+irb(main):002:0> string.slice!("prefix-")
+=> "prefix-"
+irb(main):003:0> string
+=> "content-suffix"
+```
+
+### removing prefix and suffix
+
+#### `delete_prefix`
+
+```shell
+irb(main):01:0> string = "prefix-content-suffix"
+=> "prefix-content-suffix"
+irb(main):02:0> string.delete_prefix("prefix-")
+=> "content-suffix"
+irb(main):03:0> 
+```
+
+It might use some sort of regex to remove only prefix, because it only removes what comes on prefix
+
+```shell
+irb(main):04:0> string.delete_prefix("-suffix")
+=> "prefix-content-suffix"
+irb(main):05:0> 
+```
+
+#### `delete_suffix`
+
+```shell
+irb(main):01:0> string = "prefix-content-suffix"
+=> "prefix-content-suffix"
+irb(main):02:0> string.delete_suffix("-suffix")
+=> "prefix-content"
+irb(main):03:0> 
+```
+
+Note that `delete_prefix` and `delete_suffix` returns the string modified, but it won't change the variable itself, as `slice!`, another interesting aspect is that if `slice` doesn't match the value to be removed it returns `nil`, however both delete methods returns always the string whether the value was matched or not.
