@@ -24,6 +24,12 @@
       - [executing SQL](#executing-sql)
         - [executing](#executing)
         - [Getting values, Select Value](#getting-values-select-value)
+    - [API](#api)
+      - [Jbuilder](#jbuilder)
+        - [Rendering collection](#rendering-collection)
+      - [Set values](#set-values)
+      - [Merge values](#merge-values)
+      - [Define key format standard](#define-key-format-standard)
     - [Validations](#validations)
       - [Validate with custom method](#validate-with-custom-method)
       - [Validate with context](#validate-with-context)
@@ -291,6 +297,126 @@ irb(main):001:0> ActiveRecord::Base.connection.select_value("SELECT EXTRACT (QUA
 => 4.0  
 ```
 
+### API
+
+#### Jbuilder
+
+Jbuilder allow creation of json in a simple data structure, to create a jbuilder file we use extension `.json.jbuilder`
+
+```rb
+# app/views/messages/show.json.jbuilder
+
+json.content format_content(@message.content)
+json.(@message, :created_at, :updated_at)
+
+json.author do
+  json.name @message.creator.name.familiar
+  json.email_address @message.creator.email_address_with_name
+  json.url url_for(@message.creator, format: :json)
+end
+
+if current_user.admin?
+  json.visitors calculate_visitors(@message)
+end
+
+json.comments @message.comments, :content, :created_at
+```
+
+**Output:**
+
+```json
+{
+  "content": "<p>This is <i>serious</i> monkey business</p>",
+  "created_at": "2011-10-29T20:45:28-05:00",
+  "updated_at": "2011-10-29T20:45:28-05:00",
+
+  "author": {
+    "name": "David H.",
+    "email_address": "'David Heinemeier Hansson' <david@heinemeierhansson.com>",
+    "url": "http://example.com/users/1-david.json"
+  },
+
+  "visitors": 15,
+
+  "comments": [
+    { "content": "Hello everyone!", "created_at": "2011-10-29T20:45:28-05:00" },
+    { "content": "To you my good sir!", "created_at": "2011-10-29T20:47:28-05:00" }
+  ],
+}
+```
+
+##### Rendering collection
+
+```rb
+# app/views/imaging/progressions/series/_series.json.jbuilder
+
+json.id series.id
+json.name series.name
+
+json.images series.images do |image|
+  json.id image.id
+  json.url url_for(image.file.blob)
+end
+```
+
+**Output:**
+
+```json
+{
+  "id": 460,
+  "name": "Standard 8",
+  "images": [
+    {
+      "id": 52,
+      "url": "/rails/active_storage/blobs/redirect/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBPUT09IiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19--33a5df63e10cc18b415d85267d42701ee7902cf5/placeholder.jpg"
+    },
+    {
+      "id": 53,
+      "url": "/rails/active_storage/blobs/redirect/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBPZz09IiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19--cd1f772ba26bb7579f972f1d0db6fc4b957f98ca/placeholder.jpg"
+    }
+  ]
+}
+```
+
+#### Set values
+
+```rb
+json.set! :author do
+  json.set! :name, 'David'
+end
+```
+
+**Output:**
+
+```json
+{"author": { "name": "David" }}
+```
+
+#### Merge values
+
+```rb
+hash = { author: { name: "David" } }
+
+json.post do
+  json.title "Merge HOWTO"
+  json.merge! hash
+end
+```
+
+**Output:**
+
+```json
+"post": { "title": "Merge HOWTO", "author": { "name": "David" } }
+```
+
+#### Define key format standard
+
+```rb
+# initializer/jbuilder.rb
+
+Jbuilder.key_format camelize: :lower
+```
+
 ### Validations
 
 #### Validate with custom method
@@ -547,7 +673,7 @@ sudo nano /etc/redis/redis.conf
 
 > Locate the line `bind 127.0.0.1 ::1`.
 
-```txt
+```mono
 ################################## NETWORK #####################################
 
 # By default, if no "bind" configuration directive is specified, Redis listens
@@ -587,7 +713,7 @@ Change the IP address by entering the values of the connections you want the Red
 
 To add multiple IP addresses, simply separate the IP addresses with a single space:
 
-```txt
+```mono
 bind 70.25.220.238 70.25.220.239
 ```
 
@@ -979,7 +1105,7 @@ gem install foreman
 
 Create a manifest file called `Procfile` within the root of the project and define the required services you need to run as Foreman starts
 
-```txt
+```mono
 web: bin/rails server -p 3000
 js: yarn build --watch
 css: bin/rails dartsass:watch
@@ -1350,3 +1476,4 @@ rails tmp:cache:clear
 - [Create Rails App with GraphQL](https://www.digitalocean.com/community/tutorials/how-to-set-up-a-ruby-on-rails-graphql-api)
 - [Pros and Cons of Using structure.sql in Your Ruby on Rails Application](https://blog.appsignal.com/2020/01/15/the-pros-and-cons-of-using-structure-sql-in-your-ruby-on-rails-application.html)
 - [SemaphoreCI tutorials - Mocking with RSPEC](https://semaphoreci.com/community/tutorials/mocking-with-rspec-doubles-and-expectations)
+- [Rails Jbuilder](https://github.com/rails/jbuilder)
