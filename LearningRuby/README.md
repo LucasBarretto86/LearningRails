@@ -17,6 +17,12 @@
     - [removing prefix and suffix](#removing-prefix-and-suffix)
       - [`delete_prefix`](#delete_prefix)
       - [`delete_suffix`](#delete_suffix)
+  - [Integer / Numbers](#integer--numbers)
+  - [Equality Operators](#equality-operators)
+    - [operator `==`](#operator-)
+    - [operator `eql?`](#operator-eql)
+    - [operator `equal?`](#operator-equal)
+    - [operator `===`](#operator--1)
 
 ## Strings
 
@@ -191,3 +197,30 @@ irb(main):03:0>
 ```
 
 Note that `delete_prefix` and `delete_suffix` returns the string modified, but it won't change the variable itself, as `slice!`, another interesting aspect is that if `slice` doesn't match the value to be removed it returns `nil`, however both delete methods returns always the string whether the value was matched or not.
+
+## Integer / Numbers
+
+| Type    |   limit    | Numeric Type | Column Size | Max value            |
+|:--------|:----------:|:------------:|:-----------:|:---------------------|
+| integer |     1      |   tinyint    |   1 byte    | 127                  |
+| integer |     2      |   smallint   |   2 bytes   | 32767                |
+| integer |     3      |  mediumint   |   3 byte    | 8388607              |
+| integer | nil, 4, 11 |   int(11)    |   4 byte    | 2147483647           |
+| bigint  |    5..8    |    bigint    |   8 byte    | 9223372036854775807  |
+
+## Equality Operators
+
+- [`==`](#operator-)
+- [`eql?`](#operator-eql)
+- [`equal?`](#operator-equal)
+- [`===`](#operator--1)
+
+### operator `==`
+
+### operator `eql?`
+
+### operator `equal?`
+
+### operator `===`
+
+<https://medium.com/@khalidh64/difference-between-eql-equal-in-ruby-2ffa7f073532>
