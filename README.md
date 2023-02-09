@@ -949,7 +949,7 @@ allow(feed).to receive(:fetch).and_return("imagine I'm a JSON string")
 
 **Output:**
 
-```shell
+```mono
 feed.fetch
 => "imagine I'm a JSON string"
 ```

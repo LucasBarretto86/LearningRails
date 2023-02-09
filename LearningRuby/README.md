@@ -42,7 +42,7 @@ There's few ways to handle multiline strings on ruby
 
 **Output:**
 
-```shell
+```mono
 "Something needs to bed one so maybe, just maybe this might work"
 ```
 
@@ -56,7 +56,7 @@ There's few ways to handle multiline strings on ruby
 
 **Output:**
 
-```shell
+```mono
 "Something needs to bed one so maybe, just maybe this might work"
 ```
 
@@ -74,7 +74,7 @@ TXT
 
 **Output:**
 
-```shell
+```mono
 "  Something needs to be\n  done so maybe, just maybe\n  this might work\n"
 ```
 
@@ -90,7 +90,7 @@ TXT
 
 **Output:**
 
-```shell
+```mono
 "Something needs to be\ndone so maybe, just maybe\nthis might work\n"
 ```
 
@@ -106,7 +106,7 @@ HEREDOC
 
 **Output:**
 
-```shell
+```mono
 "Current time is 2022-12-21 17:12:42 -0300\n"
 ```
 
@@ -122,7 +122,7 @@ HEREDOC
 
 **Output:**
 
-```shell
+```mono
 "Current time is Lucas\n"
 ```
 
@@ -138,7 +138,7 @@ HEREDOC
 
 **Output:**
 
-```shell
+```mono
 "Current time is Lucas"
 ```
 
