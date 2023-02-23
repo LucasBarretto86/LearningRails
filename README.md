@@ -46,6 +46,8 @@
       - [Inflections](#inflections)
         - [Allowing a Acronym](#allowing-a-acronym)
         - [Allowing irregular plural](#allowing-irregular-plural)
+    - [Logger](#logger)
+      - [Customized Logger](#customized-logger)
     - [Kill PUMA](#kill-puma)
   - [Redis](#redis)
     - [Install Redis](#install-redis)
@@ -62,6 +64,9 @@
     - [View usage](#view-usage)
     - [Monitoring Redis](#monitoring-redis)
   - [Kredis](#kredis)
+    - [Configuring Kredis](#configuring-kredis)
+      - [Custom or Additional configs](#custom-or-additional-configs)
+    - [Kredis basic usage example](#kredis-basic-usage-example)
   - [GraphQL](#graphql)
     - [Adding gem `graphiql-rails`](#adding-gem-graphiql-rails)
     - [`graphiql-rails` initial configuration](#graphiql-rails-initial-configuration)
@@ -610,6 +615,10 @@ end
 sudo netstat -ntlp | grep LISTEN
 ```
 
+### Logger
+
+#### Customized Logger
+
 ### Kill PUMA
 
 ```shell
@@ -830,6 +839,34 @@ redis-cli monitor
 ```
 
 ## Kredis
+
+Kredis is a higher level wrapper for your redis database which allow you to store more complex data-structure on your redis.
+
+### Configuring Kredis
+
+within your project run
+
+```rb
+bundle add kredis
+rails kredis:install
+```
+
+after kredis is install it will create a YAML file `config/redis/shared.yml`
+
+```mono
+config
+└── redis
+    └── shared.yml
+```
+
+#### Custom or Additional configs
+
+Additional configurations can be added under `config/redis/*.yml` and referenced when a type is created. For example, `Kredis.string("mystring", config: :strings)` would lookup `config/redis/strings.yml`.
+
+### Kredis basic usage example
+
+```rb
+```
 
 ## GraphQL
 
@@ -1477,3 +1514,4 @@ rails tmp:cache:clear
 - [Pros and Cons of Using structure.sql in Your Ruby on Rails Application](https://blog.appsignal.com/2020/01/15/the-pros-and-cons-of-using-structure-sql-in-your-ruby-on-rails-application.html)
 - [SemaphoreCI tutorials - Mocking with RSPEC](https://semaphoreci.com/community/tutorials/mocking-with-rspec-doubles-and-expectations)
 - [Rails Jbuilder](https://github.com/rails/jbuilder)
+- [Kredis](https://github.com/rails/kredis)
