@@ -67,6 +67,7 @@
     - [Configuring Kredis](#configuring-kredis)
       - [Custom or Additional configs](#custom-or-additional-configs)
     - [Kredis basic usage example](#kredis-basic-usage-example)
+    - [Kredis within ActiveRecords](#kredis-within-activerecords)
   - [GraphQL](#graphql)
     - [Adding gem `graphiql-rails`](#adding-gem-graphiql-rails)
     - [`graphiql-rails` initial configuration](#graphiql-rails-initial-configuration)
@@ -865,8 +866,75 @@ Additional configurations can be added under `config/redis/*.yml` and referenced
 
 ### Kredis basic usage example
 
+**Creating record:**
+
 ```rb
+irb(main):001:0> str = Kredis.string "exampleString"
+  Kredis  (6.4ms)  Connected to shared
+=> 
+#<Kredis::Types::Scalar:0x00007fd8c1337b28
 ```
+
+**Rendering object:**
+
+```rb
+irb(main):002:0> str
+=> 
+#<Kredis::Types::Scalar:0x00007fd8c1337b28
+ @default=nil,
+ @expires_in=nil,
+ @key="exampleString",
+ @proxy=#<Kredis::Types::Proxy:0x00007fd8c1337970 @key="exampleString", @redis=#<Redis client v4.5.1 for redis://localhost:6379/2>>,
+ @typed=:string>
+```
+
+**Setting value:**
+
+```rb
+irb(main):003:0> str.set "Some sentence as example here"
+  Kredis Proxy (0.5ms)  SET exampleString ["Some sentence as example here"] 
+=> "OK"
+```
+
+OR
+
+```rb
+irb(main):004:0> str.value = "Another sentence as example here"
+  Kredis Proxy (0.3ms)  SET exampleString ["Another sentence as example here"] 
+=> "OK"
+```
+
+**Retrieving value:**
+
+```rb
+irb(main):005:0> str.value
+  Kredis Proxy (0.3ms)  GET exampleString  
+=> "Some sentence as example here"
+```
+
+### Kredis within ActiveRecords
+
+That's where kredis really shines, it also give us the ability to create data-structures on redis within ActiveRecord models, kredis give us various methods that allow creation of these structures, such an unique list.
+
+**Adding a kredis method to an ActiveRecord:**
+
+```rb
+# app/models/user.rb
+
+class User < ApplicationRecord  
+  kredis_unique_list :recent_searches, limit: 5
+end
+```
+
+**Basic usage on a view:**
+
+```erb
+<% current_user.recent_searches.elements.each do |query| %>
+  <%= link_to query, root_path(query: query) %>
+<% end %>
+```
+
+Look further this example [here](/specifics/LearningRubyOnRails/src/example_projects/learning-kredis)
 
 ## GraphQL
 
