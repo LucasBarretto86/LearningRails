@@ -30,6 +30,11 @@
       - [Set values](#set-values)
       - [Merge values](#merge-values)
       - [Define key format standard](#define-key-format-standard)
+    - [ActiveStorage](#activestorage)
+      - [ActiveStorage setup](#activestorage-setup)
+      - [Configuring S3 for ActiveStorage](#configuring-s3-for-activestorage)
+      - [Attaching Files to Records](#attaching-files-to-records)
+      - [Removing file](#removing-file)
     - [Validations](#validations)
       - [Validate with custom method](#validate-with-custom-method)
       - [Validate with context](#validate-with-context)
@@ -422,6 +427,154 @@ end
 
 Jbuilder.key_format camelize: :lower
 ```
+
+### ActiveStorage
+
+> Rails depend on external applications to handle specific files like images, videos and PDF
+>
+>- `libvips` v8.6+ or `ImageMagick` for image analysis and transformations
+>- `ffmpeg` v3.4+ for video previews and `ffprobe` for video/audio analysis
+>- `poppler` or `muPDF` for PDF previews
+
+#### ActiveStorage setup
+
+In order to work properly it's also required to add to the gemfile a gem specifically to handle active_record variants
+
+```gemfile
+gem "image_processing", ">= 1.2"
+```
+
+```shell
+bin/rails active_storage:install
+bin/rails db:migrate
+```
+
+#### Configuring S3 for ActiveStorage
+
+```rb
+bundle add aws-sdk-s3
+```
+
+```rb
+# config/storage.yml
+
+local:
+  service: Disk
+  root: <%= Rails.root.join("storage") %>
+
+test:
+  service: Disk
+  root: <%= Rails.root.join("tmp/storage") %>
+
+amazon:
+  service: S3
+  access_key_id: <%= ENV['AWS_S3_ACCESS_KEY_ID'] %>
+  secret_access_key: <%= ENV['AWS_S3_SECRET_ACCESS_KEY'] %>
+  region: us-east-1
+  bucket: <%= ENV['AWS_S3_BUCKET_NAME'] %>
+  public: true
+  http_open_timeout: 5
+  http_read_timeout: 5
+  retry_limit: 2
+```
+
+> Notice that for a saver use case it's better to use environment variable
+
+After that we need to setup application environment config behavior, in this case we gonna keep images on development locally and only will upload to S3 on production environment:
+
+```rb
+# config/environments/development.rb
+
+config.active_storage.service = :local
+```
+
+```rb
+# config/environments/production.rb
+
+config.active_storage.service = :amazon
+```
+
+However it's possible to upload files in any environment as long as you specify on the specific config file.
+
+#### Attaching Files to Records
+
+To add attachments to a specific model we must use method within the model we want to keep the attachment related to
+
+**has_one:**
+
+```rb
+class User < ApplicationRecord
+  has_one_attached :avatar
+end
+```
+
+**has_many:**
+
+```rb
+class User < ApplicationRecord
+  has_many_attached :pictures
+end
+```
+
+**has attach for specific service config:**
+It's also to force attach file for a specific service in case you have more than one cloud service
+
+```rb
+class Message < ApplicationRecord
+  has_many_attached :images, service: :s3
+end
+```
+
+**Attaching and setting up a variant:**
+
+```rb
+class Message < ApplicationRecord
+  has_many_attached :images do |attachable|
+    attachable.variant :thumb, resize_to_limit: [100, 100]
+  end
+end
+```
+
+**Attaching File/IO Objects:**
+
+```rb
+# images_controller#create
+
+@message.images.attach(io: File.open('/path/to/file'), filename: 'file.pdf')
+```
+
+OR
+
+```rb
+# images_controller#create
+
+@message.images.attach(io: File.open('/path/to/file'), filename: 'file.pdf', content_type: 'application/pdf')
+```
+
+**Attaching bypassing content_type:**
+
+```rb
+# images_controller#create
+
+@message.images.attach(
+  io: File.open('/path/to/file'),
+  filename: 'file.pdf',
+  content_type: 'application/pdf',
+  identify: false
+)
+```
+
+#### Removing file
+
+```rb
+# Synchronously destroy the avatar and actual resource files.
+user.avatar.purge
+
+# Destroy the associated models and actual resource files async, via Active Job.
+user.avatar.purge_later
+```
+
+To learn more about ActiveStorage, check here: <https://guides.rubyonrails.org/active_storage_overview.html>
 
 ### Validations
 
