@@ -23,6 +23,7 @@
     - [operator `eql?`](#operator-eql)
     - [operator `equal?`](#operator-equal)
     - [operator `===`](#operator--1)
+  - [Comparing Values](#comparing-values)
 
 ## Strings
 
@@ -224,3 +225,21 @@ Note that `delete_prefix` and `delete_suffix` returns the string modified, but i
 ### operator `===`
 
 <https://medium.com/@khalidh64/difference-between-eql-equal-in-ruby-2ffa7f073532>
+
+## Comparing Values
+
+```rb
+products = [{ type: "Product", title: "notebook", value: 20.00 }, { type: "Product", name: "pencils", value: 5.00 }]
+services = [{ type: "Service", title: "Copy", price: 10.0 }, { type: "Service", title: "Colored copy", price: 15.00 }]
+
+totals = (products + services).sort { |product, service| product["value"] <=> service["price"] }
+
+totals.each { |total| p  total[:type]}
+```
+
+```mono
+"Product"
+"Product"                                                                         
+"Service"
+"Service"
+```

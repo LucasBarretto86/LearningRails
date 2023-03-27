@@ -7,8 +7,9 @@
       - [For older Rails versions](#for-older-rails-versions)
       - [Configured as API app](#configured-as-api-app)
       - [Configured with React libs (Rails 6 or above)](#configured-with-react-libs-rails-6-or-above)
-      - [Configuring database representation](#configuring-database-representation)
-        - [Moving from schema to structure](#moving-from-schema-to-structure)
+      - [Configured with bootstrap an jsBuilding (esBuild)](#configured-with-bootstrap-an-jsbuilding-esbuild)
+    - [Rails Database representation](#rails-database-representation)
+      - [Moving from schema to structure](#moving-from-schema-to-structure)
     - [Rails Credentials](#rails-credentials)
       - [Generate credentials](#generate-credentials)
         - [Setup EDITOR](#setup-editor)
@@ -25,6 +26,7 @@
       - [executing SQL](#executing-sql)
         - [executing](#executing)
         - [Getting values, Select Value](#getting-values-select-value)
+    - [Hotwire](#hotwire)
     - [API](#api)
       - [Jbuilder](#jbuilder)
         - [Rendering collection](#rendering-collection)
@@ -36,6 +38,8 @@
       - [Configuring S3 for ActiveStorage](#configuring-s3-for-activestorage)
       - [Attaching Files to Records](#attaching-files-to-records)
       - [Removing file](#removing-file)
+      - [Encrypted attachments](#encrypted-attachments)
+      - [variants](#variants)
     - [Validations](#validations)
       - [Validate with custom method](#validate-with-custom-method)
       - [Validate with context](#validate-with-context)
@@ -54,6 +58,7 @@
         - [Allowing irregular plural](#allowing-irregular-plural)
     - [Logger](#logger)
       - [Customized Logger](#customized-logger)
+    - [Importmaps and Bootstraps without nodeJS](#importmaps-and-bootstraps-without-nodejs)
     - [Kill PUMA](#kill-puma)
   - [Redis](#redis)
     - [Install Redis](#install-redis)
@@ -96,6 +101,11 @@
   - [Rubocop](#rubocop)
   - [Brakeman](#brakeman)
   - [Foreman](#foreman)
+  - [pg\_search](#pg_search)
+    - [Install pg\_search](#install-pg_search)
+    - [Setup multisearch](#setup-multisearch)
+    - [Adding search attribute to model](#adding-search-attribute-to-model)
+  - [scenic](#scenic)
   - [React with in Rails project](#react-with-in-rails-project)
     - [Configuration](#configuration)
       - [Installing react into the project with webpacker](#installing-react-into-the-project-with-webpacker)
@@ -134,9 +144,10 @@
     - [Helpers](#helpers)
       - [ApplicationHelper](#applicationhelper)
     - [locale dynamic configs](#locale-dynamic-configs)
-  - [Error and fixes](#error-and-fixes)
+  - [Issues](#issues)
     - [Postgres - Fixing PG Error for new rails apps](#postgres---fixing-pg-error-for-new-rails-apps)
     - [cannot load such file -- coffee\_script](#cannot-load-such-file----coffee_script)
+    - [Bundler running on wrong version](#bundler-running-on-wrong-version)
   - [References](#references)
 
 ## Rails
@@ -171,7 +182,13 @@ rails new my_api -d=postgresql -T --api
 rails new my-app --webpack=react --database=postgresql
 ```
 
-#### Configuring database representation
+#### Configured with bootstrap an jsBuilding (esBuild)
+
+```shell
+rails new my-app --css=bootstrap --database=postgresql
+```
+
+### Rails Database representation
 
 `schema.rb`
 
@@ -187,7 +204,7 @@ Mature database representation
 - It allows for an exact copy of the database structure. This is important when working with a team, as well as if you need to rapidly generate a new database in production from a rails db:setup task.
 - It allows preserving information of advanced database features. For example, if you are using PostgreSQL, it enables the use of views, materialized views, functions, constraints and so on.
 
-##### Moving from schema to structure
+#### Moving from schema to structure
 
 ```rb
 # config/application.rb
@@ -326,6 +343,12 @@ Model with reference:
 rails g model Review title:string description:string score:integer airline:belongs_to
 ```
 
+Model with polymorphic
+
+```shell
+rails g model Image position:integer description:string imageable:belongs_to{polymorphic}
+```
+
 #### executing SQL
 
 Rails allow us to execute or get values from SQL
@@ -355,6 +378,8 @@ irb(main):001:0> ActiveRecord::Base.connection.select_value("SELECT EXTRACT (QUA
    (0.7ms)  SELECT EXTRACT (QUARTER FROM TIMESTAMP '2022-11-10')
 => 4.0  
 ```
+
+### Hotwire
 
 ### API
 
@@ -624,6 +649,30 @@ user.avatar.purge_later
 
 To learn more about ActiveStorage, check here: <https://guides.rubyonrails.org/active_storage_overview.html>
 
+#### Encrypted attachments
+
+<https://alisepehri.medium.com/preview-for-amazon-s3-client-side-encrypted-active-storage-files-8e3ba55accb8>
+
+#### variants
+
+```rb
+# app/views/blogs/show.html.erb
+
+<%= image_tag blog.display_picture.variant(resize_to_limit: [100, 100]) %>
+```
+
+```rb
+class Blog < ActiveRecord::Base
+  has_one_attached :display_picture, variants: {
+    thumb: { resize: "100x100" },
+    medium: { resize: "300x300" }
+  }
+end
+
+# app/views/blogs/show.html.erb
+<%= image_tag blog.display_picture.variant(:thumb) %>
+```
+
 ### Validations
 
 #### Validate with custom method
@@ -820,6 +869,13 @@ sudo netstat -ntlp | grep LISTEN
 ### Logger
 
 #### Customized Logger
+
+### Importmaps and Bootstraps without nodeJS
+
+<https://dev.to/coorasse/rails-7-bootstrap-5-and-importmaps-without-nodejs-4g8>
+
+- Create standard clean app
+- Install `boostrap` gem and `sassc-rails`
 
 ### Kill PUMA
 
@@ -1423,6 +1479,111 @@ To start Foreman simple run the command
 foreman start
 ```
 
+## pg_search
+
+### Install pg_search
+
+```shell
+bundle add pg_search
+```
+
+### Setup multisearch
+
+```shell
+rails g pg_search:migration:multisearch
+rails db:migrate
+```
+
+### Adding search attribute to model
+
+```rb
+# frozen_string_literal: true
+
+module Patient::Searchable
+  extend ActiveSupport::Concern
+  include PgSearch::Model
+
+  included do
+    pg_search_scope :search, against: :full_name
+
+    scope :default_order, -> { reorder("priority DESC") }
+  end
+end
+```
+
+To search
+
+```rb
+Patient.search("Jane")
+```
+
+**Output:**
+
+```rb
+=> 
+[#<Patient:0x00007ff6e2b1e398
+  id: 3914,
+  gf_external_id: "144986529183",
+  first_name: "Jane",
+  middle_name: "",
+  last_name: "McInernay",
+  full_name: "Jane McInernay Reilly",
+  page_source: "",
+  created_at: Wed, 01 Mar 2023 20:49:00.725568000 UTC +00:00,
+  updated_at: Sun, 19 Mar 2023 14:52:58.290029000 UTC +00:00,
+  image_script: false,
+  notes_green_script: true,
+  notes_yellow_script: true,
+  active: false,
+  appointment_script: false,
+  ledger_script: false,
+  medical_script: false,
+  profile_script: true>,
+ #<Patient:0x00007ff6e2b1e2d0
+  id: 4121,
+  gf_external_id: "145020362130",
+  first_name: "Jane ",
+  middle_name: "",
+  last_name: "Kinsella",
+  full_name: "Jane  Kinsella",
+  page_source: "",
+  created_at: Wed, 01 Mar 2023 20:49:00.817765000 UTC +00:00,
+  updated_at: Sun, 19 Mar 2023 15:35:20.366462000 UTC +00:00,
+  image_script: false,
+  notes_green_script: true,
+  notes_yellow_script: true,
+  active: false,
+  appointment_script: false,
+  ledger_script: false,
+  medical_script: false,
+  profile_script: true>,
+ #<Patient:0x00007ff6e2b1e208
+  id: 6466,
+  gf_external_id: "200038492862",
+  first_name: "Jane  ",
+  middle_name: "",
+  last_name: "Fishler",
+  full_name: "Jane Fishler",
+  page_source: "",
+  created_at: Wed, 01 Mar 2023 20:49:01.857211000 UTC +00:00,
+  updated_at: Sun, 19 Mar 2023 23:35:07.825168000 UTC +00:00,
+  image_script: false,
+  notes_green_script: true,
+  notes_yellow_script: true,
+  active: false,
+  appointment_script: false,
+  ledger_script: false,
+  medical_script: false,
+  profile_script: true>
+  ]
+```
+
+## scenic
+
+<https://github.com/scenic-views/scenic>
+
+> Handling SQL views within rails
+
 ## React with in Rails project
 
 ### Configuration
@@ -1755,7 +1916,7 @@ An error occurred while installing pg (1.2.3), and Bundler cannot continue.
 sudo apt install postgresql-contrib libpq-dev
 ```
 
-## Error and fixes
+## Issues
 
 ### Postgres - Fixing PG Error for new rails apps
 
@@ -1774,6 +1935,16 @@ rails tmp:cache:clear
 
 ```
 
+### Bundler running on wrong version
+
+To enforce bundler to run on a specific version:
+
+```shell
+ asdf shell ruby 3.1.2 && bundle install
+```
+
+> Be sure to have ruby installed for this version
+
 ## References
 
 - [Foreman](https://www.theforeman.org/introduction.html)
@@ -1784,3 +1955,4 @@ rails tmp:cache:clear
 - [SemaphoreCI tutorials - Mocking with RSPEC](https://semaphoreci.com/community/tutorials/mocking-with-rspec-doubles-and-expectations)
 - [Rails Jbuilder](https://github.com/rails/jbuilder)
 - [Kredis](https://github.com/rails/kredis)
+- [pg_search](https://www.mintbit.com/blog/searching-made-easy-with-pg-search-gem-in-ruby-on-rails)
