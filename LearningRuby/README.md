@@ -19,11 +19,15 @@
       - [`delete_suffix`](#delete_suffix)
   - [Integer / Numbers](#integer--numbers)
   - [Equality Operators](#equality-operators)
-    - [operator `==`](#operator-)
+    - [operator `==` and `!=`](#operator--and-)
     - [operator `eql?`](#operator-eql)
     - [operator `equal?`](#operator-equal)
-    - [operator `===`](#operator--1)
-  - [Comparing Values](#comparing-values)
+    - [operator `===`](#operator-)
+  - [Pattern matching operator](#pattern-matching-operator)
+  - [Compare operator](#compare-operator)
+  - [Concept](#concept)
+    - [Comparing object values](#comparing-object-values)
+  - [Reference](#reference)
 
 ## Strings
 
@@ -211,35 +215,193 @@ Note that `delete_prefix` and `delete_suffix` returns the string modified, but i
 
 ## Equality Operators
 
-- [`==`](#operator-)
-- [`eql?`](#operator-eql)
-- [`equal?`](#operator-equal)
-- [`===`](#operator--1)
+### operator `==` and `!=`
 
-### operator `==`
+```rb
+irb(main):001:0> "This string" == "This string"
+=> true
+irb(main):002:0> "This string" == "That string"
+=> false
+irb(main):003:0> "This string" != "This string"
+=> false
+irb(main):004:0> "This string" != "That string"
+=> true
+```
+
+On string it's very easy to understand how it works, but if we attempt to check equality on numbers
+
+```rb
+irb(main):001:0> 1 == 1
+=> true
+irb(main):002:0> 1 == 1.0
+=> true
+irb(main):003:0> 1 == 2
+=> false
+irb(main):004:0> 
+```
+
+> Notice that 1 == 1.0 are true however it has different type `integer` and `double`
 
 ### operator `eql?`
 
+```rb
+irb(main):001:0> 1.eql? 1.0
+=> false
+irb(main):002:0> 1.eql? 1
+=> true
+```
+
+> Notice  that it solves the type issue on `==`
+
+```rb
+irb(main):001:0> test_1 = 1
+=> 1
+irb(main):002:0> test_2 = 1.0
+=> 1.0
+irb(main):003:0> test_1 == test_2
+=> true
+irb(main):004:0> test_1.eql? test_2
+=> false
+```
+
 ### operator `equal?`
+
+```rb
+irb(main):001:0> test_1 = 1
+=> 1
+irb(main):002:0> test_2 = 1.0
+=> 1.0
+irb(main):003:0> test_1.equal? test_2
+=> false
+irb(main):004:0> test_1.eql? test_2
+=> false
+irb(main):005:0> test_1 == test_2
+=> true
+```
+
+> I didn't get the difference between `equal?` and `eql?` but seems something related to the object memory address
 
 ### operator `===`
 
-<https://medium.com/@khalidh64/difference-between-eql-equal-in-ruby-2ffa7f073532>
-
-## Comparing Values
+`===` operator is a range or collection operator, it works almost like `include?` method
 
 ```rb
-products = [{ type: "Product", title: "notebook", value: 20.00 }, { type: "Product", name: "pencils", value: 5.00 }]
-services = [{ type: "Service", title: "Copy", price: 10.0 }, { type: "Service", title: "Colored copy", price: 15.00 }]
+irb(main):001:0> (1..4) === 3
+=> true
+irb(main):002:0> (1..4) === 5
+=> false
+irb(main):003:0> (1..4).include? 3
+=> true
+irb(main):004:0> (1..4).include? 5
+=> false
+```
 
-totals = (products + services).sort { |product, service| product["value"] <=> service["price"] }
+However `===` doesn't work for a complex inclusion checking
 
-totals.each { |total| p  total[:type]}
+```rb
+irb(main):001:0> [{id: 1}, {id: 2}, {id: 4}] === ({id: 2})
+=> false
+irb(main):002:0> [{id: 1}, {id: 2}, {id: 4}].include?({id: 2})
+=> true
+```
+
+## Pattern matching operator
+
+Ruby has a pattern matching operator (`=~`) that works like magic
+
+```rb
+irb(main):014:0> "There's a matching here" =~ /matching/
+=> 10
+```
+
+It returns `10` since the first char match was on the `10` index of the sentence.
+
+Let's try to find a partial match
+
+```rb
+irb(main):019:0> "There's a matching here" =~ /atching/
+=> 11
+```
+
+it returns nil on case of mismatch
+
+```rb
+irb(main):019:0> "There's a matching here" =~ /tatching/
+=> nil
+```
+
+But notice that it return the index of first match
+
+```rb
+irb(main):019:0> "There's a matching here" =~ /here/
+=> 1
+```
+
+## Compare operator
+
+Ruby has a special compare operator (`<=>`)
+
+It's simple, comparing to values, in case a given value is different from the other it returns 1, 0 or -1
+
+**Example:**
+
+Comparing char/string
+
+```rb
+irb(main):001:0> "a" <=> "b"
+=> -1
+irb(main):002:0> "a" <=> "c"
+=> -1
+irb(main):003:0> "a" <=> "a"
+=> 0
+irb(main):004:0> "b" <=> "a"
+=> 1
+```
+
+> Notice that it compares based on the positioning on the alphabet, for instance `a` is on lesser positioning than `b`, so it returns `-1`, if we compare `a` with `a` it returns `0`, and if we compare `b` to `a`, ir returns `1` since `b` has a higher positioning than `a` .
+
+On integers compare it's very straight forward
+
+**Example:**
+
+```rb
+irb(main):001:0> 1 <=> 2
+=> -1
+irb(main):002:0> 2 <=> 2
+=> 0
+irb(main):003:0> 2 <=> 1
+=> 1
+irb(main):004:0> 
+```
+
+## Concept
+
+### Comparing object values
+
+```rb
+products = [
+  { type: "Product", title: "Notebook", value: 20.00 }, 
+  { type: "Product", name: "Pencils", value: 5.00 }
+]
+
+services = [
+  { type: "Service", title: "Copy", value: 10.0 }, 
+  { type: "Service", title: "Colored copy", value: 15.00 }
+]
+
+totals = (products + services).sort { |first, second| first[:value] <=> second[:value] }
+
+p totals
 ```
 
 ```mono
-"Product"
-"Product"                                                                         
-"Service"
-"Service"
+=> 
+[{:type=>"Product", :name=>"Pencils", :value=>5.0},
+ {:type=>"Service", :title=>"Copy", :value=>10.0},
+ {:type=>"Service", :title=>"Colored copy", :value=>15.0},
+ {:type=>"Product", :title=>"Notebook", :value=>20.0}]
 ```
+
+## Reference
+
+[Equality operators](https://medium.com/@khalidh64/difference-between-eql-equal-in-ruby-2ffa7f073532)

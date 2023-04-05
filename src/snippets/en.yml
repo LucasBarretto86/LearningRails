@@ -1,0 +1,16 @@
+en:
+  number:
+    currency:
+      format:
+        format: "%n %u"
+        unit: "$"
+
+  date:
+    formats:
+      default: "%A, %b %d, %Y"
+      short: "%a, %b %d, %Y"
+
+  time:
+    formats:
+      default: "%I:%M %p"
+      datetime: "%B %d, %Y, %I:%M %p"

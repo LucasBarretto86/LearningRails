@@ -122,6 +122,10 @@
       - [run Flipper generator](#run-flipper-generator)
       - [Flipper Usage](#flipper-usage)
     - [SimpleCov](#simplecov)
+  - [Create Private GEM](#create-private-gem)
+    - [GEM generator](#gem-generator)
+    - [GEM code implement](#gem-code-implement)
+    - [How to test GEM code on development](#how-to-test-gem-code-on-development)
   - [Rails Template](#rails-template)
   - [Gists](#gists)
     - [Private](#private)
@@ -1736,6 +1740,111 @@ Flipper.enable_percentage_of_actors :search, 2
 > For more specifications for usage, see: <https://www.flippercloud.io/docs>
 
 ### SimpleCov
+
+## Create Private GEM
+
+### GEM generator
+
+to generate basic gem structure run
+
+```rb
+bundle gem your_gem_name
+```
+
+Gem naming convention:
+
+- Use dashes and extensions but keep in mind that every dash represents a structure (folder, module)
+  - For example if we have a gem name like  gem-structure-demo_notifier, it will generate a structure like `gem/structure/demo_notifier` and its class or module will have a name like module/class `Gem::Structure::DemoNotifier`
+- Don’t use uppercase letters
+
+**Creation process example:**
+
+```shell
+Creating gem 'gem-learning_create_gem'...
+Do you want to generate tests with your gem?
+Future `bundle gem` calls will use your choice. This setting can be changed anytime with `bundle config gem.test`.
+Enter a test framework. rspec/minitest/test-unit/(none): minitest
+Do you want to set up continuous integration for your gem? Supported services:
+* CircleCI:       https://circleci.com/
+* GitHub Actions: https://github.com/features/actions
+* GitLab CI:      https://docs.gitlab.com/ee/ci/
+
+Future `bundle gem` calls will use your choice. This setting can be changed anytime with `bundle config gem.ci`.
+Enter a CI service. github/gitlab/circle/(none): github
+Do you want to license your code permissively under the MIT license?
+This means that any other developer or company will be legally allowed to use your code for free as long as they admit you created it. You can read more about the MIT license at https://choosealicense.com/licenses/mit. y/(n): y
+MIT License enabled in config
+Do you want to include a code of conduct in gems you generate?
+Codes of conduct can increase contributions to your project by contributors who prefer collaborative, safe spaces. You can read more about the code of conduct at contributor-covenant.org. Having a code of conduct means agreeing to the responsibility of enforcing it, so be sure that you are prepared to do that. Be sure that your email address is specified as a contact in the generated code of conduct so that people know who to contact in case of a violation. For suggestions about how to enforce codes of conduct, see https://bit.ly/coc-enforcement. y/(n): n
+Do you want to include a changelog?
+A changelog is a file which contains a curated, chronologically ordered list of notable changes for each version of a project. To make it easier for users and contributors to see precisely what notable changes have been made between each release (or version) of the project. Whether consumers or developers, the end users of software are human beings who care about what's in the software. When the software changes, people want to know why and how. see https://keepachangelog.com y/(n): y
+Changelog enabled in config
+Do you want to add a code linter and formatter to your gem? Supported Linters:
+* RuboCop:       https://rubocop.org
+* Standard:      https://github.com/testdouble/standard
+
+Future `bundle gem` calls will use your choice. This setting can be changed anytime with `bundle config gem.linter`.
+Enter a linter. rubocop/standard/(none): rubocop
+RuboCop enabled in config
+Initializing git repo in /home/barretto86/Projects/RubyMineProjects/gem-learning_create_gem
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint: 
+hint:  git config --global init.defaultBranch <name>
+hint: 
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint: 
+hint:  git branch -m <name>
+      create  gem-learning_create_gem/Gemfile
+      create  gem-learning_create_gem/lib/gem/learning_create_gem.rb
+      create  gem-learning_create_gem/lib/gem/learning_create_gem/version.rb
+      create  gem-learning_create_gem/sig/gem/learning_create_gem.rbs
+      create  gem-learning_create_gem/gem-learning_create_gem.gemspec
+      create  gem-learning_create_gem/Rakefile
+      create  gem-learning_create_gem/README.md
+      create  gem-learning_create_gem/bin/console
+      create  gem-learning_create_gem/bin/setup
+      create  gem-learning_create_gem/.gitignore
+      create  gem-learning_create_gem/test/test_helper.rb
+      create  gem-learning_create_gem/test/gem/test_learning_create_gem.rb
+      create  gem-learning_create_gem/.github/workflows/main.yml
+      create  gem-learning_create_gem/LICENSE.txt
+      create  gem-learning_create_gem/CHANGELOG.md
+      create  gem-learning_create_gem/.rubocop.yml
+Gem 'gem-learning_create_gem' was successfully created. For more information on making a RubyGem visit https://bundler.io/guides/creating_gem.html
+```
+
+### GEM code implement
+
+The code the gem will use, must be written on the generated file: `/lib/gem/learning_create_gem.rb`
+
+```rb
+# frozen_string_literal: true
+
+require_relative "learning_create_gem/version"
+
+module Gem
+  module LearningCreateGem
+    class Error < StandardError; end
+      # Your code here
+  end
+end
+```
+
+### How to test GEM code on development
+
+To test our gem code as we development it we must use `irb` and require `rubygems` and our gem path as well `./lib/gem/learning_create_gem`
+
+```rb
+user@machine-name: irb
+irb(main):001:0> require 'rubygems'
+=> false
+irb(main):002:0> require './lib/gem/learning_create_gem'
+=> true
+irb(main):003:0> Gem::LearningCreateGem.methods
+```
 
 ## Rails Template
 
