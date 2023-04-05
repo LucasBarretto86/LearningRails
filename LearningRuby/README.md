@@ -18,11 +18,13 @@
       - [`delete_prefix`](#delete_prefix)
       - [`delete_suffix`](#delete_suffix)
   - [Integer / Numbers](#integer--numbers)
-  - [Equality Operators](#equality-operators)
+  - [Equality operators](#equality-operators)
     - [operator `==` and `!=`](#operator--and-)
     - [operator `eql?`](#operator-eql)
     - [operator `equal?`](#operator-equal)
     - [operator `===`](#operator-)
+      - [type comparator](#type-comparator)
+      - [Implicit usage](#implicit-usage)
   - [Pattern matching operator](#pattern-matching-operator)
   - [Compare operator](#compare-operator)
   - [Concept](#concept)
@@ -213,7 +215,7 @@ Note that `delete_prefix` and `delete_suffix` returns the string modified, but i
 | integer | nil, 4, 11 |   int(11)    |   4 byte    | 2147483647           |
 | bigint  |    5..8    |    bigint    |   8 byte    | 9223372036854775807  |
 
-## Equality Operators
+## Equality operators
 
 ### operator `==` and `!=`
 
@@ -240,7 +242,7 @@ irb(main):003:0> 1 == 2
 irb(main):004:0> 
 ```
 
-> Notice that 1 == 1.0 are true however it has different type `integer` and `double`
+> Notice that 1 == 1.0 are true however it has different type `integer` and `float`
 
 ### operator `eql?`
 
@@ -303,6 +305,42 @@ irb(main):001:0> [{id: 1}, {id: 2}, {id: 4}] === ({id: 2})
 => false
 irb(main):002:0> [{id: 1}, {id: 2}, {id: 4}].include?({id: 2})
 => true
+```
+
+#### type comparator
+
+But `===` operator has a variety of usages including type comparator
+
+```rb
+irb(main):001:0> String === "Zen"
+=> true
+irb(main):002:0> Range === (..1)
+=> true
+irb(main):003:0> Array === []
+=> true
+irb(main):004:0> Integer === 1
+=> true
+irb(main):005:0> Float === 1.0
+=> true
+```
+
+#### Implicit usage
+
+```rb
+minutes = 15
+
+case minutes
+  when 10..20
+    puts "match"
+  else
+    puts "no match"
+end
+```
+
+**Output:**
+
+```mono
+match
 ```
 
 ## Pattern matching operator
