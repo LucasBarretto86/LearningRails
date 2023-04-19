@@ -8,6 +8,7 @@
       - [Configured as API app](#configured-as-api-app)
       - [Configured with React libs (Rails 6 or above)](#configured-with-react-libs-rails-6-or-above)
       - [Configured with bootstrap an jsBuilding (esBuild)](#configured-with-bootstrap-an-jsbuilding-esbuild)
+      - [Configured with postcss, postgres and esbuild](#configured-with-postcss-postgres-and-esbuild)
     - [Rails Database representation](#rails-database-representation)
       - [Moving from schema to structure](#moving-from-schema-to-structure)
     - [Rails Credentials](#rails-credentials)
@@ -117,6 +118,10 @@
       - [Import to the app pack an external component](#import-to-the-app-pack-an-external-component)
   - [MailCatcher](#mailcatcher)
   - [Specific GEMS](#specific-gems)
+    - [`factory_bot_rails` gem setup](#factory_bot_rails-gem-setup)
+      - [`factory_bot_rails` gem install](#factory_bot_rails-gem-install)
+      - [Factory config for RSPEC](#factory-config-for-rspec)
+      - [Factory creation](#factory-creation)
     - [Flipper](#flipper)
       - [Add Flipper to gemfile](#add-flipper-to-gemfile)
       - [run Flipper generator](#run-flipper-generator)
@@ -191,6 +196,17 @@ rails new my-app --webpack=react --database=postgresql
 ```shell
 rails new my-app --css=bootstrap --database=postgresql
 ```
+
+#### Configured with postcss, postgres and esbuild
+
+```rb
+rails new lucasbarretto.com -d postgresql -j esbuild -c postcss -T
+```
+
+> `-d` set database as `postgresql`
+> `-j` set javascript framework as `esbuild`
+> `-c` set css framework as `postcss`
+> `-T` remove default test framework
 
 ### Rails Database representation
 
@@ -1461,12 +1477,18 @@ bundle exec brakeman
 
 ## Foreman
 
+> If you are using esbuild it already has foreman out of the box, so you just need to run `bin/dev` which uses the `Procfile.dev` that exists on the root folder
+
 Foreman is a tool that run all required services needed to run a project
 
 Installing Foreman gem
 
 ```shell
 gem install foreman
+
+or 
+
+bundle add foreman
 ```
 
 Create a manifest file called `Procfile` within the root of the project and define the required services you need to run as Foreman starts
@@ -1702,6 +1724,73 @@ gem install mailcatcher
 ```
 
 ## Specific GEMS
+
+### `factory_bot_rails` gem setup
+
+#### `factory_bot_rails` gem install
+
+Add factory_bot_rails to your Gemfile in :development, :test group
+
+```rb
+  group :development, :test do
+    ...
+    gem 'factory_bot_rails'
+  end
+```
+
+then run `bundle`
+
+#### Factory config for RSPEC
+
+Create a file `spec/support/factory_bot.rb` and add the following configuration inside
+
+```rb
+RSpec.configure do |config|
+  config.include FactoryBot::Syntax::Methods
+end
+```
+
+```shell
+mkdir spec/support/
+touch spec/support/factory_bot.rb
+```
+
+Uncomment the following line from `rails_helper.rb` so all files inside `spec/support` are loaded automatically by rspec
+
+```rb
+# Dir[Rails.root.join('spec', 'support', '**', '*.rb')].sort.each { |f| require f }
+```
+
+#### Factory creation
+
+Add factories folder inside spec folder if it doesn’t already exist. You can then create factories inside `spec/factories` folder.
+
+```shell
+mkdir spec/factories/
+```
+
+Create your factory within `spec/factories` folder
+
+**Example:**
+
+```rb
+FactoryBot.define do
+  factory :user do
+    first_name { 'John' }
+    last_name  { 'Doe' }
+    email { john@email_provider.com }
+    mobile_number { 7860945310 }
+  end
+end
+```
+
+**Usage:**
+
+```rb
+RSpec.describe User, type: :model do
+  let(:user) { build(:user) }
+end
+```
 
 ### Flipper
 
