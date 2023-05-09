@@ -118,7 +118,7 @@
       - [Import to the app pack an external component](#import-to-the-app-pack-an-external-component)
   - [MailCatcher](#mailcatcher)
   - [Specific GEMS](#specific-gems)
-    - [`factory_bot_rails` gem setup](#factory_bot_rails-gem-setup)
+    - [Factory Bot](#factory-bot)
       - [`factory_bot_rails` gem install](#factory_bot_rails-gem-install)
       - [Factory config for RSPEC](#factory-config-for-rspec)
       - [Factory creation](#factory-creation)
@@ -127,6 +127,12 @@
       - [run Flipper generator](#run-flipper-generator)
       - [Flipper Usage](#flipper-usage)
     - [SimpleCov](#simplecov)
+    - [Audited](#audited)
+      - [Install gem `audited`](#install-gem-audited)
+      - [Setup `audited`](#setup-audited)
+    - [Paranoia](#paranoia)
+      - [Install gem `paranoia`](#install-gem-paranoia)
+      - [Setup `paranoia`](#setup-paranoia)
   - [Create Private GEM](#create-private-gem)
     - [GEM generator](#gem-generator)
     - [GEM code implement](#gem-code-implement)
@@ -1725,7 +1731,7 @@ gem install mailcatcher
 
 ## Specific GEMS
 
-### `factory_bot_rails` gem setup
+### Factory Bot
 
 #### `factory_bot_rails` gem install
 
@@ -1829,6 +1835,121 @@ Flipper.enable_percentage_of_actors :search, 2
 > For more specifications for usage, see: <https://www.flippercloud.io/docs>
 
 ### SimpleCov
+
+### Audited
+
+This change is used to create audits for models in a very simple way
+
+#### Install gem `audited`
+
+```gemfile
+# for rails 5 or above
+
+gem "audited", "~> 5.0"
+
+```
+
+#### Setup `audited`
+
+```mono
+rails generate audited:install
+rake db:migrate
+```
+
+**Usage:**
+
+```rb
+class User < ActiveRecord::Base
+  audited
+end
+
+# By default, whenever a user is created, updated or destroyed, a new audit is created.
+
+user = User.create!(name: "Steve")
+user.audits.count # => 1
+user.update!(name: "Ryan")
+user.audits.count # => 2
+user.destroy
+user.audits.count # => 3
+
+# Audits contain information regarding what action was taken on the model and what changes were made.
+
+user.update!(name: "Ryan")
+audit = user.audits.last
+audit.action # => "update"
+audit.audited_changes # => {"name"=>["Steve", "Ryan"]}
+
+# You can get previous versions of a record by index or date, or list all revisions.
+
+user.revisions
+user.revision(1)
+user.revision_at(Date.parse("2016-01-01"))
+```
+
+For mor advanced usage check: <https://github.com/collectiveidea/audited>
+
+### Paranoia
+
+Gem used to create soft delete for models
+
+#### Install gem `paranoia`
+
+```gemfile
+# for rails 5 or above
+
+gem "paranoia", "~> 2.2"
+```
+
+#### Setup `paranoia`
+
+Notice that for each model we need to create a migration do add the column deleted_at in this example we are going to show how it would work on an appointment model
+
+```mono
+bin/rails generate migration AddDeletedAtToAppointments deleted_at:datetime:index
+```
+
+ *Migration:**
+
+```rb
+# 20230509133935_add_deleted_at_to_appointments.rb
+
+class AddDeletedAtToAppointments < ActiveRecord::Migration[6.1]
+  def change
+    add_column :appointments, :deleted_at, :datetime
+    add_index :appointments, :deleted_at
+  end
+end
+
+```
+
+**Usage:**
+
+```rb
+class Client < ActiveRecord::Base
+  acts_as_paranoid
+
+  # ...
+end
+
+# Hey presto, it's there! Calling destroy will now set the deleted_at column:
+client.deleted_at
+# => nil
+client.destroy
+# => client
+client.deleted_at
+# => [current timestamp]
+
+# If you really want it gone gone, call really_destroy!:
+client.deleted_at
+# => nil
+client.really_destroy!
+# => client
+
+# If you need skip updating timestamps for deleting records, call really_destroy!(update_destroy_attributes: false). When we call really_destroy!(update_destroy_attributes: false) on the parent client, then each child email will also have really_destroy!(update_destroy_attributes: false) called.
+
+client.really_destroy!(update_destroy_attributes: false)
+# => client
+```
 
 ## Create Private GEM
 

@@ -10,6 +10,11 @@
     - [Rubocop and Brakeman](#rubocop-and-brakeman)
   - [Starting local server](#starting-local-server)
   - [Redcarpet test implementation](#redcarpet-test-implementation)
+  - [Creating basic models](#creating-basic-models)
+    - [Create user model](#create-user-model)
+    - [Create post model](#create-post-model)
+    - [Create comment model](#create-comment-model)
+  - [Implementing concern to render markdown with LeVar lib](#implementing-concern-to-render-markdown-with-levar-lib)
   - [Setup env variables with YML](#setup-env-variables-with-yml)
   - [References](#references)
 
@@ -147,6 +152,83 @@ class LeVar
     renderer = ::Redcarpet::Render::HTML.new(options)
     markdown = ::Redcarpet::Markdown.new(renderer, extensions)
     markdown.render(text).html_safe
+  end
+end
+```
+
+## Creating basic models
+
+### Create user model
+
+```rb
+rails g model user name:string surname:string email:string password_digest:string role:integer
+```
+
+**Class implementation:**
+
+```rb
+class User < ApplicationRecord
+  has_secure_password
+
+  has_many :posts
+  has_many :comments
+
+  enum role: [:standard, :admin]
+
+  validates :name, :surname, :email, presence: true
+  validates_uniqueness_of :email, case_sensitive: false
+end
+```
+
+### Create post model
+
+```rb
+ rails g model post user:belongs_to title:string content:text
+```
+
+**Class implementation:**
+
+```rb
+class Post < ApplicationRecord
+  include Renderable
+
+  belongs_to :user
+
+  has_many :comments, dependent: :destroy
+
+  validates :user, :title, :content, presence: true
+end
+```
+
+### Create comment model
+
+```rb
+rails g model comment user:belongs_to post:belongs_to content:text
+```
+
+**Class implementation:**
+
+```rb
+class Comment < ApplicationRecord
+  include Renderable
+
+  belongs_to :user
+  belongs_to :post
+
+  validates :post, :content, presence: true
+end
+```
+
+## Implementing concern to render markdown with LeVar lib
+
+```rb
+module Renderable
+  extend ActiveSupport::Concern
+
+  included do
+    def render
+      LeVar.render_rainbow(content)
+    end
   end
 end
 ```
