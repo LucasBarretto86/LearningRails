@@ -1919,7 +1919,6 @@ class AddDeletedAtToAppointments < ActiveRecord::Migration[6.1]
     add_index :appointments, :deleted_at
   end
 end
-
 ```
 
 **Usage:**
@@ -1945,7 +1944,7 @@ client.deleted_at
 client.really_destroy!
 # => client
 
-# If you need skip updating timestamps for deleting records, call really_destroy!(update_destroy_attributes: false). When we call really_destroy!(update_destroy_attributes: false) on the parent client, then each child email will also have really_destroy!(update_destroy_attributes: false) called.
+#If you need skip updating timestamps for deleting records, call really_destroy!(update_destroy_attributes: false). When we call really_destroy!(update_destroy_attributes: false) on the parent client, then each child email will also have really_destroy!(update_destroy_attributes: false) called.
 
 client.really_destroy!(update_destroy_attributes: false)
 # => client
