@@ -61,6 +61,9 @@
       - [Customized Logger](#customized-logger)
     - [Importmaps and Bootstraps without nodeJS](#importmaps-and-bootstraps-without-nodejs)
     - [Kill PUMA](#kill-puma)
+  - [Sidekiq](#sidekiq)
+    - [Running Sidekiq](#running-sidekiq)
+    - [Flushing Sidekiq JOBS](#flushing-sidekiq-jobs)
   - [Redis](#redis)
     - [Install Redis](#install-redis)
     - [Check Redis status](#check-redis-status)
@@ -907,6 +910,49 @@ sudo netstat -ntlp | grep LISTEN
 
 ```shell
 lsof -wni tcp:3000
+```
+
+## Sidekiq
+
+### Running Sidekiq
+
+```shell
+bundle exec sidekiq
+```
+
+But you can run sidekiq also using custom configs using flag `-C` and config file path
+
+```yml
+# config/sidekiq.yml
+
+development:
+  :concurrency: 5
+  :queues:
+    - [critical]
+    - [high]
+    - [renderer]
+    - [default]
+    - [low]
+    - [backfill]
+production:
+  :concurrency: <%= ENV.fetch("SIDEKIQ_CONCURRENCY") { 3 } %>
+  :queues:
+    - [critical, 10]
+    - [high, 5]
+    - [default, 2]
+
+max_retries: <%= ENV.fetch("SIDEKIQ_MAX_RETRIES") { 25 } %>
+
+```
+
+```shell
+bundle exec sidekiq -C config/sidekiq.yml
+```
+
+### Flushing Sidekiq JOBS
+
+```shell
+Sidekiq.redis(&:flushdb)
 ```
 
 ## Redis
