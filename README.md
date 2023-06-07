@@ -64,6 +64,7 @@
   - [Sidekiq](#sidekiq)
     - [Running Sidekiq](#running-sidekiq)
     - [Flushing Sidekiq JOBS](#flushing-sidekiq-jobs)
+    - [Sidekiq cleaning](#sidekiq-cleaning)
   - [Redis](#redis)
     - [Install Redis](#install-redis)
     - [Check Redis status](#check-redis-status)
@@ -954,6 +955,48 @@ bundle exec sidekiq -C config/sidekiq.yml
 ```shell
 Sidekiq.redis(&:flushdb)
 ```
+
+### Sidekiq cleaning
+
+```sh
+require 'sidekiq/api'
+
+# 1. Clear retry set
+
+Sidekiq::RetrySet.new.clear
+
+# 2. Clear scheduled jobs 
+
+Sidekiq::ScheduledSet.new.clear
+
+# 3. Clear 'Processed' and 'Failed' jobs
+
+Sidekiq::Stats.new.reset
+
+# 3. Clear 'Dead' jobs statistics
+
+Sidekiq::DeadSet.new.clear
+
+# Stats
+
+stats = Sidekiq::Stats.new
+stats.queues
+# {"production_mailers"=>25, "production_default"=>1}
+
+# Queue
+
+queue = Sidekiq::Queue.new('queue_name')
+queue.count
+queue.clear
+queue.each { |job| job.item } # hash content
+
+
+# Redis Acess
+
+Sidekiq.redis { |redis| redis.keys }
+```
+
+[Credits for @wbotelhos](https://gist.github.com/wbotelhos/fb865fba2b4f3518c8e533c7487d5354)
 
 ## Redis
 
