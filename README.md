@@ -163,6 +163,7 @@
     - [Helpers](#helpers)
       - [ApplicationHelper](#applicationhelper)
     - [locale dynamic configs](#locale-dynamic-configs)
+  - [Concepts](#concepts)
   - [Issues](#issues)
     - [Postgres - Fixing PG Error for new rails apps](#postgres---fixing-pg-error-for-new-rails-apps)
     - [cannot load such file -- coffee\_script](#cannot-load-such-file----coffee_script)
@@ -2322,6 +2323,8 @@ An error occurred while installing pg (1.2.3), and Bundler cannot continue.
 ```shell
 sudo apt install postgresql-contrib libpq-dev
 ```
+
+## Concepts
 
 ## Issues
 
