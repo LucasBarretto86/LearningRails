@@ -5,11 +5,11 @@
   - [Action Cable](#action-cable)
     - [What is Action Cable?](#what-is-action-cable)
     - [Setting Up Action Cable](#setting-up-action-cable)
-      - [Step 1: Configure `cable.yml`](#step-1-configure-cableyml)
-      - [Step 2: Create a Channel](#step-2-create-a-channel)
-      - [Step 3: Configure WebSocket Connection](#step-3-configure-websocket-connection)
-      - [Step 4: Implement WebSocket Logic](#step-4-implement-websocket-logic)
-    - [Practical Example: Real-Time Chat](#practical-example-real-time-chat)
+      - [Configure `cable.yml`](#configure-cableyml)
+      - [Create a Channel](#create-a-channel)
+      - [Configure WebSocket Connection](#configure-websocket-connection)
+      - [Implement WebSocket Logic](#implement-websocket-logic)
+    - [Practical Real-Time Chat](#practical-real-time-chat)
   - [Active Job](#active-job)
     - [What is Active Job?](#what-is-active-job)
     - [Setting Up Active Job](#setting-up-active-job)
@@ -26,7 +26,7 @@
     - [Scheduling Jobs with Cron](#scheduling-jobs-with-cron)
       - [Installing and Configuring Whenever](#installing-and-configuring-whenever)
       - [Defining and Scheduling Jobs](#defining-and-scheduling-jobs)
-    - [Example: Background Email Sending](#example-background-email-sending)
+    - [Background Email Sending](#background-email-sending)
   - [Authentication and Authorization](#authentication-and-authorization)
     - [Authentication](#authentication)
       - [User Authentication](#user-authentication)
@@ -43,10 +43,16 @@
   - [Cross-Origin Resource Sharing (CORS)](#cross-origin-resource-sharing-cors)
     - [What is CORS?](#what-is-cors)
     - [Dealing with CORS](#dealing-with-cors)
-      - [Step 1: Add `rack-cors` Gem to Your Gemfile](#step-1-add-rack-cors-gem-to-your-gemfile)
-      - [Step 2: Configure CORS in `config/application.rb`](#step-2-configure-cors-in-configapplicationrb)
-      - [Step 3: Install and Configure `rack-cors`](#step-3-install-and-configure-rack-cors)
-      - [Step 4: Customize CORS Configuration](#step-4-customize-cors-configuration)
+      - [Add `rack-cors` Gem to Your Gemfile](#add-rack-cors-gem-to-your-gemfile)
+      - [Configure CORS in `config/application.rb`](#configure-cors-in-configapplicationrb)
+      - [Install and Configure `rack-cors`](#install-and-configure-rack-cors)
+      - [Customize CORS Configuration](#customize-cors-configuration)
+    - [SOLID Principles in Ruby on Rails](#solid-principles-in-ruby-on-rails)
+      - [Single Responsibility Principle (SRP)](#single-responsibility-principle-srp)
+      - [Open/Closed Principle (OCP)](#openclosed-principle-ocp)
+      - [Liskov Substitution Principle (LSP)](#liskov-substitution-principle-lsp)
+      - [Interface Segregation Principle (ISP)](#interface-segregation-principle-isp)
+      - [Dependency Inversion Principle (DIP)](#dependency-inversion-principle-dip)
     - [Best Practices](#best-practices)
       - [Security Concerns](#security-concerns)
       - [Testing](#testing)
@@ -70,30 +76,30 @@
       - [Example Using Rswag](#example-using-rswag)
     - [Handling External API Integrations](#handling-external-api-integrations)
   - [Caching](#caching)
-    - [1. Page Caching](#1-page-caching)
-    - [2. Action Caching](#2-action-caching)
-    - [3. Fragment Caching](#3-fragment-caching)
-    - [4. Low-Level Caching](#4-low-level-caching)
+    - [Page Caching](#page-caching)
+    - [Action Caching](#action-caching)
+    - [Fragment Caching](#fragment-caching)
+    - [Low-Level Caching](#low-level-caching)
     - [Implement Rate Limiting and Throttling with Caching](#implement-rate-limiting-and-throttling-with-caching)
     - [Cache Responses with Version-Specific Keys](#cache-responses-with-version-specific-keys)
     - [Hotwire in Ruby on Rails](#hotwire-in-ruby-on-rails)
       - [Key Components of Hotwire](#key-components-of-hotwire)
-        - [1. Turbo Streams Example](#1-turbo-streams-example)
-        - [2. Turbo Frames Example](#2-turbo-frames-example)
-        - [3. Turbo Drive Example](#3-turbo-drive-example)
+        - [Turbo Streams Example](#turbo-streams-example)
+        - [Turbo Frames Example](#turbo-frames-example)
+        - [Turbo Drive Example](#turbo-drive-example)
     - [Practical Examples of Hotwire and Action Cable](#practical-examples-of-hotwire-and-action-cable)
-      - [Example 1: Real-Time Comments](#example-1-real-time-comments)
-      - [Example 2: Live Notifications](#example-2-live-notifications)
+      - [Real-Time Comments](#real-time-comments)
+      - [Live Notifications](#live-notifications)
   - [Advanced Database Queries](#advanced-database-queries)
-    - [Example: Complex Queries with ActiveRecord](#example-complex-queries-with-activerecord)
+    - [Complex Queries with ActiveRecord](#complex-queries-with-activerecord)
   - [Performance Optimization](#performance-optimization)
-    - [Example: Caching Strategies](#example-caching-strategies)
+    - [Caching Strategies](#caching-strategies)
   - [Webpacker and JavaScript Integration](#webpacker-and-javascript-integration)
-    - [Example: Using React with Rails](#example-using-react-with-rails)
+    - [Using React with Rails](#using-react-with-rails)
   - [Scalability and Deployment](#scalability-and-deployment)
     - [Concept: Scalability and Deployment](#concept-scalability-and-deployment)
-    - [Example: Deploying Rails with Docker and Kubernetes](#example-deploying-rails-with-docker-and-kubernetes)
-    - [Example: Managing JavaScript Dependencies](#example-managing-javascript-dependencies)
+    - [Deploying Rails with Docker and Kubernetes](#deploying-rails-with-docker-and-kubernetes)
+    - [Managing JavaScript Dependencies](#managing-javascript-dependencies)
   - [RSPEC, Test-Driven Development (TDD), Minitest](#rspec-test-driven-development-tdd-minitest)
     - [What is RSPEC?](#what-is-rspec)
     - [Why Use RSPEC and TDD?](#why-use-rspec-and-tdd)
@@ -118,7 +124,7 @@
       - [Installing Faker](#installing-faker)
       - [Generating Fake Data](#generating-fake-data)
     - [Writing Improved RSPEC Tests](#writing-improved-rspec-tests)
-      - [Example: RSPEC Test for User Model](#example-rspec-test-for-user-model)
+      - [RSPEC Test for User Model](#rspec-test-for-user-model)
     - [Running RSPEC Tests](#running-rspec-tests)
     - [Best Practices for RSPEC, TDD, FactoryBot, and Faker](#best-practices-for-rspec-tdd-factorybot-and-faker)
     - [Selenium and System Tests](#selenium-and-system-tests)
@@ -133,39 +139,49 @@
       - [RSPEC and FactoryBot](#rspec-and-factorybot)
       - [Minitest and Native Test Frameworks](#minitest-and-native-test-frameworks)
   - [GraphQL](#graphql)
-    - [Example: Building a GraphQL API in Rails](#example-building-a-graphql-api-in-rails)
+    - [Building a GraphQL API in Rails](#building-a-graphql-api-in-rails)
+  - [Progressive Web App (PWA) in Ruby on Rails](#progressive-web-app-pwa-in-ruby-on-rails)
+    - [Prerequisites](#prerequisites)
+    - [Create a Manifest File](#create-a-manifest-file)
+    - [Register a Service Worker](#register-a-service-worker)
+    - [Customize Your Service Worker](#customize-your-service-worker)
+    - [Link Manifest and Service Worker in Your Layout](#link-manifest-and-service-worker-in-your-layout)
+    - [Ensure HTTPS](#ensure-https)
+    - [Testing and Debugging](#testing-and-debugging)
+    - [Add Install Prompts (Optional)](#add-install-prompts-optional)
+    - [Publish and Promote](#publish-and-promote)
   - [React Integration](#react-integration)
-    - [Example: React with Rails Using React-Rails](#example-react-with-rails-using-react-rails)
+    - [React with Rails Using React-Rails](#react-with-rails-using-react-rails)
   - [Stimulus Reflex](#stimulus-reflex)
-    - [Example: Building Interactive Web Apps with Real-time Updates](#example-building-interactive-web-apps-with-real-time-updates)
+    - [Building Interactive Web Apps with Real-time Updates](#building-interactive-web-apps-with-real-time-updates)
   - [Internationalization (I18n) and Localization (L10n)](#internationalization-i18n-and-localization-l10n)
-    - [Example: Multi-Language Support in Rails](#example-multi-language-support-in-rails)
+    - [Multi-Language Support in Rails](#multi-language-support-in-rails)
   - [Building a Content Management System (CMS)](#building-a-content-management-system-cms)
-    - [Example: Creating a Custom CMS in Rails](#example-creating-a-custom-cms-in-rails)
+    - [Creating a Custom CMS in Rails](#creating-a-custom-cms-in-rails)
   - [Advanced Rails Security](#advanced-rails-security)
-    - [Example: Implementing Security Best Practices](#example-implementing-security-best-practices)
+    - [Implementing Security Best Practices](#implementing-security-best-practices)
   - [Background Jobs with Delayed Job](#background-jobs-with-delayed-job)
-    - [Example: Asynchronous Processing with Delayed Job](#example-asynchronous-processing-with-delayed-job)
+    - [Asynchronous Processing with Delayed Job](#asynchronous-processing-with-delayed-job)
   - [Performance Monitoring and Profiling](#performance-monitoring-and-profiling)
-    - [Example: Identifying and Resolving Performance Bottlenecks](#example-identifying-and-resolving-performance-bottlenecks)
+    - [Identifying and Resolving Performance Bottlenecks](#identifying-and-resolving-performance-bottlenecks)
   - [Advanced Caching Techniques](#advanced-caching-techniques)
-    - [Example: Full-Page Caching Strategies](#example-full-page-caching-strategies)
+    - [Full-Page Caching Strategies](#full-page-caching-strategies)
   - [Database Replication and Sharding](#database-replication-and-sharding)
-    - [Example: Scaling Your Database for High Traffic](#example-scaling-your-database-for-high-traffic)
+    - [Scaling Your Database for High Traffic](#scaling-your-database-for-high-traffic)
   - [Building a RESTful API with GraphQL Integration](#building-a-restful-api-with-graphql-integration)
-    - [Example: Combining REST and GraphQL in Rails](#example-combining-rest-and-graphql-in-rails)
+    - [Combining REST and GraphQL in Rails](#combining-rest-and-graphql-in-rails)
   - [Microservices with Rails](#microservices-with-rails)
-    - [Example: Decomposing a Monolith into Microservices](#example-decomposing-a-monolith-into-microservices)
+    - [Decomposing a Monolith into Microservices](#decomposing-a-monolith-into-microservices)
   - [Service Objects](#service-objects)
-    - [Example: Implementing a Service Object](#example-implementing-a-service-object)
+    - [Implementing a Service Object](#implementing-a-service-object)
   - [Single Table Inheritance (STI)](#single-table-inheritance-sti)
-    - [Example: Using STI](#example-using-sti)
+    - [Using STI](#using-sti)
   - [Background Jobs with Active Job](#background-jobs-with-active-job)
-    - [Example: Using Active Job](#example-using-active-job)
+    - [Using Active Job](#using-active-job)
   - [Using WebSockets for Real-Time Communication](#using-websockets-for-real-time-communication)
-    - [Example: Implementing Real-Time Chat with Action Cable](#example-implementing-real-time-chat-with-action-cable)
+    - [Implementing Real-Time Chat with Action Cable](#implementing-real-time-chat-with-action-cable)
   - [Machine Learning and AI Integration](#machine-learning-and-ai-integration)
-    - [Example: Sentiment Analysis with Machine Learning API](#example-sentiment-analysis-with-machine-learning-api)
+    - [Sentiment Analysis with Machine Learning API](#sentiment-analysis-with-machine-learning-api)
 
 ## Action Cable
 
@@ -177,7 +193,7 @@ Action Cable is a framework in Ruby on Rails that enables real-time communicatio
 
 To set up Action Cable in your Rails application, follow these steps:
 
-#### Step 1: Configure `cable.yml`
+#### Configure `cable.yml`
 
 ```yaml
 # config/cable.yml
@@ -192,7 +208,7 @@ production:
 
 Make sure to adjust the configuration based on your Redis server settings.
 
-#### Step 2: Create a Channel
+#### Create a Channel
 
 Generate a channel using the Rails generator:
 
@@ -202,7 +218,7 @@ rails generate channel Chat
 
 This will create a channel file (`app/channels/chat_channel.rb`) where you can define WebSocket behavior.
 
-#### Step 3: Configure WebSocket Connection
+#### Configure WebSocket Connection
 
 In your application layout or view, include the following JavaScript to establish a WebSocket connection:
 
@@ -211,7 +227,7 @@ In your application layout or view, include the following JavaScript to establis
 <%= action_cable_meta_tag %>
 ```
 
-#### Step 4: Implement WebSocket Logic
+#### Implement WebSocket Logic
 
 Inside your channel file (`app/channels/chat_channel.rb`), implement logic for handling WebSocket connections and messages.
 
@@ -232,7 +248,7 @@ class ChatChannel < ApplicationCable::Channel
 end
 ```
 
-### Practical Example: Real-Time Chat
+### Practical Real-Time Chat
 
 Let's create a simple real-time chat application using Action Cable.
 
@@ -286,13 +302,13 @@ Choose a queuing backend based on your project's requirements. While Active Job 
 
 For this example, we'll focus on using Sidekiq as it's widely adopted.
 
-1. Add the `sidekiq` gem to your Gemfile:
+Add the `sidekiq` gem to your Gemfile:
 
-   ```ruby
-   gem 'sidekiq'
-   ```
+ ```ruby
+ gem 'sidekiq'
+ ```
 
-2. Run `bundle install` to install the gem.
+Run `bundle install` to install the gem.
 
 #### Create a Job
 
@@ -339,19 +355,19 @@ Sidekiq is a popular background processing framework for Ruby applications. It's
 
 To use Sidekiq with Active Job, you'll need to follow these steps:
 
-1. Add the `sidekiq` gem to your Gemfile:
+Add the `sidekiq` gem to your Gemfile:
 
-   ```ruby
-   gem 'sidekiq'
-   ```
+```ruby
+gem 'sidekiq'
+```
 
-2. Run `bundle install` to install the gem.
+Run `bundle install` to install the gem.
 
-3. Configure Active Job to use Sidekiq as the queue adapter. In your Rails application's `config/application.rb` or an initializer file, add the following line:
+Configure Active Job to use Sidekiq as the queue adapter. In your Rails application's `config/application.rb` or an initializer file, add the following line:
 
-   ```ruby
-   config.active_job.queue_adapter = :sidekiq
-   ```
+ ```ruby
+ config.active_job.queue_adapter = :sidekiq
+ ```
 
 Now, when you enqueue jobs using `perform_later`, they will be processed by Sidekiq.
 
@@ -365,21 +381,21 @@ Redis is an open-source, in-memory data store that is commonly used for caching 
 
 To use Redis as the backend for Active Job, you need to ensure Redis is set up and running. You can typically install Redis using a package manager or run it in a Docker container.
 
-1. Add the `redis` gem to your Gemfile:
+Add the `redis` gem to your Gemfile:
 
-   ```ruby
-   gem 'redis'
-   ```
+```ruby
+gem 'redis'
+```
 
-2. Run `bundle install` to install the gem.
+Run `bundle install` to install the gem.
 
-3. Configure your Rails application to use Redis for Active Job. In your Rails application's `config/application.rb` or an initializer file, add the following lines:
+Configure your Rails application to use Redis for Active Job. In your Rails application's `config/application.rb` or an initializer file, add the following lines:
 
-   ```ruby
-   config.active_job.queue_adapter = :async
-   config.active_job.queue_name_prefix = Rails.env
-   config.active_job.queue_name_delimiter = '.'
-   ```
+```ruby
+config.active_job.queue_adapter = :async
+config.active_job.queue_name_prefix = Rails.env
+config.active_job.queue_name_delimiter = '.'
+```
 
 Now, you can enqueue jobs using `perform_later`, and they will be processed by Active Job using Redis as the queue backend.
 
@@ -391,19 +407,19 @@ Cron jobs allow you to schedule tasks to run at specific times or intervals. Whi
 
 To manage cron jobs in your Rails application, we'll use the `whenever` gem. Here's how to set it up:
 
-1. Add the `whenever` gem to your Gemfile:
+Add the `whenever` gem to your Gemfile:
 
-   ```ruby
-   gem 'whenever', require: false
-   ```
+ ```ruby
+ gem 'whenever', require: false
+ ```
 
-2. Run `bundle install` to install the gem.
+Run `bundle install` to install the gem.
 
-3. Generate the `schedule.rb` file using the `whenever` command:
+Generate the `schedule.rb` file using the `whenever` command:
 
-   ```shell
-   wheneverize .
-   ```
+ ```shell
+ wheneverize .
+ ```
 
 #### Defining and Scheduling Jobs
 
@@ -418,17 +434,17 @@ end
 
 In this example, we schedule the `MyJob` to run every day at 2:30 AM using the `runner` directive. You can replace `arg1` and `arg2` with actual arguments you want to pass to the job.
 
-4. Update your crontab with the new schedule:
+Update your crontab with the new schedule:
 
-   ```shell
-   whenever --update-crontab
-   ```
+ ```shell
+ whenever --update-crontab
+ ```
 
 Now, the defined job will be enqueued daily at the specified time.
 
 By combining cron jobs and Active Job, you can schedule and automate various background tasks in your Rails application.
 
-### Example: Background Email Sending
+### Background Email Sending
 
 Consider an example where you need to send emails to users when they sign up. Instead of sending the email synchronously during the sign-up process, you can create an `EmailSenderJob` that sends the email in the background using Active Job. This ensures that the sign-up process remains fast and responsive.
 
@@ -620,14 +636,14 @@ To enable CORS in your Ruby on Rails application, you can use the `rack-cors` ge
 
 Here's a cookbook-style example of how to set up `rack-cors`:
 
-#### Step 1: Add `rack-cors` Gem to Your Gemfile
+#### Add `rack-cors` Gem to Your Gemfile
 
 ```ruby
 # Gemfile
 gem 'rack-cors'
 ```
 
-#### Step 2: Configure CORS in `config/application.rb`
+#### Configure CORS in `config/application.rb`
 
 ```ruby
 # config/application.rb
@@ -645,7 +661,7 @@ end
 
 In this example, we're allowing access from `https://your-allowed-frontend.com` and `https://another-frontend.com`. We also permit common HTTP methods like `GET`, `POST`, `PUT`, `PATCH`, `DELETE`, and `OPTIONS`.
 
-#### Step 3: Install and Configure `rack-cors`
+#### Install and Configure `rack-cors`
 
 Run the following command to install the gem and create an initial configuration file:
 
@@ -653,7 +669,7 @@ Run the following command to install the gem and create an initial configuration
 rails generate cors:install
 ```
 
-#### Step 4: Customize CORS Configuration
+#### Customize CORS Configuration
 
 Edit the generated `config/initializers/cors.rb` file to fine-tune your CORS settings:
 
@@ -671,84 +687,289 @@ This example configures CORS for API endpoints under `/api/` and allows access o
 
 Now your Rails application can safely respond to requests from permitted origins without CORS issues.
 
+### SOLID Principles in Ruby on Rails
+
+SOLID is a set of five object-oriented design principles that aim to make software more maintainable and extensible. In the context of Ruby on Rails, these principles can help developers create clean, robust, and maintainable applications.
+
+#### Single Responsibility Principle (SRP)
+
+The SRP states that a class should have only one reason to change, meaning it should have a single responsibility. In Rails, this translates to ensuring that classes, especially models and controllers, have clear and focused responsibilities.
+
+**Example:**
+
+```ruby
+# Good: User model with a single responsibility (authentication).
+class User < ApplicationRecord
+  def authenticate(password)
+    # Authentication logic here
+  end
+end
+
+# Good: UserController handles user management.
+class UsersController < ApplicationController
+  def create
+    # User creation logic here
+  end
+end
+```
+
+#### Open/Closed Principle (OCP)
+
+The OCP suggests that classes should be open for extension but closed for modification. In Rails, this can be achieved through inheritance and modules to add new functionality.
+
+**Example:**
+
+```ruby
+# Good: Payment class is open for extension.
+class Payment
+  def process
+    # Payment processing logic here
+  end
+end
+
+# Extending Payment class for Stripe payments.
+class StripePayment < Payment
+  def process
+    # Stripe-specific payment processing logic here
+  end
+end
+
+# Extending Payment class for PayPal payments.
+class PayPalPayment < Payment
+  def process
+    # PayPal-specific payment processing logic here
+  end
+end
+```
+
+#### Liskov Substitution Principle (LSP)
+
+The LSP states that objects of a superclass should be replaceable with objects of a subclass without affecting the program's correctness. In Rails, this means that subclasses should honor the contracts established by their parent classes.
+
+**Example:**
+
+```ruby
+# Base Vehicle class with a common method.
+class Vehicle
+  def start_engine
+    # Common engine start logic
+  end
+end
+
+# Car class honors the start_engine contract.
+class Car < Vehicle
+  # Car-specific engine start logic here
+end
+
+# Motorcycle class also honors the start_engine contract.
+class Motorcycle < Vehicle
+  # Motorcycle-specific engine start logic here
+end
+```
+
+#### Interface Segregation Principle (ISP)
+
+The ISP suggests that clients should not be forced to depend on interfaces they do not use. In Rails, this means creating focused and minimalistic interfaces for classes and modules.
+
+**Example:**
+
+```ruby
+# Good: Focused and minimalistic interface for an email service.
+class EmailService
+  def send_confirmation_email(user)
+    # Send confirmation email logic
+  end
+
+  def send_password_reset_email(user)
+    # Send password reset email logic
+  end
+end
+```
+
+#### Dependency Inversion Principle (DIP)
+
+The DIP states that high-level modules should not depend on low-level modules, but both should depend on abstractions. In Rails, this can be implemented through abstractions and dependency injection.
+
+**Example:**
+
+```ruby
+# Abstraction for data access.
+class DataAccess
+  def retrieve_data
+    # Data retrieval logic here
+  end
+end
+
+# Concrete implementation using ActiveRecord.
+class ActiveRecordDataAccess < DataAccess
+  def retrieve_data
+    # ActiveRecord-specific data retrieval logic here
+  end
+end
+
+# Controller using dependency injection.
+class DataController < ApplicationController
+  def initialize(data_access)
+    @data_access = data_access
+  end
+
+  def index
+    data = @data_access.retrieve_data
+    # Use data in the controller
+  end
+end
+```
+
 ### Best Practices
 
 #### Security Concerns
 
-Security should always be a top priority.
+Security is of paramount importance in any web application. In Ruby on Rails, you can implement various security measures to protect your application and its users.
 
-**Practical Example**: Implement Cross-Site Request Forgery (CSRF) protection and Cross-Site Scripting (XSS) prevention measures in your Rails application.
+Security measures include:
+
+- **Cross-Site Request Forgery (CSRF) Protection:** Implement CSRF tokens to prevent unauthorized actions from malicious websites. This ensures that requests made to your application are valid and from trusted sources.
+
+- **Cross-Site Scripting (XSS) Prevention:** Sanitize and escape user-generated content to prevent malicious scripts from executing in your application, thus safeguarding against XSS attacks.
+
+Consider an example where you protect your Rails application against CSRF and XSS:
+
+```ruby
+# In your application controller, enable CSRF protection.
+class ApplicationController < ActionController::Base
+  protect_from_forgery with: :exception
+end
+```
 
 #### Testing
 
-Writing tests for authentication and authorization is critical.
+Testing is an essential part of ensuring the security and functionality of your authentication and authorization processes.
 
-**Practical Example**: Write comprehensive test cases for your authentication and authorization processes using tools like RSpec.
+Test cases should include:
+
+- **Authentication Tests:** Verify that users can log in and out correctly, with valid and invalid credentials.
+
+- **Authorization Tests:** Ensure that users can access only the resources they are authorized to access. Test various user roles and permissions.
+
+Use testing frameworks like RSpec and Capybara to write comprehensive test cases for your authentication and authorization processes:
+
+```ruby
+# Example RSpec test for authentication
+require 'rails_helper'
+
+RSpec.describe 'Authentication', type: :feature do
+  it 'allows valid users to log in' do
+    user = create(:user)
+    visit login_path
+    fill_in 'Email', with: user.email
+    fill_in 'Password', with: user.password
+    click_button 'Log In'
+    expect(page).to have_content('Welcome, #{user.name}!')
+  end
+end
+```
 
 #### Logging and Auditing
 
-Logging and auditing can help you track and analyze user activity.
+Logging and auditing are crucial for tracking and analyzing user activity within your Rails application.
 
-**Practical Example**: Set up logging and auditing for user actions in your application to monitor user activity.
+Logging and auditing involve:
+
+- **Recording User Actions:** Log significant user actions, such as login attempts, changes to sensitive data, or administrative activities.
+
+- **Storing Logs Securely:** Ensure that log files are stored securely, with appropriate access controls.
+
+Here's an example of setting up logging and auditing for user actions:
+
+```ruby
+# In your application, create a log entry when a user logs in.
+def log_user_login(user)
+  Rails.logger.info("User #{user.email} logged in at #{Time.now}")
+end
+```
 
 #### Performance Considerations
 
-As your application grows, performance becomes a concern.
+As your Rails application scales, performance optimization becomes essential, even for authentication and authorization processes.
 
-**Practical Example**: Optimize authentication and authorization to improve your application's performance using techniques like database indexing.
+Performance considerations include:
+
+- **Database Indexing:** Index database columns used in queries related to authentication and authorization. This can significantly speed up database lookups.
+
+- **Caching:** Implement caching mechanisms to store frequently accessed user data and permissions, reducing the need for repeated database queries.
+
+Optimizing authentication and authorization can lead to improved application performance, especially when dealing with large user bases. Here's an example of adding an index to a database column:
+
+```ruby
+# Add an index to the email column of the users table.
+class AddIndexToUsersEmail < ActiveRecord::Migration[6.0]
+  def change
+    add_index :users, :email, unique: true
+  end
+end
+```
 
 ### Advanced Topics
 
 #### Multi-Tenancy
 
-If your application serves multiple tenants or organizations, you'll need to implement multi-tenancy authentication and authorization.
+Multi-tenancy is a complex authentication and authorization scenario where an application serves multiple tenants or organizations, each with its set of users and permissions.
 
-**Practical Example**: Implement multi-tenancy support in your application's authentication and authorization for handling multiple organizations.
+Considerations for multi-tenancy include:
+
+- **Tenant Isolation:** Ensure that users from one tenant cannot access the data or resources of another tenant.
+
+- **Scoped Queries:** Implement scoped queries to filter data based on the current tenant's context.
+
+For example, implementing multi-tenancy in your application might involve using a gem like `acts_as_tenant`:
+
+```ruby
+# Implement multi-tenancy using the acts_as_tenant gem.
+class User < ApplicationRecord
+  acts_as_tenant :tenant
+end
+```
 
 #### API Authentication and Authorization
 
-Building APIs? Discover how to handle authentication and authorization for API endpoints.
+When building APIs in Rails, you must handle authentication and authorization for API endpoints to secure access.
 
-**Practical Example**: Implement token-based authentication for your API endpoints to secure API access.
+Considerations for API authentication and authorization include:
+
+- **Token-Based Authentication:** Implement token-based authentication where clients obtain and use tokens (e.g., JWT) to authenticate themselves with the API.
+
+- **Scopes and Permissions:** Define and enforce permissions and scopes for API endpoints, ensuring that only authorized clients can perform specific actions.
+
+For example, implementing token-based authentication for your API endpoints might involve using gems like `devise_token_auth` or `doorkeeper`:
+
+```ruby
+# Implement token-based authentication using devise_token_auth gem.
+class Api::V1::BaseController < ApplicationController
+  include DeviseTokenAuth::Concerns::SetUserByToken
+  before_action :authenticate_user!
+end
+```
 
 #### OAuth2 Integration
 
-Integrate OAuth2 authentication with third-party providers.
+OAuth2 integration allows users to authenticate with your application using third-party providers, such as GitHub, Google, or Facebook.
 
-**Practical Example**: Integrate OAuth2 authentication with a third-party provider (e.g., GitHub) for seamless login using external accounts.
+Integration steps include:
 
-```
+- **Setting up OAuth2 Credentials:** Register your application with the third-party provider to obtain client credentials (client ID and client secret).
 
-This extended document includes explanations and practical examples for cookies, session cookies, permissions, and their relationship with Authentication and Authorization in a Ruby on Rails application.
+- **User Authentication Flow:** Implement the OAuth2 authentication flow, including redirecting users to the third-party provider's authentication page and handling callbacks.
 
-### Example: User Authentication with Devise
-
-To implement authentication with Devise in Rails 6/7:
-
-1. Add Devise to your Gemfile and run `bundle install`.
-2. Run `rails generate devise:install` to set up Devise.
-3. Create a User model with `rails generate devise User`.
-4. Configure your routes and views for registration, login, and password management.
-5. Use Devise helpers like `authenticate_user!` and `current_user` in controllers.
+For example, integrating OAuth2 authentication with GitHub might involve using the `omniauth-github` gem:
 
 ```ruby
-# Gemfile
-gem 'devise'
-
-# Terminal
-bundle install
-rails generate devise:install
-rails generate devise User
-rails db:migrate
-
-# config/routes.rb
-devise_for :users
-
-# app/controllers/application_controller.rb
-before_action :authenticate_user!
-
-# app/views/devise/ - Customize views here
+# Implement OAuth2 authentication with GitHub using omniauth-github gem.
+Rails.application.config.middleware.use OmniAuth::Builder do
+  provider :github, ENV['GITHUB_CLIENT_ID'], ENV['GITHUB_CLIENT_SECRET']
+end
 ```
+
+This extended document provides in-depth explanations and practical examples for key best practices and advanced topics in Ruby on Rails authentication and authorization. Understanding and implementing these concepts will help you build secure, efficient, and feature-rich web applications.
 
 ## RESTful APIs
 
@@ -908,7 +1129,7 @@ Building RESTful APIs with Rails 6/7 empowers you to create scalable, maintainab
 
 ## Caching
 
-### 1. Page Caching
+### Page Caching
 
 Page caching is the simplest form of caching, where entire HTML pages are cached and served directly by the web server. While it's less common for APIs, it can still be applied to certain scenarios where the API responses are static or don't change frequently.
 
@@ -925,7 +1146,7 @@ end
 
 In this example, the `home` action is page-cached. The HTML content generated by this action will be cached as a static HTML file by the web server (e.g., Nginx or Apache) and served directly for subsequent requests.
 
-### 2. Action Caching
+### Action Caching
 
 Action caching caches the output of a controller action. This can be useful for caching responses of actions that render dynamic content but don't change frequently.
 
@@ -943,7 +1164,7 @@ end
 
 In this example, the `index` action is action-cached for one hour. Subsequent requests within the cache expiration period will retrieve the cached response.
 
-### 3. Fragment Caching
+### Fragment Caching
 
 Fragment caching allows you to cache parts of a view or a template. It can be used to cache parts of an API response that are computationally expensive to generate.
 
@@ -960,7 +1181,7 @@ end
 
 In this example, the JSON response for the `articles` index action is fragment-cached. The cache key is based on a combination of versioning, resource name, and the collection of articles. The cache expires after 30 minutes.
 
-### 4. Low-Level Caching
+### Low-Level Caching
 
 Low-level caching provides fine-grained control over caching and can be used to cache data at the model or database query level. Here's an example of caching the result of a database query:
 
@@ -1049,7 +1270,7 @@ Hotwire is a set of tools and libraries designed to enhance the interactivity an
 
 Certainly! Here are code snippet examples for the key components of Hotwire in Ruby on Rails:
 
-##### 1. Turbo Streams Example
+##### Turbo Streams Example
 
 Turbo Streams allow you to send updates from the server to the client in real-time, typically in the form of HTML fragments. Here's how you can use Turbo Streams in your Rails views:
 
@@ -1065,7 +1286,7 @@ Turbo Streams allow you to send updates from the server to the client in real-ti
 
 In this example, we use `turbo_stream_from` to establish a connection to a Turbo Stream for real-time updates. Then, within a Turbo Stream block, we use `turbo_stream.replace` to replace or update the content of a specific HTML element on the page with the new comment content.
 
-##### 2. Turbo Frames Example
+##### Turbo Frames Example
 
 Turbo Frames help manage updates received via Turbo Streams and define where and how the updates should be rendered. Here's an example of how to use Turbo Frames in your Rails views:
 
@@ -1081,7 +1302,7 @@ Turbo Frames help manage updates received via Turbo Streams and define where and
 
 In this example, we use `turbo_frame_tag` to create a Turbo Frame named "post_content." Inside the Turbo Frame block, we define the content that should be initially displayed. Any updates sent via Turbo Streams to this frame will replace the existing content, providing a seamless update experience.
 
-##### 3. Turbo Drive Example
+##### Turbo Drive Example
 
 Turbo Drive enhances navigation within a web application by making regular link clicks and form submissions asynchronous. Here's an example of how to use Turbo Drive in your Rails views:
 
@@ -1118,7 +1339,7 @@ These code snippets demonstrate how to use the key components of Hotwire—Turbo
 
 Now, let's explore practical examples of how to use Hotwire and Action Cable together in a Ruby on Rails application.
 
-#### Example 1: Real-Time Comments
+#### Real-Time Comments
 
 **Objective**: Implement real-time comments for a blog post.
 
@@ -1162,7 +1383,7 @@ Now, let's explore practical examples of how to use Hotwire and Action Cable tog
    <%= turbo_stream_from "post_comments_#{comment.post_id}" %>
    ```
 
-#### Example 2: Live Notifications
+#### Live Notifications
 
 **Objective**: Implement live notifications for user activities.
 
@@ -1216,7 +1437,7 @@ To implement advanced database queries:
 3. Use scopes to encapsulate query logic and keep your models clean.
 4. Monitor query performance using tools like `rails_db` or database-specific monitoring tools.
 
-### Example: Complex Queries with ActiveRecord
+### Complex Queries with ActiveRecord
 
 ```ruby
 # app/models/user.rb
@@ -1249,7 +1470,7 @@ To implement performance optimization in Rails:
 4. Profile your application using tools like `rack-mini-profiler` or `New Relic`.
 5. Follow best practices and guidelines from the Rails community.
 
-### Example: Caching Strategies
+### Caching Strategies
 
 ```ruby
 # app/views/posts/show.html.erb
@@ -1278,7 +1499,7 @@ To implement Webpacker and JavaScript integration in Rails:
 3. Use the `javascript_pack_tag` and `stylesheet_pack_tag` helpers in your views.
 4. Install and manage JavaScript libraries with Yarn or npm.
 
-### Example: Using React with Rails
+### Using React with Rails
 
 ```ruby
 # Terminal
@@ -1326,7 +1547,7 @@ To implement scalability and deployment in Rails:
 4. Configure server environment variables and secrets.
 5. Implement horizontal scaling with load balancers for high traffic.
 
-### Example: Deploying Rails with Docker and Kubernetes
+### Deploying Rails with Docker and Kubernetes
 
 ```ruby
 # Dockerfile
@@ -1368,7 +1589,7 @@ spec:
       targetPort: 3000
 ```
 
-### Example: Managing JavaScript Dependencies
+### Managing JavaScript Dependencies
 
 ```ruby
 # Gemfile
@@ -1470,15 +1691,15 @@ TDD follows a cycle consisting of three phases:
 
 #### Red Phase
 
-1. Write a failing test that describes the behavior you want to implement.
+Write a failing test that describes the behavior you want to implement.
 
 #### Green Phase
 
-2. Write the minimum amount of code to make the failing test pass.
+Write the minimum amount of code to make the failing test pass.
 
 #### Refactor Phase
 
-3. Refactor the code, keeping the tests passing, and improving the code's quality.
+Refactor the code, keeping the tests passing, and improving the code's quality.
 
 By following this cycle, you ensure that your code is thoroughly tested and that new features or changes are implemented with confidence.
 
@@ -1568,7 +1789,7 @@ Faker::Lorem.sentence #=> "Lorem ipsum dolor sit amet."
 
 Now, let's update our RSPEC test using the FactoryBot factory to create test data.
 
-#### Example: RSPEC Test for User Model
+#### RSPEC Test for User Model
 
 ```ruby
 describe User do
@@ -1737,7 +1958,7 @@ To implement GraphQL in Rails:
 3. Use the `graphiql-rails` gem for a GraphQL development tool.
 4. Expose GraphQL endpoints for clients to query.
 
-### Example: Building a GraphQL API in Rails
+### Building a GraphQL API in Rails
 
 ```ruby
 # Gemfile
@@ -1782,6 +2003,122 @@ class GraphqlController < ApplicationController
 end
 ```
 
+## Progressive Web App (PWA) in Ruby on Rails
+
+Progressive Web Apps (PWAs) combine the best of web and mobile app experiences. They can be accessed through web browsers but provide an app-like experience, including offline access and the ability to be installed on the user's device. In this guide, you'll learn how to configure a PWA in a Ruby on Rails application.
+
+### Prerequisites
+
+Before you begin, make sure you have the following:
+
+- Ruby and Ruby on Rails installed on your system. You can check this by running `ruby -v` and `rails -v` in your terminal.
+- A basic understanding of Ruby on Rails development.
+
+### Create a Manifest File
+
+1.1. **Create a `manifest.json` File**:
+
+- In your Rails application, create a manifest file named `manifest.json` to define PWA-specific metadata. Place this file in the `public` directory.
+
+- Example `manifest.json`:
+
+     ```json
+     {
+       "name": "My PWA App",
+       "short_name": "PWA App",
+       "start_url": "/",
+       "display": "standalone",
+       "background_color": "#ffffff",
+       "theme_color": "#000000",
+       "icons": [
+         {
+           "src": "/assets/icon.png",
+           "sizes": "192x192",
+           "type": "image/png"
+         }
+       ]
+     }
+     ```
+
+- Customize the `manifest.json` file to reflect your PWA's name, icons, and color scheme.
+
+### Register a Service Worker
+
+2.1. **Install the `serviceworker-rails` Gem**:
+
+- Rails provides a convenient gem, `serviceworker-rails`, to help you set up a service worker. Add it to your Gemfile:
+
+     ```ruby
+     gem 'serviceworker-rails'
+     ```
+
+- Run `bundle install` to install the gem.
+
+2.2. **Generate a Service Worker**:
+
+- Generate a service worker by running the following command:
+
+    ```shell
+    rails generate serviceworker:install
+    ```
+
+- This command creates a `serviceworker.js` file in the `app/javascripts` directory.
+
+### Customize Your Service Worker
+
+3.1. **Edit the Service Worker**:
+
+- Customize your service worker to cache assets and provide offline functionality. Modify the `serviceworker.js` file in the `app/javascripts` directory according to your application's caching needs.
+
+### Link Manifest and Service Worker in Your Layout
+
+4.1. **Update Your Application Layout**:
+
+- In your Rails layout file (e.g., `app/views/layouts/application.html.erb`), add references to the `manifest.json` file and the service worker. Place these within the `<head>` section of your HTML:
+
+     ```html
+     <link rel="manifest" href="/manifest.json">
+     <script>
+       if ('serviceWorker' in navigator) {
+         navigator.serviceWorker.register('/serviceworker.js').then(function(registration) {
+           console.log('Service Worker registered with scope:', registration.scope);
+         }).catch(function(error) {
+           console.error('Service Worker registration failed:', error);
+         });
+       }
+     </script>
+     ```
+
+### Ensure HTTPS
+
+5.1. **Secure Your Application**:
+
+- To ensure the security of your PWA, it's strongly recommended to host your Rails application using HTTPS. You can obtain a free SSL/TLS certificate from services like Let's Encrypt.
+
+### Testing and Debugging
+
+6.1. **Test on Mobile Devices and Browsers**:
+
+- Test your PWA on various mobile devices and browsers to ensure compatibility and a smooth user experience.
+
+6.2. **Debugging**:
+
+- Use browser developer tools and debugging tools to test and debug your PWA on mobile devices.
+
+### Add Install Prompts (Optional)
+
+7.1. **Implement Install Prompts**:
+
+- Consider implementing a web app install banner or prompt for users to easily add your PWA to their home screen. This step enhances user engagement.
+
+### Publish and Promote
+
+8.1. **Publish Your PWA**:
+
+- Once you've configured your Rails-based PWA, host it on a web server and promote it to your target audience.
+
+By following these steps, you can configure your Ruby on Rails application as a Progressive Web App (PWA), providing users with a more app-like experience while maintaining the advantages of web accessibility. PWAs offer cross-platform compatibility, making them accessible on both iOS and Android devices through web browsers.
+
 ## React Integration
 
 Integrating React with Rails allows you to build dynamic and interactive user interfaces using the React JavaScript library while benefiting from Rails' server-rendered HTML.
@@ -1794,7 +2131,7 @@ To implement React integration with Rails using the `react-rails` gem:
 2. Create React components in the `app/javascript/components` directory.
 3. Render React components in your Rails views using the `<%= react_component %>` helper.
 
-### Example: React with Rails Using React-Rails
+### React with Rails Using React-Rails
 
 ```ruby
 # Gemfile
@@ -1830,7 +2167,7 @@ To implement Stimulus Reflex in Rails:
 3. Define Reflex actions that update the page in real-time.
 4. Use the `stimulus_reflex` JavaScript library to trigger Reflex actions.
 
-### Example: Building Interactive Web Apps with Real-time Updates
+### Building Interactive Web Apps with Real-time Updates
 
 ```ruby
 # Gemfile
@@ -1880,7 +2217,7 @@ To implement I18n and L10n in Rails:
 2. Use the `t` helper method in your views and controllers to display translated content.
 3. Set the `I18n.locale` based on user preferences or browser settings.
 
-### Example: Multi-Language Support in Rails
+### Multi-Language Support in Rails
 
 ```yaml
 # config/locales/en.yml
@@ -1920,7 +2257,7 @@ To implement a custom CMS in Rails:
 3. Implement user authentication and authorization.
 4. Use gems like `ckeditor` or `rich` for rich text editing.
 
-### Example: Creating a Custom CMS in Rails
+### Creating a Custom CMS in Rails
 
 ```ruby
 # Generate an Article model
@@ -1970,7 +2307,7 @@ To implement advanced security in Rails:
 4. Protect against CSRF attacks using Rails' built-in mechanisms.
 5. Keep libraries and gems up to date to patch security vulnerabilities.
 
-### Example: Implementing Security Best Practices
+### Implementing Security Best Practices
 
 ```ruby
 # Gemfile
@@ -2002,7 +2339,7 @@ To implement background jobs with Delayed Job in Rails:
 3. Queue jobs using the `delay` method on objects or by directly enqueuing them.
 4. Start the Delayed Job worker process to process jobs.
 
-### Example: Asynchronous Processing with Delayed Job
+### Asynchronous Processing with Delayed Job
 
 ```ruby
 # Gemfile
@@ -2053,7 +2390,7 @@ To implement performance monitoring and profiling in Rails:
 3. Profile the application to identify slow actions and views.
 4. Use a load testing tool to simulate high traffic and assess performance under load.
 
-### Example: Identifying and Resolving Performance Bottlenecks
+### Identifying and Resolving Performance Bottlenecks
 
 ```ruby
 # Gemfile
@@ -2093,7 +2430,7 @@ To implement advanced caching techniques in Rails:
 4. Use conditional caching to serve cached content when possible, or regenerate it when needed.
 5. Monitor and expire cached content based on changes in data.
 
-### Example: Full-Page Caching Strategies
+### Full-Page Caching Strategies
 
 ```ruby
 # Enable caching in development (for testing)
@@ -2130,7 +2467,7 @@ To implement database replication and sharding in Rails:
 3. Decide how to shard data, such as by user, geography, or time.
 4. Implement query routing to direct requests to the appropriate database.
 
-### Example: Scaling Your Database for High Traffic
+### Scaling Your Database for High Traffic
 
 ```ruby
 # Gemfile
@@ -2168,7 +2505,7 @@ To implement a RESTful API with GraphQL integration in Rails:
 3. Define GraphQL types, queries, and mutations alongside your RESTful controllers.
 4. Expose RESTful and GraphQL endpoints for different use cases.
 
-### Example: Combining REST and GraphQL in Rails
+### Combining REST and GraphQL in Rails
 
 ```ruby
 # config/routes.rb
@@ -2211,7 +2548,7 @@ To implement microservices with Rails:
 3. Implement APIs for inter-service communication, using REST or GraphQL.
 4. Use orchestration tools like Kubernetes to manage and scale microservices.
 
-### Example: Decomposing a Monolith into Microservices
+### Decomposing a Monolith into Microservices
 
 ```ruby
 # Create separate Rails applications for microservices
@@ -2241,7 +2578,7 @@ To implement service objects in Rails:
 2. Define service classes that encapsulate specific business operations.
 3. Inject dependencies into service objects for better testability and flexibility.
 
-### Example: Implementing a Service Object
+### Implementing a Service Object
 
 ```ruby
 # app/services/order_service.rb
@@ -2280,7 +2617,7 @@ To implement STI in Rails:
 2. Add a `type` column to the database table for storing the class name.
 3. Define unique behaviors for each subclass.
 
-### Example: Using STI
+### Using STI
 
 ```ruby
 # Create a parent model
@@ -2312,7 +2649,7 @@ To use Active Job in Rails:
 2. Define the work to be performed in the `perform` method.
 3. Enqueue jobs using `MyJob.perform_later(args)`.
 
-### Example: Using Active Job
+### Using Active Job
 
 ```ruby
 # Generate a job
@@ -2343,7 +2680,7 @@ To use WebSockets in Rails:
 2. Set up WebSocket routes and channels to handle WebSocket connections and data.
 3. Implement WebSocket clients in your frontend application.
 
-### Example: Implementing Real-Time Chat with Action Cable
+### Implementing Real-Time Chat with Action Cable
 
 ```ruby
 # Generate a channel
@@ -2373,7 +2710,7 @@ To integrate machine learning and AI in Rails:
 2. Deploy machine learning models as APIs or services that your Rails application can interact with.
 3. Implement features that leverage AI and ML models to provide value to users.
 
-### Example: Sentiment Analysis with Machine Learning API
+### Sentiment Analysis with Machine Learning API
 
 ```ruby
 # Use a machine learning API for sentiment analysis
