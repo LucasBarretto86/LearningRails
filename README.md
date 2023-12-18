@@ -991,8 +991,7 @@ queue.count
 queue.clear
 queue.each { |job| job.item } # hash content
 
-
-# Redis Acess
+# Redis Access
 
 Sidekiq.redis { |redis| redis.keys }
 ```
