@@ -242,7 +242,7 @@ irb(main):003:0> 1 == 2
 irb(main):004:0> 
 ```
 
-> Notice that 1 == 1.0 are true however it has different type `integer` and `float`
+> **Notice:** that 1 == 1.0 are true however it has different type `integer` and `float`
 
 ### operator `eql?`
 
@@ -253,7 +253,7 @@ irb(main):002:0> 1.eql? 1
 => true
 ```
 
-> Notice  that it solves the type issue on `==`
+> **Notice:**  that it solves the type issue on `==`
 
 ```rb
 irb(main):001:0> test_1 = 1
@@ -396,7 +396,7 @@ irb(main):004:0> "b" <=> "a"
 => 1
 ```
 
-> Notice that it compares based on the positioning on the alphabet, for instance `a` is on lesser positioning than `b`, so it returns `-1`, if we compare `a` with `a` it returns `0`, and if we compare `b` to `a`, ir returns `1` since `b` has a higher positioning than `a` .
+> **Notice:** that it compares based on the positioning on the alphabet, for instance `a` is on lesser positioning than `b`, so it returns `-1`, if we compare `a` with `a` it returns `0`, and if we compare `b` to `a`, ir returns `1` since `b` has a higher positioning than `a` .
 
 On integers compare it's very straight forward
 

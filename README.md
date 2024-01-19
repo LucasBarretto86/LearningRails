@@ -582,7 +582,7 @@ amazon:
   retry_limit: 2
 ```
 
-> Notice that for a saver use case it's better to use environment variable
+> **Notice:** that for a saver use case it's better to use environment variable
 
 After that we need to setup application environment config behavior, in this case we gonna keep images on development locally and only will upload to S3 on production environment:
 
