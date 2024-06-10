@@ -59,6 +59,10 @@
         - [Allowing irregular plural](#allowing-irregular-plural)
     - [Logger](#logger)
       - [Customized Logger](#customized-logger)
+    - [Singletons](#singletons)
+    - [Form Object](#form-object)
+      - [Form definition](#form-definition)
+      - [Usage](#usage)
     - [Importmaps and Bootstraps without nodeJS](#importmaps-and-bootstraps-without-nodejs)
     - [Kill PUMA](#kill-puma)
   - [Sidekiq](#sidekiq)
@@ -69,11 +73,12 @@
     - [Install Redis](#install-redis)
     - [Check Redis status](#check-redis-status)
     - [Starting Redis with specific Port](#starting-redis-with-specific-port)
+    - [Making Redis starts on boot](#making-redis-starts-on-boot)
     - [Restarting Redis](#restarting-redis)
     - [Stop Redis](#stop-redis)
     - [Redis Configuration File](#redis-configuration-file)
     - [Redis on console](#redis-on-console)
-    - [Usage](#usage)
+    - [Usage](#usage-1)
       - [Set](#set)
       - [Get](#get)
     - [Redis as cache](#redis-as-cache)
@@ -901,6 +906,121 @@ sudo netstat -ntlp | grep LISTEN
 
 #### Customized Logger
 
+### Singletons
+
+Singleton is a design pattern that ensures that a class has only one instance and provides a global point of access to that instance.
+
+Basically are objects that gets instantiated once on the application and remains globally available without needing to be instancianted again coz it keeps available throughout the runtime of the application, so when you use it you will always get the same instance, instead of keep creating garbage.
+
+**Example:**
+
+```rb
+# app/lib
+
+class DatabaseConnection
+  attr_accessor :connection
+  
+  def initialize
+    @connection = establish_database_connection
+  end
+  
+  def self.instance
+    @instance ||= new
+  end
+  
+private
+  
+  def establish_database_connection
+    # Whatever code is needed to establish connection
+  end
+end
+```
+
+### Form Object
+
+Form objects in Rails are used to handle complex forms that interact with multiple models or when you need to encapsulate form-specific behavior that doesn't belong in the models themselves.
+
+> Form objects in Rails are related to the `Command Pattern`. The Command Pattern is a behavioral design pattern that encapsulates a request as an object, thereby allowing for parameterization of clients with different requests, queueing of requests, and logging of the requests. It also provides support for undoable operations.
+
+#### Form definition
+
+```rb
+# app/forms/user_profile_form.rb
+class UserProfileForm
+  include ActiveModel::Model
+
+  attr_accessor :first_name, :last_name, :email, :password, :profile_bio, :user
+
+  validates :first_name, :last_name, :email, presence: true
+  validates :email, format: { with: URI::MailTo::EMAIL_REGEXP }
+  validates :password, length: { minimum: 6 }, if: -> { password.present? }
+
+  def save
+    return false unless valid?
+
+    ActiveRecord::Base.transaction do
+      user.update!(first_name: first_name, last_name: last_name, email: email, password: password.presence || user.password)
+      user.profile.update!(bio: profile_bio)
+    end
+
+    true
+  rescue ActiveRecord::RecordInvalid
+    false
+  end
+
+  def self.from_user(user)
+    new(
+      first_name: user.first_name,
+      last_name: user.last_name,
+      email: user.email,
+      profile_bio: user.profile.bio,
+      user: user
+    )
+  end
+end
+```
+
+#### Usage
+
+```rb
+# app/controllers/users_controller.rb
+class UsersController < ApplicationController
+  def new
+    @user_profile_form = UserProfileForm.new
+  end
+
+  def create
+    @user_profile_form = UserProfileForm.new(user_profile_params)
+
+    if @user_profile_form.save
+      redirect_to user_path(@user_profile_form.user), notice: 'Profile created successfully.'
+    else
+      render :new
+    end
+  end
+
+  def edit
+    @user_profile_form = UserProfileForm.from_user(current_user)
+  end
+
+  def update
+    @user_profile_form = UserProfileForm.new(user_profile_params.merge(user: current_user))
+
+    if @user_profile_form.save
+      redirect_to user_path(current_user), notice: 'Profile updated successfully.'
+    else
+      render :edit
+    end
+  end
+
+  private
+
+  def user_profile_params
+    params.require(:user_profile_form).permit(:first_name, :last_name, :email, :password, :profile_bio)
+  end
+end
+```
+
 ### Importmaps and Bootstraps without nodeJS
 
 <https://dev.to/coorasse/rails-7-bootstrap-5-and-importmaps-without-nodejs-4g8>
@@ -1025,6 +1145,12 @@ systemctl status redis
 
 ```shell
 redis-server --port 6380 --daemonize yes
+```
+
+### Making Redis starts on boot
+
+```shell
+sudo systemctl enable redis-server 
 ```
 
 ### Restarting Redis
@@ -2365,3 +2491,4 @@ To enforce bundler to run on a specific version:
 - [Rails Jbuilder](https://github.com/rails/jbuilder)
 - [Kredis](https://github.com/rails/kredis)
 - [pg_search](https://www.mintbit.com/blog/searching-made-easy-with-pg-search-gem-in-ruby-on-rails)
+- [Singletons](https://medium.com/@rpissardo/entendendo-singletons-em-ruby-on-rails-exemplos-funcionais-85f9c8280fd8)
