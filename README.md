@@ -173,6 +173,7 @@
     - [Postgres - Fixing PG Error for new rails apps](#postgres---fixing-pg-error-for-new-rails-apps)
     - [cannot load such file -- coffee\_script](#cannot-load-such-file----coffee_script)
     - [Bundler running on wrong version](#bundler-running-on-wrong-version)
+    - [Wicked FUCKING PDF fix](#wicked-fucking-pdf-fix)
   - [References](#references)
 
 ## Rails
@@ -2479,6 +2480,22 @@ To enforce bundler to run on a specific version:
 ```
 
 > Be sure to have ruby installed for this version
+
+### Wicked FUCKING PDF fix
+
+```shell
+Failed to execute:
+["/home/barretto86/.asdf/installs/ruby/3.3.0/bin/wkhtmltopdf", "file:////tmp/wicked_pdf20240628-782788-1aadgn.html", "/tmp/wicked_pdf_generated_file20240628-782788-v8spwc.pdf"]
+Error: PDF could not be generated!
+Command Error: /home/barretto86/.asdf/installs/ruby/3.3.0/lib/ruby/gems/3.3.0/gems/wkhtmltopdf-binary-0.12.6.6/bin/wkhtmltopdf_ubuntu_18.04_amd64: error while loading shared libraries: libssl.so.1.1: cannot open shared object file: No such file or directory
+```
+
+**Fix - Ubuntu 22.04:**
+
+```shell
+wget http://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1f-1ubuntu2.22_amd64.deb
+sudo dpkg -i libssl1.1_1.1.1f-1ubuntu2.22_amd64.deb
+```
 
 ## References
 
