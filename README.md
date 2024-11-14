@@ -17,10 +17,15 @@
           - [Master key setup](#master-key-setup)
           - [Environment based key setup](#environment-based-key-setup)
         - [Credentials file created, content initial state](#credentials-file-created-content-initial-state)
-      - [Editing  credentials](#editing--credentials)
+      - [Editing credentials](#editing-credentials)
         - [Master key for all environments](#master-key-for-all-environments)
         - [Specific keys based on environment](#specific-keys-based-on-environment)
       - [Using credentials](#using-credentials)
+    - [Rails Action Cable](#rails-action-cable)
+      - [Creating a Channel](#creating-a-channel)
+      - [Setup websocket Connection](#setup-websocket-connection)
+      - [Setup cable endpoint connection](#setup-cable-endpoint-connection)
+      - [Setup channel](#setup-channel)
     - [YAML Credentials](#yaml-credentials)
     - [Generators](#generators)
       - [Models generator](#models-generator)
@@ -78,7 +83,7 @@
     - [Stop Redis](#stop-redis)
     - [Redis Configuration File](#redis-configuration-file)
     - [Redis on console](#redis-on-console)
-    - [Usage](#usage-1)
+    - [Redis usage](#redis-usage)
       - [Set](#set)
       - [Get](#get)
     - [Redis as cache](#redis-as-cache)
@@ -89,6 +94,10 @@
       - [Custom or Additional configs](#custom-or-additional-configs)
     - [Kredis basic usage example](#kredis-basic-usage-example)
     - [Kredis within ActiveRecords](#kredis-within-activerecords)
+  - [Docker](#docker)
+    - [Creating `Dockerfile.dev`](#creating-dockerfiledev)
+    - [Creating docker-compose files](#creating-docker-compose-files)
+    - [Build and Running Container for development](#build-and-running-container-for-development)
   - [GraphQL](#graphql)
     - [Adding gem `graphiql-rails`](#adding-gem-graphiql-rails)
     - [`graphiql-rails` initial configuration](#graphiql-rails-initial-configuration)
@@ -127,6 +136,9 @@
       - [Import to the app pack an external component](#import-to-the-app-pack-an-external-component)
   - [MailCatcher](#mailcatcher)
   - [Specific GEMS](#specific-gems)
+    - [JWT](#jwt)
+      - [What is JWT?](#what-is-jwt)
+    - [Annotate](#annotate)
     - [Factory Bot](#factory-bot)
       - [`factory_bot_rails` gem install](#factory_bot_rails-gem-install)
       - [Factory config for RSPEC](#factory-config-for-rspec)
@@ -285,7 +297,7 @@ EDITOR="nano" rails credentials:edit --environment development
 secret_key_base: dd21f3b9e7d9daabab940d815e70e51fee47e5914315e46af6e741f96c8522818543c07805a322d582a340b33bba0d08af971e214b044d72d0623dfc70ec647a
 ```
 
-#### Editing  credentials
+#### Editing credentials
 
 ##### Master key for all environments
 
@@ -305,6 +317,83 @@ Within the project
 
 ```rb
 Rails.application.credentials.aws[:access_key_id]
+```
+
+### Rails Action Cable
+
+#### Creating a Channel
+
+```sh
+rails g channel Notification
+```
+
+#### Setup websocket Connection
+
+On the connection class we need to define the algorithm to connect Server and Clinic, keep in mind that websocket communication doesn't happen through http protocol, but the first connection occurs with http protocol, after connection occurs all the communication goes through Websocket protocol.
+
+```rb
+module ApplicationCable
+  class Connection < ActionCable::Connection::Base
+    identified_by :current_user
+
+    def connect
+      self.current_user = find_verified_user
+    end
+
+    private
+      def find_verified_user
+        if verified_user = User.find_by(id: cookies.encrypted[:user_id])
+          verified_user
+        else
+          reject_unauthorized_connection
+        end
+      end
+  end
+end
+
+
+```
+
+#### Setup cable endpoint connection
+
+We need to define endpoint where the communication will come in and out
+
+```rb
+Rails.application.routes.draw do
+  # ...
+  mount ActionCable.server => '/cable'
+  # ...
+end  
+```
+
+#### Setup channel
+
+```rb
+class ChatChannel < ApplicationCable::Channel
+  # Called when the consumer has successfully
+  # become a subscriber to this channel.
+
+  def subscribed
+      stream_from "chat_whatever_name"
+  end
+end
+```
+
+Notice the subtle difference between the two: the conversations channel is using stream_from while the messages channel is using stream_for. Really these are two different ways of doing the same thing, except stream_from expects to receive a string as an argument, while stream_for expects an object from the model. If you’d like to learn more about the differences between the two, you can read about it here.
+
+**Broadcast example:**
+
+```rb
+# Somewhere in your app this is called, perhaps
+# from a NewCommentJob.
+ActionCable.server.broadcast(
+  "chat_whatever_name",
+  {
+    sent_by: 'Paul',
+    body: 'This is a cool chat app.'
+  }
+)
+
 ```
 
 ### YAML Credentials
@@ -1074,7 +1163,26 @@ bundle exec sidekiq -C config/sidekiq.yml
 
 ### Flushing Sidekiq JOBS
 
-```shell
+```rb
+# Open Rails console
+rails c
+
+# Connect to Redis
+redis = Redis.new(host: 'localhost', port: 6379)
+
+# Flush all Redis databases
+redis.flushall
+
+# Or flush the current Redis database
+# redis.flushdb
+
+# Delete specific Sidekiq keys
+redis.keys("sidekiq:*").each do |key|
+  redis.del(key)
+end
+
+# OR
+
 Sidekiq.redis(&:flushdb)
 ```
 
@@ -1239,7 +1347,7 @@ OR
 redis = Redis.new(host: "10.0.1.1", port: 6380, db: 15) # Optional params
 ```
 
-### Usage
+### Redis usage
 
 redis.set "KEY_NAME", "VALUE"
 
@@ -1434,6 +1542,128 @@ end
 ```
 
 Look further this example [here](/specifics/LearningRubyOnRails/src/example_projects/learning-kredis)
+
+## Docker
+
+New rails version has already a helpful dockerfile for production, however to be able to use docker also for development is necessary to create a specific dockerfile and also add the docker-compose.file
+
+### Creating `Dockerfile.dev`
+
+```shell
+# ./
+
+touch Dockerfile.dev
+```
+
+```Dockerfile
+# syntax = docker/dockerfile:1
+
+ARG RUBY_VERSION=3.3.0
+FROM registry.docker.com/library/ruby:$RUBY_VERSION-slim as base
+
+WORKDIR /rails
+
+# Set development environment
+ENV RAILS_ENV="development" \
+    BUNDLE_DEPLOYMENT="0" \
+    BUNDLE_PATH="/usr/local/bundle"
+
+FROM base as build
+
+RUN apt-get update -qq && \
+    apt-get install --no-install-recommends -y build-essential git libvips pkg-config
+
+COPY Gemfile Gemfile.lock ./
+RUN bundle install
+
+COPY . .
+
+# Precompile bootsnap code for faster boot times
+RUN bundle exec bootsnap precompile app/ lib/
+
+FROM base
+
+RUN apt-get update -qq && \
+    apt-get install --no-install-recommends -y curl libsqlite3-0 libvips && \
+    rm -rf /var/lib/apt/lists /var/cache/apt/archives
+
+COPY --from=build /usr/local/bundle /usr/local/bundle
+COPY --from=build /rails /rails
+
+RUN useradd rails --create-home --shell /bin/bash && \
+    chown -R rails:rails db log storage tmp
+USER rails:rails
+
+ENTRYPOINT ["/rails/bin/docker-entrypoint"]
+
+EXPOSE 3000
+CMD ["./bin/rails", "server", "-b", "0.0.0.0"]
+
+```
+
+### Creating docker-compose files
+
+Then we gonna create the compose files, noticed that on `build` directive we will use the directive `dockerfile` to specify which file the compose will use.
+
+```shell
+# ./
+
+touch docker-compose.yml
+touch docker-compose.dev.yml
+```
+
+```yml
+# docker-compose.dev.yml
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: my-api_c
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/rails
+      - ./db:/rails/db
+    environment:
+      RAILS_ENV: "development"
+      DATABASE_URL: "sqlite3:///rails/db/development.sqlite3"
+
+volumes:
+  db:
+
+```
+
+**For production:**
+
+```yml
+# docker-compose.yml
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: my-api_c
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/rails
+      - ./db:/rails/db
+    environment:
+      RAILS_ENV: "production"
+      DATABASE_URL: "sqlite3:///rails/db/production.sqlite3"
+
+volumes:
+  db:
+```
+
+### Build and Running Container for development
+
+```shell
+docker-compose -f docker-compose.dev.yml up --build
+```
 
 ## GraphQL
 
@@ -1657,10 +1887,15 @@ rails webpacker
 group :development do
   ...
 
-  gem 'rubocop', require: false
-  gem 'rubocop-minitest', require: false
-  gem 'rubocop-performance', require: false
-  gem 'rubocop-rails', require: false
+  gem "rubocop", require: false
+  gem "rubocop-performance", require: false
+  gem "rubocop-rails", require: false
+
+  #  For minitest
+  gem "rubocop-minitest", require: false 
+
+  # For RSPEC
+  gem "rubocop-rspec", require: false 
 end
 ```
 
@@ -1946,6 +2181,210 @@ gem install mailcatcher
 ```
 
 ## Specific GEMS
+
+### JWT
+
+The gem 'jwt' lets you securely encode and verify tokens, ensuring data integrity in stateless applications, is regarded as the best way to handle authentication on APIs
+
+#### What is JWT?
+
+JSON Web Token a token that we generate so that the client can send on Authorization of Header every request, that token we use to cryptograph requests and authenticate an user
+
+Using JWT tokens involves encoding user data into a token, which is then sent in headers (e.g., Authorization: Bearer <token>) to authenticate API requests without storing session data on the server. This way, each request carries its own proof of identity.
+
+**Gem Install:**
+
+```sh
+bundle add 'jwt'
+```
+
+**How to use:**
+
+**1. Create Service Class:**
+
+```rb
+# app/services/jwt_encoder.rb
+
+class JWTEncoder
+  JWT_SECRET_KEY = Rails.application.credentials.jwt_secret_key || ENV["JWT_SECRET_KEY"]
+
+  def self.encode(payload)
+    JWT.encode(payload, JWT_SECRET_KEY)
+  end
+
+  def self.decode(token)
+    JWT.decode(token, JWT_SECRET_KEY)&.first
+  end
+end
+```
+
+**2. Create required ENV:**
+
+Notice that `JWT_SECRET_KEY` is ENV, this is use as a 'Salt' on the incryption and decryption, to create a fingerprint to define this ENV we can run
+
+```rb
+require 'securerandom'
+
+fingerprint = SecureRandom.hex(64) # Generates a 128-character hexadecimal string
+```
+
+That fingerprint you save as a credential or as ENV
+
+**3. Setup usage:**
+
+```rb
+# frozen_string_literal: true
+
+class SessionsController < ActionController::API
+  def create
+    @user = User.find_by(email: session_params[:email])
+
+    if @user&.authenticate(session_params[:password])
+      render json: { token: JWTEncoder.encode(user_id: @user.id) }, status: :ok
+    else
+      render json: { error: "Invalid email or/and password invalid" }, status: :unauthorized
+    end
+  end
+
+  private
+    def session_params
+      params.require(:session).permit(:email, :password)
+    end
+end
+```
+
+**4. Test request:**
+
+```json
+<!-- Payload: -->
+{
+  "session": {
+    "email": "test@test.com",
+    "password": "password"
+  }
+}
+
+<!-- Response: -->
+{
+  "token": "eyJhbGciPaHIUzL1NiJ9.eyJ1h5BnR2lkIjoxfQ.h6sPiJG2xs3bieZeo5ghZM9UAk1akeuX_bDNIsbGKyE"
+}
+```
+
+> That token the front-end will record on `LocalStorage`, and when ever he wants to call the API he will have to add to the request `headers`
+
+```json
+headers: { 
+  'Content-Type': 'application/json',  
+  'Authorization: 'Bear Authorization: Bearer <token>' 
+}
+```
+
+> `<token>` must be replaced by the token itself
+
+### Annotate
+
+Annotate is a great gem that add comments form the table structure into a models and others
+
+**Gem Install:**
+
+```sh
+group :development do
+  gem 'annotate'
+end
+```
+
+**Gem setup:**
+
+```rb
+rails g annotate:install
+```
+
+**Configuration:**
+
+```rb
+# lib/tasks/auto_annotate_models.rake
+
+# NOTE: only doing this in development as some production environments (Heroku)
+# NOTE: are sensitive to local FS writes, and besides -- it's just not proper
+# NOTE: to have a dev-mode tool do its thing in production.
+if Rails.env.development?
+  require 'annotate'
+  task :set_annotation_options do
+    # You can override any of these by setting an environment variable of the
+    # same name.
+    Annotate.set_defaults(
+      
+      # Basic Configuration for Annotation Positions
+      'position_in_class'           => 'bottom',  # Place annotation at the end of the model file
+      'position_in_routes'          => 'before',  # Place annotation at the start of the routes file
+      'position_in_test'            => 'before',  # Place annotation at the start of test files
+      'position_in_fixture'         => 'before',  # Place annotation at the start of fixture files
+      'position_in_factory'         => 'before',  # Place annotation at the start of factory files
+      'position_in_serializer'      => 'bottom',  # Place annotation at the end of serializer files
+
+      # Model and Directory Configuration
+      'model_dir'                   => 'app/models', # Directory to scan for models
+      'root_dir'                    => '',           # Root directory for project
+      'ignore_model_sub_dir'        => 'false',      # Ignore subdirectories in models folder
+
+      # File Inclusion and Exclusion Settings
+      'models'                      => 'true',       # Annotate models
+      'routes'                      => 'false',      # Don't annotate routes file
+      'active_admin'                => 'false',      # Exclude ActiveAdmin models
+      'exclude_tests'               => 'true',       # Exclude test files from annotation
+      'exclude_fixtures'            => 'true',       # Exclude fixture files from annotation
+      'exclude_factories'           => 'true',       # Exclude factory files from annotation
+      'exclude_serializers'         => 'false',      # Include serializers in annotation
+      'exclude_scaffolds'           => 'true',       # Exclude scaffold files from annotation
+      'exclude_controllers'         => 'true',       # Exclude controller files from annotation
+      'exclude_helpers'             => 'true',       # Exclude helper files from annotation
+      'exclude_sti_subclasses'      => 'false',      # Annotate STI subclasses
+      'ignore_routes'               => nil,          # Set custom routes to ignore
+      'ignore_columns'              => nil,          # List columns to ignore during annotation
+      'ignore_unknown_models'       => 'false',      # Fail when unknown models are encountered
+
+      # Foreign Key and Index Settings
+      'show_foreign_keys'           => 'true',       # Show foreign key relationships in annotation
+      'show_complete_foreign_keys'  => 'false',      # Show complete foreign key details
+      'show_indexes'                => 'true',       # Show indexes in annotation
+      'simple_indexes'              => 'false',      # Show full index details (not simplified)
+      'hide_limit_column_types'     => 'integer,bigint,boolean', # Limit column types to hide
+      'hide_default_column_types'   => 'json,jsonb,hstore', # Default column types to hide
+
+      # Formatting and Display Options
+      'with_comment'                => 'true',       # Add # comments around annotations
+      'format_bare'                 => 'true',       # Plain format for annotations
+      'format_rdoc'                 => 'false',      # RDoc format (not used)
+      'format_yard'                 => 'false',      # YARD format (not used)
+      'format_markdown'             => 'false',      # Markdown format (not used)
+      'sort'                        => 'false',      # Keep fields unsorted in annotations
+      'classified_sort'             => 'true',       # Sort fields by type and name
+      'wrapper_open'                => nil,          # Custom opening wrapper for annotation
+      'wrapper_close'               => nil,          # Custom closing wrapper for annotation
+
+      # Performance and Debugging
+      'trace'                       => 'false',      # Enable debugging trace
+      'force'                       => 'false',      # Force overwrite annotations
+      'frozen'                      => 'false',      # Mark files as frozen for tracking changes
+      'skip_on_db_migrate'          => 'false',      # Run annotation after database migrations
+
+      # Miscellaneous
+      'additional_file_patterns'    => [],           # Additional file patterns to annotate
+      'include_version'             => 'false',      # Exclude Rails version from annotation
+      'require'                     => ''            # Additional files to require
+    )
+  end
+
+  Annotate.load_tasks
+end
+
+```
+
+**Executing annotate:**
+
+```sh
+bundle exec annotate
+```
 
 ### Factory Bot
 
