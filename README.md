@@ -70,6 +70,9 @@
       - [Usage](#usage)
     - [Importmaps and Bootstraps without nodeJS](#importmaps-and-bootstraps-without-nodejs)
     - [Kill PUMA](#kill-puma)
+  - [Rails 8](#rails-8)
+    - [User Authentication](#user-authentication)
+    - [Further considerations](#further-considerations)
   - [Sidekiq](#sidekiq)
     - [Running Sidekiq](#running-sidekiq)
     - [Flushing Sidekiq JOBS](#flushing-sidekiq-jobs)
@@ -106,6 +109,7 @@
   - [RSPEC](#rspec)
     - [Installing RSPEC](#installing-rspec)
       - [Generate RSPEC required files](#generate-rspec-required-files)
+    - [Setup generators](#setup-generators)
     - [Mock and Doubles](#mock-and-doubles)
       - [Doubles](#doubles)
         - [Method stubs](#method-stubs)
@@ -154,6 +158,7 @@
     - [Paranoia](#paranoia)
       - [Install gem `paranoia`](#install-gem-paranoia)
       - [Setup `paranoia`](#setup-paranoia)
+    - [Nokogiri](#nokogiri)
   - [Create Private GEM](#create-private-gem)
     - [GEM generator](#gem-generator)
     - [GEM code implement](#gem-code-implement)
@@ -1124,6 +1129,66 @@ end
 lsof -wni tcp:3000
 ```
 
+## Rails 8
+
+### User Authentication
+
+[How to Setup Authentication in Rails 8](https://medium.com/@azzenabidi/how-to-setup-authentication-in-rails-8-33295a31c356)
+
+On Rails 8 there's this idea that authentication must be dealt  in house, avoiding to use gems like devise for instance, so they implemented a authentication generator that get all the hard work done
+
+```sh
+rails g authentication
+```
+
+**Output:**
+
+```mono
+invoke  erb
+      create    app/views/passwords/new.html.erb
+      create    app/views/passwords/edit.html.erb
+      create    app/views/sessions/new.html.erb
+      create  app/models/session.rb
+      create  app/models/user.rb
+      create  app/models/current.rb
+      create  app/controllers/sessions_controller.rb
+      create  app/controllers/concerns/authentication.rb
+      create  app/controllers/passwords_controller.rb
+      create  app/channels/application_cable/connection.rb
+      create  app/mailers/passwords_mailer.rb
+      create  app/views/passwords_mailer/reset.html.erb
+      create  app/views/passwords_mailer/reset.text.erb
+      create  test/mailers/previews/passwords_mailer_preview.rb
+      insert  app/controllers/application_controller.rb
+       route  resources :passwords, param: :token
+       route  resource :session
+        gsub  Gemfile
+      bundle  install --quiet
+    generate  migration CreateUsers email_address:string!:uniq password_digest:string! --force
+       rails  generate migration CreateUsers email_address:string!:uniq password_digest:string! --force 
+      invoke  active_record
+      create    db/migrate/20241120214018_create_users.rb
+    generate  migration CreateSessions user:references ip_address:string user_agent:string --force
+       rails  generate migration CreateSessions user:references ip_address:string user_agent:string --force 
+      invoke  active_record
+      create    db/migrate/20241120214019_create_sessions.rb
+```
+
+As you can see it creates all the good stuff already
+
+> I guess the highlight from the generator is the creation of Authentication concern that attaches to the Application controller, if you look further on this concern you will notice very interesting things like the usage of the Current from CurrentAttributes and Session model usage to hold session information, that is something else. The idea to have a table to hold session was something that always came to my mind, it's a great way to hold session stuff like last access and ip_address, it also matches the usage of session id with cookies
+
+### Further considerations
+
+I had two problems using straight out of the box generator, first when it creates the User model it defines the email field as `email_address` I don't get why, because, the method used on the `sessions_controller` generated uses `authenticated_by` and it expects the fields to be `email` and `password`. Another problem I got was on the terminal it complained about params not permitted, so I had to create e default strong_params:
+
+```rb
+  private
+    def session_params
+      params.require(:session).permit(:email, :password)
+    end
+```
+
 ## Sidekiq
 
 ### Running Sidekiq
@@ -1556,49 +1621,67 @@ touch Dockerfile.dev
 ```
 
 ```Dockerfile
-# syntax = docker/dockerfile:1
+# syntax=docker/dockerfile:1
+# check=error=true
 
+# Base image with the correct Ruby version
 ARG RUBY_VERSION=3.3.0
-FROM registry.docker.com/library/ruby:$RUBY_VERSION-slim as base
+FROM docker.io/library/ruby:$RUBY_VERSION-slim AS base
 
+# Set working directory for the Rails app
 WORKDIR /rails
 
-# Set development environment
-ENV RAILS_ENV="development" \
-    BUNDLE_DEPLOYMENT="0" \
-    BUNDLE_PATH="/usr/local/bundle"
-
-FROM base as build
-
+# Install base packages including postgresql to avoid pg issue
 RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y build-essential git libvips pkg-config
+    apt-get install --no-install-recommends -y curl libjemalloc2 libvips postgresql-client && \
+    rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
+# Set production environment
+ENV RAILS_ENV="development"
+
+# Throw-away build stage to reduce the final image size
+FROM base AS build
+
+# Install packages needed to build gems
+RUN apt-get update -qq && \
+    apt-get install --no-install-recommends -y build-essential git libpq-dev pkg-config && \
+    rm -rf /var/lib/apt/lists /var/cache/apt/archives
+
+# Install application gems
 COPY Gemfile Gemfile.lock ./
 RUN bundle install
 
+# Copy application code
 COPY . .
 
 # Precompile bootsnap code for faster boot times
 RUN bundle exec bootsnap precompile app/ lib/
 
+# Final stage for the app image
 FROM base
 
-RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y curl libsqlite3-0 libvips && \
-    rm -rf /var/lib/apt/lists /var/cache/apt/archives
-
+# Copy installed gems and app code from the build stage
 COPY --from=build /usr/local/bundle /usr/local/bundle
 COPY --from=build /rails /rails
 
-RUN useradd rails --create-home --shell /bin/bash && \
+# Create a non-root user for security and set up necessary directories
+RUN groupadd --system --gid 1000 rails && \
+    useradd rails --uid 1000 --gid 1000 --create-home --shell /bin/bash && \
     chown -R rails:rails db log storage tmp
-USER rails:rails
+USER 1000:1000
 
+# Entrypoint prepares the database.
 ENTRYPOINT ["/rails/bin/docker-entrypoint"]
 
+# Expose port for Rails app
 EXPOSE 3000
-CMD ["./bin/rails", "server", "-b", "0.0.0.0"]
 
+CMD ["./bin/thrust", "./bin/rails", "server", "-b", "0.0.0.0"]
+
+# OR
+
+# RAILS < 8
+# CMD ["./bin/rails", "server", "-b", "0.0.0.0"]
 ```
 
 ### Creating docker-compose files
@@ -1735,7 +1818,7 @@ Adding to the project
 Add on gem file and run bundle
 
 ```Gemfile
-group :test do
+group :devlopment, :test do
   ...
 
   gem "rspec"
@@ -1753,6 +1836,18 @@ gem install rubocop-rspec
 
 ```shell
 rails g rspec:install
+```
+
+### Setup generators
+
+```rb
+# application.rb
+
+# LUCAS: Add configuration to generate spec and factories files as we use generators
+config.generators do |generator|
+  generator.test_framework :rspec
+  generator.fixture_replacement :factory_bot, suffix_factory: 'factory'
+end
 ```
 
 ### Mock and Doubles
@@ -2603,6 +2698,48 @@ client.really_destroy!
 
 client.really_destroy!(update_destroy_attributes: false)
 # => client
+```
+
+### Nokogiri
+
+**Installation:**
+
+```sh
+gem install nokogiri
+
+# OR
+
+bundle add nokogiri
+```
+
+We can test Nokogiri very easily on Rails console
+
+```rb
+# rails c
+
+require 'open-uri'
+
+doc = Nokogiri::HTML(URI.open("http://www.google.com/"))
+pp doc
+
+# OR
+
+doc = File.open("blossom.html") { |f| Nokogiri::HTML(f) }
+pp doc
+```
+
+> In some cases you might not be able to reach the url, it can happen for various reasons, but if it's a regular public link, its probably because we need to send additional options specifying the User-Agent from this request:
+
+```rb
+require 'open-uri'
+
+url = "http://www.google.com/"
+
+options = options = {
+  "User-Agent": "Mozilla/5.0"
+ }
+
+doc = Nokogiri::HTML(URI.open(url, options))
 ```
 
 ## Create Private GEM
