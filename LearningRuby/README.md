@@ -1,6 +1,8 @@
 # Learning Ruby
 
 - [Learning Ruby](#learning-ruby)
+  - [Primitive types](#primitive-types)
+    - [Comparison with Primitive Types in Other Languages](#comparison-with-primitive-types-in-other-languages)
   - [Strings](#strings)
     - [Multiline](#multiline)
       - [Special character `\` or `+`](#special-character--or-)
@@ -27,9 +29,33 @@
       - [Implicit usage](#implicit-usage)
   - [Pattern matching operator](#pattern-matching-operator)
   - [Compare operator](#compare-operator)
+  - [Variables](#variables)
+    - [Local Variables](#local-variables)
+    - [Instance Variables (`@`)](#instance-variables-)
+    - [Class Variables (`@@`)](#class-variables-)
+    - [Global Variables (`$`)](#global-variables-)
+    - [Constants](#constants)
+    - [Pseudo-Variables](#pseudo-variables)
+    - [Special Variables](#special-variables)
+    - [Summary of Variable Types](#summary-of-variable-types)
+  - [Accumulator concept](#accumulator-concept)
   - [Concept](#concept)
     - [Comparing object values](#comparing-object-values)
   - [Reference](#reference)
+
+## Primitive types
+
+Ruby actually doesn't have primitive types, every type on Ruby is an instance of an class
+
+### Comparison with Primitive Types in Other Languages
+
+| Concept  | Ruby                     | Java/C/C++        |
+| -------- | ------------------------ | ----------------- |
+| Integer  | `Integer` class          | `int`             |
+| Float    | `Float` class            | `float`, `double` |
+| String   | `String` class           | `char*`, `String` |
+| Boolean  | `TrueClass`/`FalseClass` | `bool`, `boolean` |
+| Null/Nil | `NilClass` (`nil`)       | `null`, `         |
 
 ## Strings
 
@@ -207,13 +233,13 @@ Note that `delete_prefix` and `delete_suffix` returns the string modified, but i
 
 ## Integer / Numbers
 
-| Type    |   limit    | Numeric Type | Column Size | Max value            |
-|:--------|:----------:|:------------:|:-----------:|:---------------------|
-| integer |     1      |   tinyint    |   1 byte    | 127                  |
-| integer |     2      |   smallint   |   2 bytes   | 32767                |
-| integer |     3      |  mediumint   |   3 byte    | 8388607              |
-| integer | nil, 4, 11 |   int(11)    |   4 byte    | 2147483647           |
-| bigint  |    5..8    |    bigint    |   8 byte    | 9223372036854775807  |
+| Type    |   limit    | Numeric Type | Column Size | Max value           |
+| :------ | :--------: | :----------: | :---------: | :------------------ |
+| integer |     1      |   tinyint    |   1 byte    | 127                 |
+| integer |     2      |   smallint   |   2 bytes   | 32767               |
+| integer |     3      |  mediumint   |   3 byte    | 8388607             |
+| integer | nil, 4, 11 |   int(11)    |   4 byte    | 2147483647          |
+| bigint  |    5..8    |    bigint    |   8 byte    | 9223372036854775807 |
 
 ## Equality operators
 
@@ -410,6 +436,146 @@ irb(main):002:0> 2 <=> 2
 irb(main):003:0> 2 <=> 1
 => 1
 irb(main):004:0> 
+```
+
+## Variables
+
+### Local Variables
+
+- **Scope**: Limited to the block, method, or class/module where they are defined.
+- **Naming Convention**: Start with a lowercase letter or an underscore (`_`).
+- **Example**:
+
+  ```ruby
+  def greet
+    message = "Hello, World!" # Local variable
+    puts message
+  end
+
+  greet # Output: Hello, World!
+  # puts message # Error: undefined local variable
+  ```
+
+---
+
+### Instance Variables (`@`)
+
+- **Scope**: Belong to a specific object instance.
+- Used to store object-specific state.
+- Already covered in previous explanations.
+
+---
+
+### Class Variables (`@@`)
+
+- **Scope**: Shared across all instances of a class and the class itself.
+- Already covered in previous explanations.
+
+---
+
+### Global Variables (`$`)
+
+- **Scope**: Accessible throughout the entire Ruby program.
+- Already covered in previous explanations.
+
+---
+
+### Constants
+
+- **Scope**: Associated with classes or modules. They are accessible using the class/module namespace and cannot be changed without a warning.
+- **Naming Convention**: Start with a capital letter.
+- **Example**:
+
+  ```ruby
+  class Config
+    API_URL = "https://example.com" # Constant
+  end
+
+  puts Config::API_URL # Output: https://example.com
+  ```
+
+---
+
+### Pseudo-Variables
+
+- These are special variables provided by Ruby and cannot be assigned to. They represent particular values or objects in Ruby.
+
+| Pseudo-Variable | Meaning                                     |
+| --------------- | ------------------------------------------- |
+| `self`          | Refers to the current object.               |
+| `nil`           | Represents the absence of value (null).     |
+| `true`          | Represents a boolean true value.            |
+| `false`         | Represents a boolean false value.           |
+| `__FILE__`      | The name of the current source file.        |
+| `__LINE__`      | The current line number in the source file. |
+
+**Example**:
+
+```ruby
+puts "This code is in file: #{__FILE__} on line #{__LINE__}"
+```
+
+---
+
+### Special Variables
+
+Ruby has some pre-defined special variables, typically used for advanced scripting. These are denoted by `$` followed by a single character.
+
+| Variable     | Description                                  |
+| ------------ | -------------------------------------------- |
+| `$0`         | The name of the Ruby script.                 |
+| `$?`         | Exit status of the last executed command.    |
+| `$_`         | Last input line read by `gets`.              |
+| `$LOAD_PATH` | Array of paths to search for required files. |
+
+**Example**:
+
+```ruby
+puts $0 # Outputs the script name
+```
+
+---
+
+### Summary of Variable Types
+
+| Type               | Scope                                    | Example Naming            |
+| ------------------ | ---------------------------------------- | ------------------------- |
+| Local Variables    | Limited to a block or method.            | `my_var`, `_temp`         |
+| Instance Variables | Object-specific.                         | `@instance_var`           |
+| Class Variables    | Shared across a class and its instances. | `@@class_var`             |
+| Global Variables   | Accessible across the entire program.    | `$global_var`             |
+| Constants          | Associated with classes or modules.      | `CONSTANT_NAME`           |
+| Pseudo-Variables   | Special system-defined variables.        | `self`, `nil`, `__LINE__` |
+
+These variable types give Ruby its flexibility while maintaining clear scoping rules!
+
+## Accumulator concept
+
+In ruby we can use the Accumulator with two methods `inject` or `reduce`
+
+```rb
+enumerable.inject(initial_value) { |accumulator, element| block }
+
+
+enumerable.reduce(initial_value) { |accumulator, element| block }
+```
+
+> **initial_value**: The starting value of the accumulator (optional).
+> **accumulator**: The variable that holds the accumulated value throughout the iterations.
+> **element**: The current element being processed.
+> **block**: logical operation that will happen.
+
+**Example:**
+
+```rb
+# Using inject
+result1 = [1, 2, 3].inject(0) { |sum, num| sum + num }
+
+# Using reduce
+result2 = [1, 2, 3].reduce(0) { |sum, num| sum + num }
+
+puts result1  # Output: 6
+puts result2  # Output: 6
 ```
 
 ## Concept

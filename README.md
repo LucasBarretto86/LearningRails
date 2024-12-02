@@ -55,6 +55,7 @@
       - [Members](#members)
       - [Constraints](#constraints)
       - [Extending router](#extending-router)
+    - [Jobs](#jobs)
     - [Testing](#testing)
       - [Accessing test console](#accessing-test-console)
       - [Setup database on test environment](#setup-database-on-test-environment)
@@ -121,14 +122,6 @@
     - [Rake tasks that allow checking Webpacker installation](#rake-tasks-that-allow-checking-webpacker-installation)
       - [To check available commands](#to-check-available-commands)
         - [Most important commands to check webpacker health](#most-important-commands-to-check-webpacker-health)
-  - [Rubocop](#rubocop)
-  - [Brakeman](#brakeman)
-  - [Foreman](#foreman)
-  - [pg\_search](#pg_search)
-    - [Install pg\_search](#install-pg_search)
-    - [Setup multisearch](#setup-multisearch)
-    - [Adding search attribute to model](#adding-search-attribute-to-model)
-  - [scenic](#scenic)
   - [React with in Rails project](#react-with-in-rails-project)
     - [Configuration](#configuration)
       - [Installing react into the project with webpacker](#installing-react-into-the-project-with-webpacker)
@@ -138,8 +131,7 @@
       - [Implement a component within a view folder](#implement-a-component-within-a-view-folder)
       - [Tree for pack folders folders views](#tree-for-pack-folders-folders-views)
       - [Import to the app pack an external component](#import-to-the-app-pack-an-external-component)
-  - [MailCatcher](#mailcatcher)
-  - [Specific GEMS](#specific-gems)
+  - [GEMS](#gems)
     - [JWT](#jwt)
       - [What is JWT?](#what-is-jwt)
     - [Annotate](#annotate)
@@ -158,8 +150,17 @@
     - [Paranoia](#paranoia)
       - [Install gem `paranoia`](#install-gem-paranoia)
       - [Setup `paranoia`](#setup-paranoia)
+    - [MailCatcher](#mailcatcher)
     - [Nokogiri](#nokogiri)
-  - [Create Private GEM](#create-private-gem)
+    - [Foreman](#foreman)
+    - [Rubocop](#rubocop)
+    - [Brakeman](#brakeman)
+    - [pg\_search](#pg_search)
+      - [Install pg\_search](#install-pg_search)
+      - [Setup multisearch](#setup-multisearch)
+      - [Adding search attribute to model](#adding-search-attribute-to-model)
+    - [scenic](#scenic)
+  - [GEM Creation](#gem-creation)
     - [GEM generator](#gem-generator)
     - [GEM code implement](#gem-code-implement)
     - [How to test GEM code on development](#how-to-test-gem-code-on-development)
@@ -946,6 +947,8 @@ module LegacyRoutes
   end
 end
 ```
+
+### Jobs
 
 ### Testing
 
@@ -1976,192 +1979,6 @@ rails webpacker
 | rails webpacker:clean          | Remove old compiled webpacks                    |
 | rails webpacker:clobber        | Removes the webpack compiled output directory   |
 
-## Rubocop
-
-```Gemfile
-group :development do
-  ...
-
-  gem "rubocop", require: false
-  gem "rubocop-performance", require: false
-  gem "rubocop-rails", require: false
-
-  #  For minitest
-  gem "rubocop-minitest", require: false 
-
-  # For RSPEC
-  gem "rubocop-rspec", require: false 
-end
-```
-
-```shell
-bundle exec rubocop -a
-```
-
-To enforce corrections
-
-```shell
-bundle exec rubocop -A
-```
-
-Custom configs for rubocop
-
-You can add custom rules for cops, for that be sure to create a `.rubocop.yml` file inside the project
-
-Check the default configs below
-[RuboCop’s default configuration](https://github.com/rubocop/rubocop/blob/master/config/default.yml)
-
-## Brakeman
-
-Brakeman: Is a free vulnerability scanner specifically designed for Ruby on Rails applications. It statically analyzes Rails application code to find security issues at any stage of development
-
-```Gemfile
-group :development do
-  ...
-
-  gem 'brakeman', '>= 4.0', require: false
-end
-```
-
-```shell
-bundle exec brakeman
-```
-
-## Foreman
-
-> If you are using esbuild it already has foreman out of the box, so you just need to run `bin/dev` which uses the `Procfile.dev` that exists on the root folder
-
-Foreman is a tool that run all required services needed to run a project
-
-Installing Foreman gem
-
-```shell
-gem install foreman
-
-or 
-
-bundle add foreman
-```
-
-Create a manifest file called `Procfile` within the root of the project and define the required services you need to run as Foreman starts
-
-```mono
-web: bin/rails server -p 3000
-js: yarn build --watch
-css: bin/rails dartsass:watch
-```
-
-To start Foreman simple run the command
-
-```shell
-foreman start
-```
-
-## pg_search
-
-### Install pg_search
-
-```shell
-bundle add pg_search
-```
-
-### Setup multisearch
-
-```shell
-rails g pg_search:migration:multisearch
-rails db:migrate
-```
-
-### Adding search attribute to model
-
-```rb
-# frozen_string_literal: true
-
-module Patient::Searchable
-  extend ActiveSupport::Concern
-  include PgSearch::Model
-
-  included do
-    pg_search_scope :search, against: :full_name
-
-    scope :default_order, -> { reorder("priority DESC") }
-  end
-end
-```
-
-To search
-
-```rb
-Patient.search("Jane")
-```
-
-**Output:**
-
-```rb
-=> 
-[#<Patient:0x00007ff6e2b1e398
-  id: 3914,
-  gf_external_id: "144986529183",
-  first_name: "Jane",
-  middle_name: "",
-  last_name: "McInernay",
-  full_name: "Jane McInernay Reilly",
-  page_source: "",
-  created_at: Wed, 01 Mar 2023 20:49:00.725568000 UTC +00:00,
-  updated_at: Sun, 19 Mar 2023 14:52:58.290029000 UTC +00:00,
-  image_script: false,
-  notes_green_script: true,
-  notes_yellow_script: true,
-  active: false,
-  appointment_script: false,
-  ledger_script: false,
-  medical_script: false,
-  profile_script: true>,
- #<Patient:0x00007ff6e2b1e2d0
-  id: 4121,
-  gf_external_id: "145020362130",
-  first_name: "Jane ",
-  middle_name: "",
-  last_name: "Kinsella",
-  full_name: "Jane  Kinsella",
-  page_source: "",
-  created_at: Wed, 01 Mar 2023 20:49:00.817765000 UTC +00:00,
-  updated_at: Sun, 19 Mar 2023 15:35:20.366462000 UTC +00:00,
-  image_script: false,
-  notes_green_script: true,
-  notes_yellow_script: true,
-  active: false,
-  appointment_script: false,
-  ledger_script: false,
-  medical_script: false,
-  profile_script: true>,
- #<Patient:0x00007ff6e2b1e208
-  id: 6466,
-  gf_external_id: "200038492862",
-  first_name: "Jane  ",
-  middle_name: "",
-  last_name: "Fishler",
-  full_name: "Jane Fishler",
-  page_source: "",
-  created_at: Wed, 01 Mar 2023 20:49:01.857211000 UTC +00:00,
-  updated_at: Sun, 19 Mar 2023 23:35:07.825168000 UTC +00:00,
-  image_script: false,
-  notes_green_script: true,
-  notes_yellow_script: true,
-  active: false,
-  appointment_script: false,
-  ledger_script: false,
-  medical_script: false,
-  profile_script: true>
-  ]
-```
-
-## scenic
-
-<https://github.com/scenic-views/scenic>
-
-> Handling SQL views within rails
-
 ## React with in Rails project
 
 ### Configuration
@@ -2267,15 +2084,7 @@ document.addEventListener('DOMContentLoaded', () => {
 })
 ```
 
-## MailCatcher
-
-MailCatcher runs a super simple SMTP server which catches any message sent to it to display in a web interface. Run mailcatcher, set your favorite app to deliver to smtp://127.0.0.1:1025 instead of your default SMTP server, then check out <http://127.0.0.1:1080> to see the mail.
-
-```shell
-gem install mailcatcher
-```
-
-## Specific GEMS
+## GEMS
 
 ### JWT
 
@@ -2700,6 +2509,14 @@ client.really_destroy!(update_destroy_attributes: false)
 # => client
 ```
 
+### MailCatcher
+
+MailCatcher runs a super simple SMTP server which catches any message sent to it to display in a web interface. Run mailcatcher, set your favorite app to deliver to smtp://127.0.0.1:1025 instead of your default SMTP server, then check out <http://127.0.0.1:1080> to see the mail.
+
+```shell
+gem install mailcatcher
+```
+
 ### Nokogiri
 
 **Installation:**
@@ -2742,7 +2559,193 @@ options = options = {
 doc = Nokogiri::HTML(URI.open(url, options))
 ```
 
-## Create Private GEM
+### Foreman
+
+> If you are using esbuild it already has foreman out of the box, so you just need to run `bin/dev` which uses the `Procfile.dev` that exists on the root folder
+
+Foreman is a tool that run all required services needed to run a project
+
+Installing Foreman gem
+
+```shell
+gem install foreman
+
+or 
+
+bundle add foreman
+```
+
+Create a manifest file called `Procfile` within the root of the project and define the required services you need to run as Foreman starts
+
+```mono
+web: bin/rails server -p 3000
+js: yarn build --watch
+css: bin/rails dartsass:watch
+```
+
+To start Foreman simple run the command
+
+```shell
+foreman start
+```
+
+### Rubocop
+
+```Gemfile
+group :development do
+  ...
+
+  gem "rubocop", require: false
+  gem "rubocop-performance", require: false
+  gem "rubocop-rails", require: false
+
+  #  For minitest
+  gem "rubocop-minitest", require: false 
+
+  # For RSPEC
+  gem "rubocop-rspec", require: false 
+end
+```
+
+```shell
+bundle exec rubocop -a
+```
+
+To enforce corrections
+
+```shell
+bundle exec rubocop -A
+```
+
+Custom configs for rubocop
+
+You can add custom rules for cops, for that be sure to create a `.rubocop.yml` file inside the project
+
+Check the default configs below
+[RuboCop’s default configuration](https://github.com/rubocop/rubocop/blob/master/config/default.yml)
+
+### Brakeman
+
+Brakeman: Is a free vulnerability scanner specifically designed for Ruby on Rails applications. It statically analyzes Rails application code to find security issues at any stage of development
+
+```Gemfile
+group :development do
+  ...
+
+  gem 'brakeman', '>= 4.0', require: false
+end
+```
+
+```shell
+bundle exec brakeman
+```
+
+### pg_search
+
+#### Install pg_search
+
+```shell
+bundle add pg_search
+```
+
+#### Setup multisearch
+
+```shell
+rails g pg_search:migration:multisearch
+rails db:migrate
+```
+
+#### Adding search attribute to model
+
+```rb
+# frozen_string_literal: true
+
+module Patient::Searchable
+  extend ActiveSupport::Concern
+  include PgSearch::Model
+
+  included do
+    pg_search_scope :search, against: :full_name
+
+    scope :default_order, -> { reorder("priority DESC") }
+  end
+end
+```
+
+To search
+
+```rb
+Patient.search("Jane")
+```
+
+**Output:**
+
+```rb
+=> 
+[#<Patient:0x00007ff6e2b1e398
+  id: 3914,
+  gf_external_id: "144986529183",
+  first_name: "Jane",
+  middle_name: "",
+  last_name: "McInernay",
+  full_name: "Jane McInernay Reilly",
+  page_source: "",
+  created_at: Wed, 01 Mar 2023 20:49:00.725568000 UTC +00:00,
+  updated_at: Sun, 19 Mar 2023 14:52:58.290029000 UTC +00:00,
+  image_script: false,
+  notes_green_script: true,
+  notes_yellow_script: true,
+  active: false,
+  appointment_script: false,
+  ledger_script: false,
+  medical_script: false,
+  profile_script: true>,
+ #<Patient:0x00007ff6e2b1e2d0
+  id: 4121,
+  gf_external_id: "145020362130",
+  first_name: "Jane ",
+  middle_name: "",
+  last_name: "Kinsella",
+  full_name: "Jane  Kinsella",
+  page_source: "",
+  created_at: Wed, 01 Mar 2023 20:49:00.817765000 UTC +00:00,
+  updated_at: Sun, 19 Mar 2023 15:35:20.366462000 UTC +00:00,
+  image_script: false,
+  notes_green_script: true,
+  notes_yellow_script: true,
+  active: false,
+  appointment_script: false,
+  ledger_script: false,
+  medical_script: false,
+  profile_script: true>,
+ #<Patient:0x00007ff6e2b1e208
+  id: 6466,
+  gf_external_id: "200038492862",
+  first_name: "Jane  ",
+  middle_name: "",
+  last_name: "Fishler",
+  full_name: "Jane Fishler",
+  page_source: "",
+  created_at: Wed, 01 Mar 2023 20:49:01.857211000 UTC +00:00,
+  updated_at: Sun, 19 Mar 2023 23:35:07.825168000 UTC +00:00,
+  image_script: false,
+  notes_green_script: true,
+  notes_yellow_script: true,
+  active: false,
+  appointment_script: false,
+  ledger_script: false,
+  medical_script: false,
+  profile_script: true>
+  ]
+```
+
+### scenic
+
+<https://github.com/scenic-views/scenic>
+
+> Handling SQL views within rails
+
+## GEM Creation
 
 ### GEM generator
 
