@@ -1,105 +1,62 @@
 # Learning Ruby On Rails
 
 - [Learning Ruby On Rails](#learning-ruby-on-rails)
-  - [Rails](#rails)
-    - [Install Rails version](#install-rails-version)
-    - [Creating new Rails App](#creating-new-rails-app)
-      - [For older Rails versions](#for-older-rails-versions)
-      - [Configured as API app](#configured-as-api-app)
-      - [Configured with React libs (Rails 6 or above)](#configured-with-react-libs-rails-6-or-above)
-      - [Configured with bootstrap an jsBuilding (esBuild)](#configured-with-bootstrap-an-jsbuilding-esbuild)
-      - [Configured with postcss, postgres and esbuild](#configured-with-postcss-postgres-and-esbuild)
-    - [Rails Database representation](#rails-database-representation)
-      - [Moving from schema to structure](#moving-from-schema-to-structure)
-    - [Rails Credentials](#rails-credentials)
-      - [Generate credentials](#generate-credentials)
-        - [Setup EDITOR](#setup-editor)
-          - [Master key setup](#master-key-setup)
-          - [Environment based key setup](#environment-based-key-setup)
-        - [Credentials file created, content initial state](#credentials-file-created-content-initial-state)
-      - [Editing credentials](#editing-credentials)
-        - [Master key for all environments](#master-key-for-all-environments)
-        - [Specific keys based on environment](#specific-keys-based-on-environment)
-      - [Using credentials](#using-credentials)
-    - [Rails Action Cable](#rails-action-cable)
-      - [Creating a Channel](#creating-a-channel)
-      - [Setup websocket Connection](#setup-websocket-connection)
-      - [Setup cable endpoint connection](#setup-cable-endpoint-connection)
-      - [Setup channel](#setup-channel)
-    - [YAML Credentials](#yaml-credentials)
-    - [Generators](#generators)
-      - [Scaffold](#scaffold)
-      - [Models](#models)
-      - [controllers](#controllers)
-    - [executing SQL](#executing-sql)
-      - [executing](#executing)
-      - [Getting values, Select Value](#getting-values-select-value)
-    - [Hotwire](#hotwire)
-    - [API](#api)
-      - [Jbuilder](#jbuilder)
-        - [Rendering collection](#rendering-collection)
-      - [Set values](#set-values)
-      - [Merge values](#merge-values)
-      - [Define key format standard](#define-key-format-standard)
-    - [ActiveStorage](#activestorage)
-      - [ActiveStorage setup](#activestorage-setup)
-      - [Configuring S3 for ActiveStorage](#configuring-s3-for-activestorage)
-      - [Attaching Files to Records](#attaching-files-to-records)
-      - [Removing file](#removing-file)
-      - [Encrypted attachments](#encrypted-attachments)
-      - [variants](#variants)
-    - [Validations](#validations)
-      - [Validate with custom method](#validate-with-custom-method)
-      - [Validate with context](#validate-with-context)
-      - [Validate associations](#validate-associations)
-      - [Save based on context](#save-based-on-context)
-    - [Routes](#routes)
-      - [Members](#members)
-      - [Constraints](#constraints)
-      - [Extending router](#extending-router)
-    - [Jobs](#jobs)
-    - [Testing](#testing)
-      - [Accessing test console](#accessing-test-console)
-      - [Setup database on test environment](#setup-database-on-test-environment)
-    - [Initializers](#initializers)
-      - [Inflections](#inflections)
-        - [Allowing a Acronym](#allowing-a-acronym)
+  - [Installation](#installation)
+  - [Configurations](#configurations)
+    - [Database (schema vs structure.sql)](#database-schema-vs-structuresql)
+    - [Credentials and ENVs](#credentials-and-envs)
+      - [Rails credentials](#rails-credentials)
+      - [Custom YAML Credentials](#custom-yaml-credentials)
+      - [Dotenv Credentials](#dotenv-credentials)
+  - [Initializers](#initializers)
+    - [Inflections](#inflections)
+      - [Allowing a Acronym](#allowing-a-acronym)
         - [Allowing irregular plural](#allowing-irregular-plural)
-    - [Logger](#logger)
-      - [Customized Logger](#customized-logger)
+  - [Creating new Rails apps](#creating-new-rails-apps)
+  - [Generators](#generators)
+    - [Scaffold generator](#scaffold-generator)
+    - [Models generator](#models-generator)
+    - [Controllers generator](#controllers-generator)
+    - [Channel generator](#channel-generator)
+  - [Helpers](#helpers)
+    - [ApplicationHelper](#applicationhelper)
+    - [locale dynamic configs](#locale-dynamic-configs)
+  - [Validations](#validations)
+  - [Routes](#routes)
+    - [Members](#members)
+    - [Constraints](#constraints)
+    - [Extending router](#extending-router)
+    - [Direct routes](#direct-routes)
+  - [Jobs](#jobs)
+    - [Sidekiq](#sidekiq)
+    - [Redis](#redis)
+      - [Redis as cache](#redis-as-cache)
+  - [Action Cable](#action-cable)
+  - [Query](#query)
+    - [SQL through connection](#sql-through-connection)
+  - [Hotwire](#hotwire)
+  - [API](#api)
+    - [Jbuilder](#jbuilder)
+    - [Serializers](#serializers)
+  - [ActiveStorage](#activestorage)
+    - [Configuring S3 for ActiveStorage](#configuring-s3-for-activestorage)
+    - [Attaching Files to Records](#attaching-files-to-records)
+    - [Removing file](#removing-file)
+    - [Encrypted attachments](#encrypted-attachments)
+    - [variants](#variants)
+  - [Logger](#logger)
+    - [Customized Logger](#customized-logger)
+  - [Patterns](#patterns)
+    - [Strategy](#strategy)
+    - [Presenters](#presenters)
+    - [Service classes](#service-classes)
+    - [Adapter](#adapter)
     - [Singletons](#singletons)
     - [Form Object](#form-object)
-      - [Form definition](#form-definition)
+    - [Form definition](#form-definition)
       - [Usage](#usage)
-    - [Importmaps and Bootstraps without nodeJS](#importmaps-and-bootstraps-without-nodejs)
-    - [Kill PUMA](#kill-puma)
-  - [Rails 8](#rails-8)
-    - [User Authentication](#user-authentication)
-    - [Further considerations](#further-considerations)
-  - [Sidekiq](#sidekiq)
-    - [Running Sidekiq](#running-sidekiq)
-    - [Flushing Sidekiq JOBS](#flushing-sidekiq-jobs)
-    - [Sidekiq cleaning](#sidekiq-cleaning)
-  - [Redis](#redis)
-    - [Install Redis](#install-redis)
-    - [Check Redis status](#check-redis-status)
-    - [Starting Redis with specific Port](#starting-redis-with-specific-port)
-    - [Making Redis starts on boot](#making-redis-starts-on-boot)
-    - [Restarting Redis](#restarting-redis)
-    - [Stop Redis](#stop-redis)
-    - [Redis Configuration File](#redis-configuration-file)
-    - [Redis on console](#redis-on-console)
-    - [Redis usage](#redis-usage)
-      - [Set](#set)
-      - [Get](#get)
-    - [Redis as cache](#redis-as-cache)
-    - [View usage](#view-usage)
-    - [Monitoring Redis](#monitoring-redis)
   - [Kredis](#kredis)
-    - [Configuring Kredis](#configuring-kredis)
-      - [Custom or Additional configs](#custom-or-additional-configs)
-    - [Kredis basic usage example](#kredis-basic-usage-example)
-    - [Kredis within ActiveRecords](#kredis-within-activerecords)
+    - [**Configuring Kredis:**](#configuring-kredis)
   - [Docker](#docker)
     - [Creating `Dockerfile.dev`](#creating-dockerfiledev)
     - [Creating docker-compose files](#creating-docker-compose-files)
@@ -117,6 +74,8 @@
     - [Rake tasks that allow checking Webpacker installation](#rake-tasks-that-allow-checking-webpacker-installation)
       - [To check available commands](#to-check-available-commands)
         - [Most important commands to check webpacker health](#most-important-commands-to-check-webpacker-health)
+  - [ESbuild](#esbuild)
+  - [Importmaps](#importmaps)
   - [React with in Rails project](#react-with-in-rails-project)
     - [Configuration](#configuration)
       - [Installing react into the project with webpacker](#installing-react-into-the-project-with-webpacker)
@@ -126,19 +85,17 @@
       - [Implement a component within a view folder](#implement-a-component-within-a-view-folder)
       - [Tree for pack folders folders views](#tree-for-pack-folders-folders-views)
       - [Import to the app pack an external component](#import-to-the-app-pack-an-external-component)
-  - [RSPEC](#rspec)
-    - [Installing RSPEC](#installing-rspec)
-      - [Generate RSPEC required files](#generate-rspec-required-files)
-    - [Using rspec generators](#using-rspec-generators)
-    - [Mock and Doubles](#mock-and-doubles)
-      - [Doubles](#doubles)
-        - [Method stubs](#method-stubs)
+  - [Testing Frameworks](#testing-frameworks)
+    - [Rspec](#rspec)
+      - [Rspec generators](#rspec-generators)
+      - [Mock and Doubles](#mock-and-doubles)
   - [GEM Creation](#gem-creation)
     - [GEM generator](#gem-generator)
     - [GEM code implement](#gem-code-implement)
     - [How to test GEM code on development](#how-to-test-gem-code-on-development)
   - [Rails Template](#rails-template)
   - [GEMS](#gems)
+    - [Bootstrap](#bootstrap)
     - [Devise](#devise)
       - [Creating the User Model with Devise](#creating-the-user-model-with-devise)
       - [Setup routes with Devise](#setup-routes-with-devise)
@@ -171,6 +128,9 @@
       - [Setup multisearch](#setup-multisearch)
       - [Adding search attribute to model](#adding-search-attribute-to-model)
     - [Scenic](#scenic)
+  - [Rails 8](#rails-8)
+    - [User Authentication](#user-authentication)
+    - [Further considerations](#further-considerations)
   - [Gists](#gists)
     - [Private](#private)
     - [Public](#public)
@@ -189,9 +149,6 @@
       - [Adding `Rack::Cors` as middleware initializer](#adding-rackcors-as-middleware-initializer)
       - [How to call fonts on `css.erb` or `html.erb`](#how-to-call-fonts-on-csserb-or-htmlerb)
         - [how to precompile assets to test locally](#how-to-precompile-assets-to-test-locally)
-    - [Helpers](#helpers)
-      - [ApplicationHelper](#applicationhelper)
-    - [locale dynamic configs](#locale-dynamic-configs)
   - [Concepts](#concepts)
   - [Issues](#issues)
     - [Postgres - Fixing PG Error for new rails apps](#postgres---fixing-pg-error-for-new-rails-apps)
@@ -200,56 +157,18 @@
     - [Wicked FUCKING PDF fix](#wicked-fucking-pdf-fix)
   - [References](#references)
 
-## Rails
-
-### Install Rails version
+## Installation
 
 ```shell
 gem install rails -v 6.1.5
 ```
 
-### Creating new Rails App
+> `-v` allow you to enforce a specific rails version installation
+---
 
-```shell
-rails new my-app --database=postgresql
-```
+## Configurations
 
-#### For older Rails versions
-
-```shell
-rails _5.2.7_ new my-flights-app --webpack=react --database=postgresql
-```
-
-#### Configured as API app
-
-```shell
-rails new my_api -d=postgresql -T --api
-```
-
-#### Configured with React libs (Rails 6 or above)
-
-```shell
-rails new my-app --webpack=react --database=postgresql
-```
-
-#### Configured with bootstrap an jsBuilding (esBuild)
-
-```shell
-rails new my-app --css=bootstrap --database=postgresql
-```
-
-#### Configured with postcss, postgres and esbuild
-
-```rb
-rails new lucasbarretto.com -d postgresql -j esbuild -c postcss -T
-```
-
-> `-d` set database as `postgresql`
-> `-j` set javascript framework as `esbuild`
-> `-c` set css framework as `postcss`
-> `-T` remove default test framework
-
-### Rails Database representation
+### Database (schema vs structure.sql)
 
 `schema.rb`
 
@@ -265,7 +184,7 @@ Mature database representation
 - It allows for an exact copy of the database structure. This is important when working with a team, as well as if you need to rapidly generate a new database in production from a rails db:setup task.
 - It allows preserving information of advanced database features. For example, if you are using PostgreSQL, it enables the use of views, materialized views, functions, constraints and so on.
 
-#### Moving from schema to structure
+**Moving from schema to structure:**
 
 ```rb
 # config/application.rb
@@ -276,31 +195,23 @@ Mature database representation
   end
 ```
 
-### Rails Credentials
+---
 
-#### Generate credentials
+### Credentials and ENVs
 
-##### Setup EDITOR
+#### Rails credentials
 
-If you don't have a editor setup it, it can be any editor as long as it's alias is configured, to define it type the command below
-
-###### Master key setup
-
-```shell
-EDITOR="nano" rails credentials:edit
-```
-
-###### Environment based key setup
+**Editing credentials:**
 
 ```shell
 EDITOR="nano" rails credentials:edit --environment development
 ```
 
-##### Credentials file created, content initial state
+> Each environment has its on encrypted credential files
+
+**Credential (Examples):**
 
 ```yml
-# .credentials.yml
-
 # aws:
 #   access_key_id: 123
 #   secret_access_key: 345
@@ -309,106 +220,16 @@ EDITOR="nano" rails credentials:edit --environment development
 secret_key_base: dd21f3b9e7d9daabab940d815e70e51fee47e5914315e46af6e741f96c8522818543c07805a322d582a340b33bba0d08af971e214b044d72d0623dfc70ec647a
 ```
 
-#### Editing credentials
-
-##### Master key for all environments
-
-```shell
-rails credentials:edit
-```
-
-##### Specific keys based on environment
-
-```shell
-rails credentials:edit --environment development
-```
-
-#### Using credentials
-
-Within the project
+**Using Rails credentials:**
 
 ```rb
 Rails.application.credentials.aws[:access_key_id]
 ```
 
-### Rails Action Cable
+> Notice that if key has more than one level we use `[]`
+---
 
-#### Creating a Channel
-
-```sh
-rails g channel Notification
-```
-
-#### Setup websocket Connection
-
-On the connection class we need to define the algorithm to connect Server and Clinic, keep in mind that websocket communication doesn't happen through http protocol, but the first connection occurs with http protocol, after connection occurs all the communication goes through Websocket protocol.
-
-```rb
-module ApplicationCable
-  class Connection < ActionCable::Connection::Base
-    identified_by :current_user
-
-    def connect
-      self.current_user = find_verified_user
-    end
-
-    private
-      def find_verified_user
-        if verified_user = User.find_by(id: cookies.encrypted[:user_id])
-          verified_user
-        else
-          reject_unauthorized_connection
-        end
-      end
-  end
-end
-
-
-```
-
-#### Setup cable endpoint connection
-
-We need to define endpoint where the communication will come in and out
-
-```rb
-Rails.application.routes.draw do
-  # ...
-  mount ActionCable.server => '/cable'
-  # ...
-end  
-```
-
-#### Setup channel
-
-```rb
-class ChatChannel < ApplicationCable::Channel
-  # Called when the consumer has successfully
-  # become a subscriber to this channel.
-
-  def subscribed
-      stream_from "chat_whatever_name"
-  end
-end
-```
-
-Notice the subtle difference between the two: the conversations channel is using stream_from while the messages channel is using stream_for. Really these are two different ways of doing the same thing, except stream_from expects to receive a string as an argument, while stream_for expects an object from the model. If you’d like to learn more about the differences between the two, you can read about it here.
-
-**Broadcast example:**
-
-```rb
-# Somewhere in your app this is called, perhaps
-# from a NewCommentJob.
-ActionCable.server.broadcast(
-  "chat_whatever_name",
-  {
-    sent_by: 'Paul',
-    body: 'This is a cool chat app.'
-  }
-)
-
-```
-
-### YAML Credentials
+#### Custom YAML Credentials
 
 On rails you can use many way to keep track from your credentials, here there's a simple example how to configure credentials on a YAML file
 
@@ -455,27 +276,110 @@ Since he have added a file on the project we need also to add it to .gitignore i
 .env.development.yml
 ```
 
-### Generators
+---
+
+#### Dotenv Credentials
+
+<!-- TODO -->
+
+---
+
+## Initializers
+
+### Inflections
+
+The inflection initializer allow you to define terminologies, plurals and etc..
+
+#### Allowing a Acronym
+
+```rb
+# config/initializers/inflections.rb
+
+ActiveSupport::Inflector.inflections(:en) do |inflect|
+  inflect.acronym 'SMS'
+end
+```
+
+##### Allowing irregular plural
+
+```rb
+# config/initializers/inflections.rb
+
+ActiveSupport::Inflector.inflections(:en) do |inflect|
+  inflect.irregular 'person', 'people'
+end
+
+## PUMA
+
+### Check PUMA PORTS
+
+```shell
+sudo netstat -ntlp | grep LISTEN
+```
+
+## Creating new Rails apps
+
+**Create app with postgresql database:**
+
+```shell
+rails new my-app --database=postgresql
+```
+
+**Create app for specific Rails version:**
+
+```shell
+rails _5.2.7_ new my-flights-app
+```
+
+**Create app configured as API:**
+
+```shell
+rails new my_api --api
+```
+
+**Create aap configured with React libs (Rails 6 and above):**
+
+```shell
+rails new my-app --webpack=react --database=postgresql
+```
+
+**Create app configured with bootstrap:**
+
+```shell
+rails new my-app --css=bootstrap
+```
+
+**Configured with postcss, postgres and esbuild:**
+
+```rb
+rails new lucasbarretto.com -d postgresql -j esbuild -c postcss -T
+```
+
+> `-d` set database as `postgresql`
+> `-j` set javascript framework as `esbuild`
+> `-c` set css framework as `postcss`
+> `-T` remove default test framework
+---
+
+## Generators
 
 To check available generators native and from dependencies
 
 ```shell
 rails generate
-```
 
-OR
+# OR
 
-```shell
 rails g
 ```
 
-#### Scaffold
+### Scaffold generator
 
 ```sh
 rails generate scaffold Post title:string body:text
 ```
 
-#### Models
+### Models generator
 
 **Simple model:**
 
@@ -501,47 +405,638 @@ rails g model Post author:references_to{foreign_key:users} content:text
 rails g model Image position:integer description:string imageable:belongs_to{polymorphic}
 ```
 
-#### controllers
+### Controllers generator
 
 ```sh
 rails g controller API::V1::Session create destroy
 ```
 
-### executing SQL
+### Channel generator
 
+```sh
+rails g channel Notification
+```
+
+---
+
+## Helpers
+
+### ApplicationHelper
+
+```rb
+def dom_id_for_view(prefix: nil, suffix: nil)
+  "id=#{[prefix || controller_name, suffix || action_name].compact.join("-")}"
+end
+
+def dom_class_for_view(options = {})
+  default_class = "#{[options[:prefix] || controller_name, options[:suffix] || action_name].compact.join("-")}"
+  "class=#{options[:class] || default_class }"
+end
+```
+
+### locale dynamic configs
+
+Within the locale folder on the project it's possible to create an additional file to assist dynamic formatting for the class `I18n.t` and `I18n.l`
+
+```rb
+## config/locales/en.rb
+{
+  en: {
+    date: {
+      formats: {
+        short_month_day_year: lambda { "%b, #{ _1.day.ordinalize} %Y" }
+      }
+    }
+  }
+}
+```
+
+---
+
+## Validations
+
+**validate:**
+
+```rb
+class Example < ApplicationRecord
+  validate :custom_validation
+
+  private
+    def custom_validation
+         errors.add(:custom_validation, "There's some custom error message you created here") if some_condition_are_not_fulfilled
+    end
+end
+```
+
+**Validation context:**
+
+```rb
+class Example < ApplicationRecord
+    validates :name, presence: true, on: :custom_context
+end
+
+class Example::NamesController < ApplicationController
+  def create
+    @example = Example.assign_attributes(example_names_params)
+    if @example.valid?(:custom_context)
+      @example.save!
+    end 
+    
+    private
+      def example_names_params
+        params.require(:example).permit(:name)
+      end
+  end
+end
+```
+
+**Associated validation:**
+
+```rb
+class Exercise < ApplicationRecord
+    has_one :example
+
+    validates_associated :example
+end
+
+class ExercisesController < ApplicationController
+  def new
+    @example = @exercise.build_example
+  end
+
+  def create
+    @exercise.build_example(example_params) 
+
+    if @exercise.valid?(:custom_context)
+      @exercise.save!
+    else
+      render :new, status: :not_acceptable
+    end 
+    
+    private
+      def example_params
+        params.require(:example).permit(:name, :description, :etc)
+      end
+  end
+end
+```
+
+---
+
+## Routes
+
+### Members
+
+```rb
+resource :availability, only: [:new, :create] do
+  member do
+    get "/:booking_appointment_cache_id/edit", to: "availabilities#edit", as: :edit
+    patch "/:booking_appointment_cache_id", to: "availabilities#update"
+  end
+end
+```
+
+### Constraints
+
+```rb
+constraints lambda { |request| Clinic.exists? subdomain: request.subdomain } do
+  devise_for :staff_members, controllers: {
+    registrations: 'staff_members/registrations',
+    passwords: 'staff_members/passwords',
+  }
+
+  scope module: :public do
+    get 'c/:token', to: 'appointments/confirms#show', as: :confirmed_appointment
+    post 'c/:token', to: 'appointments/confirms#update', as: :confirm_appointment
+  end
+
+  resources :appointments, only: [] do
+    scope module: :appointments do
+        resource :export, only: [:show]
+      end
+    end
+end
+```
+
+### Extending router
+
+```rb
+module LegacyRoutes
+  def self.extended(router)
+    router.instance_exec do
+    end
+  end
+end
+```
+
+---
+
+### Direct routes
+
+<!-- TODO -->
+
+---
+
+## Jobs
+
+<!-- TODO -->
+
+### Sidekiq
+
+**Running Sidekiq:**
+
+```shell
+bundle exec sidekiq
+```
+
+But you can run sidekiq also using custom configs using flag `-C` and config file path
+
+```yml
+# config/sidekiq.yml
+
+development:
+  :concurrency: 5
+  :queues:
+    - [critical]
+    - [high]
+    - [renderer]
+    - [default]
+    - [low]
+    - [backfill]
+production:
+  :concurrency: <%= ENV.fetch("SIDEKIQ_CONCURRENCY") { 3 } %>
+  :queues:
+    - [critical, 10]
+    - [high, 5]
+    - [default, 2]
+
+max_retries: <%= ENV.fetch("SIDEKIQ_MAX_RETRIES") { 25 } %>
+
+```
+
+```shell
+bundle exec sidekiq -C config/sidekiq.yml
+```
+
+**Flushing Sidekiq JOBS:**
+
+```rb
+# Open Rails console
+rails c
+
+# Connect to Redis
+redis = Redis.new(host: 'localhost', port: 6379)
+
+# Flush all Redis databases
+redis.flushall
+
+# Or flush the current Redis database
+# redis.flushdb
+
+# Delete specific Sidekiq keys
+redis.keys("sidekiq:*").each do |key|
+  redis.del(key)
+end
+
+# OR
+
+Sidekiq.redis(&:flushdb)
+```
+
+**Sidekiq cleaning:**
+
+```sh
+require 'sidekiq/api'
+
+# 1. Clear retry set
+
+Sidekiq::RetrySet.new.clear
+
+# 2. Clear scheduled jobs 
+
+Sidekiq::ScheduledSet.new.clear
+
+# 3. Clear 'Processed' and 'Failed' jobs
+
+Sidekiq::Stats.new.reset
+
+# 3. Clear 'Dead' jobs statistics
+
+Sidekiq::DeadSet.new.clear
+
+# Stats
+
+stats = Sidekiq::Stats.new
+stats.queues
+# {"production_mailers"=>25, "production_default"=>1}
+
+# Queue
+
+queue = Sidekiq::Queue.new('queue_name')
+queue.count
+queue.clear
+queue.each { |job| job.item } # hash content
+
+# Redis Access
+
+Sidekiq.redis { |redis| redis.keys }
+```
+
+[Credits for @wbotelhos](https://gist.github.com/wbotelhos/fb865fba2b4f3518c8e533c7487d5354)
+
+### Redis
+
+Developers often look for systems that would increase the speed and performance of their projects. One popular system like that is Redis. It is an open-source, in-memory database used as a cache and message broker. It is also known as a data structure server.
+
+What makes it unique compared to relational database systems is the ability to store high-level data types, such as maps, lists, and sets. It also offers an easy-to-use interface, atomic manipulation of data, and exceptional performance.
+
+**Install Redis:**
+
+```shell
+sudo apt install redis
+gem install redis
+```
+
+**Check Redis status:**
+
+```shell
+redis-cli ping
+```
+
+```shell
+systemctl status redis
+```
+
+**Starting Redis with specific Port:**
+
+```shell
+redis-server --port 6380 --daemonize yes
+```
+
+**Making Redis starts on boot:**
+
+```shell
+sudo systemctl enable redis-server 
+```
+
+**Restarting Redis:**
+
+```shell
+/etc/init.d/redis-server restart
+```
+
+OR
+
+```shell
+sudo systemctl restart redis-server
+```
+
+**Stop Redis:**
+
+```shell
+sudo systemctl stop redis
+```
+
+**Redis Configuration File:**
+
+The default Redis configuration file is located in `/etc/redis/redis.conf` directory. To change Redis server to listen a particular IP address, you need to edit the `/etc/redis/redis.conf` file.
+
+```shell
+sudo nano /etc/redis/redis.conf
+```
+
+> Locate the line `bind 127.0.0.1 ::1`.
+
+```mono
+################################## NETWORK #####################################
+
+# By default, if no "bind" configuration directive is specified, Redis listens
+# for connections from all available network interfaces on the host machine.
+# It is possible to listen to just one or multiple selected interfaces using
+# the "bind" configuration directive, followed by one or more IP addresses.
+# Each address can be prefixed by "-", which means that redis will not fail to
+# start if the address is not available. Being not available only refers to
+# addresses that does not correspond to any network interface. Addresses that
+# are already in use will always fail, and unsupported protocols will always BE
+# silently skipped.
+#
+# Examples:
+#
+# bind 192.168.1.100 10.0.0.1     # listens on two specific IPv4 addresses
+# bind 127.0.0.1 ::1              # listens on loopback IPv4 and IPv6
+# bind * -::*                     # like the default, all available interfaces
+#
+# ~~~ WARNING ~~~ If the computer running Redis is directly exposed to the
+# internet, binding to all the interfaces is dangerous and will expose the
+# instance to everybody on the internet. So by default we uncomment the
+# following bind directive, that will force Redis to listen only on the
+# IPv4 and IPv6 (if available) loopback interface addresses (this means Redis
+# will only be able to accept client connections from the same host that it is
+# running on).
+#
+# IF YOU ARE SURE YOU WANT YOUR INSTANCE TO LISTEN TO ALL THE INTERFACES
+# COMMENT OUT THE FOLLOWING LINE.
+#
+# You will also need to set a password unless you explicitly disable protected
+# mode.
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+bind 127.0.0.1 -::1
+```
+
+Change the IP address by entering the values of the connections you want the Redis server to listen for.
+
+To add multiple IP addresses, simply separate the IP addresses with a single space:
+
+```mono
+bind 70.25.220.238 70.25.220.239
+```
+
+**Redis on console:**
+
+```rb
+# irb
+require 'redis'
+
+redis = Redis.new # Default params
+
+OR
+
+redis = Redis.new(host: "10.0.1.1", port: 6380, db: 15) # Optional params
+```
+
+**Redis usage:**
+
+redis.set "KEY_NAME", "VALUE"
+
+**Set:**
+
+```rb
+redis.set "Test", "This is a test string"
+```
+
+**Get:**
+
+```rb
+redis.get "Test"
+```
+
+#### Redis as cache
+
+**Within the gemfile add:**
+
+```gemfile
+gem "redis-rails"
+```
+
+**Config Redis on project:**
+
+- Original:
+
+```rb
+# config/environments/development.rb
+
+# Enable/disable caching. By default caching is disabled.
+# Run rails dev:cache to toggle caching.
+  if Rails.root.join('tmp', 'caching-dev.txt').exist?
+    config.action_controller.perform_caching = true
+
+    config.cache_store = :memory_store
+    config.public_file_server.headers = {
+      'Cache-Control' => "public, max-age=#{2.days.to_i}"
+    }
+  else
+    config.action_controller.perform_caching = false
+
+    config.cache_store = :null_store
+  end
+```
+
+- Modified:
+
+```rb
+config.action_controller.perform_caching = true
+
+config.cache_store = :redis_store, {
+ host: "localhost",
+ port: 6379,
+ db: 15,
+ namespace: "028redis"
+}
+
+```
+
+- `memory_store` limits the amount of cache to the server cache limitations, therefore it won't allow usage of multiple host and multiple processes
+- `host` will be the address corresponding to the server and localhost on development
+- `namespace` allow us to segregate the usage of database usage in different applications, lets says you have multiple apps using the `db: 0` so in that case needs to use namespace to avoid problems
+
+**Festalab config in prod:**
+
+```rb
+  # Use a different cache store in production.
+
+  config.cache_store = :redis_cache_store, {
+    url: ENV['AWS_REDIS_CACHE_URL'],
+    read_timeout: 0.2,
+    connect_timeout: 30,
+    write_timeout: 0.2
+  }
+```
+
+**View usage:**
+
+```erb
+<h1>Test redis</h1>
+<p>Here there's a cache test to explain redis usage as cache</p>
+
+<% cache 'testing-cache-key', expire_in: Time.now + 1.hour do %>
+  <%= w%[ testing_value_01, testing_value_02, testing_value_03, testing_value_04].sample %>
+<% end %>
+```
+
+- On that example we gonna create a cache that expires in one hour, if no value is assigned or expired it will assign a random sample value form the array
+
+**Monitoring Redis:**
+
+to have an monitor to check redis log we use the CLI
+
+```shell
+redis-cli monitor
+```
+
+---
+
+## Action Cable
+
+**Creating a Channel:**
+
+```sh
+rails g channel Notification
+```
+
+**Setup websocket Connection:**
+
+On the connection class we need to define the algorithm to connect Server and Clinic, keep in mind that websocket communication doesn't happen through http protocol, but the first connection occurs with http protocol, after connection occurs all the communication goes through Websocket protocol.
+
+```rb
+module ApplicationCable
+  class Connection < ActionCable::Connection::Base
+    identified_by :current_user
+
+    def connect
+      self.current_user = find_verified_user
+    end
+
+    private
+      def find_verified_user
+        if verified_user = User.find_by(id: cookies.encrypted[:user_id])
+          verified_user
+        else
+          reject_unauthorized_connection
+        end
+      end
+  end
+end
+```
+
+**Setup cable connection endpoint:**
+
+We need to define endpoint where the communication will come in and out
+
+```rb
+Rails.application.routes.draw do
+  # ...
+  mount ActionCable.server => '/cable'
+  # ...
+end  
+```
+
+**Setup channel:**
+
+```rb
+class ChatChannel < ApplicationCable::Channel
+  # Called when the consumer has successfully
+  # become a subscriber to this channel.
+
+  def subscribed
+      stream_from "chat_whatever_name"
+  end
+end
+```
+
+Notice the subtle difference between the two: the conversations channel is using stream_from while the messages channel is using stream_for. Really these are two different ways of doing the same thing, except stream_from expects to receive a string as an argument, while stream_for expects an object from the model. If you’d like to learn more about the differences between the two, you can read about it here.
+
+**Broadcast example:**
+
+```rb
+# Somewhere in your app this is called, perhaps
+# from a NewCommentJob.
+ActionCable.server.broadcast(
+  "chat_whatever_name",
+  {
+    sent_by: 'Paul',
+    body: 'This is a cool chat app.'
+  }
+)
+
+```
+
+---
+
+## Query
+
+### SQL through connection
+
+**execute:**
 Rails allow us to execute or get values from SQL
-
-#### executing
 
 ```rb
 ActiveRecord::Base.connection.execute('SELECT NOW();')
 ```
 
-```bash
+**example:**
+
+```sh
 irb(main):003:0> ActiveRecord::Base.connection.execute('SELECT NOW();')
    (0.3ms)  SELECT NOW();
 => #<PG::Result:0x00007f5129693e18 status=PGRES_TUPLES_OK ntuples=1 nfields=1 cmd_tuples=1>   
 ```
 
-#### Getting values, Select Value
+**select:**
+
+Getting values, Select Value
 
 ```rb
-ActiveRecord::Base.connection.select_value("SQL QUERY")
+ActiveRecord::Base.connection.select_value("SELECT EXTRACT (QUARTER FROM TIMESTAMP '#{Date.current}')")
 ```
 
-**Output:**
+**Example:**
 
-```bash
+```sh
 irb(main):001:0> ActiveRecord::Base.connection.select_value("SELECT EXTRACT (QUARTER FROM TIMESTAMP '#{Date.current}')")
    (0.7ms)  SELECT EXTRACT (QUARTER FROM TIMESTAMP '2022-11-10')
 => 4.0  
 ```
 
-### Hotwire
+---
 
-### API
+## Hotwire
 
-#### Jbuilder
+`Hotwire` is a framework for building modern, real-time, interactive applications in Rails without relying heavily on JavaScript. It combines Turbo and Stimulus to enhance user experience.
+
+Real-world examples:
+
+- Live Chat System
+- Live Search
+- Real-time Notifications
+- Forms with Validation
+
+<!-- TODO -->
+
+---
+
+## API
+
+### Jbuilder
 
 Jbuilder allow creation of json in a simple data structure, to create a jbuilder file we use extension `.json.jbuilder`
 
@@ -587,7 +1082,7 @@ json.comments @message.comments, :content, :created_at
 }
 ```
 
-##### Rendering collection
+**Rendering collection:**
 
 ```rb
 # app/views/imaging/progressions/series/_series.json.jbuilder
@@ -620,7 +1115,7 @@ end
 }
 ```
 
-#### Set values
+**Rendering collection with `Set!`:**
 
 ```rb
 json.set! :author do
@@ -634,7 +1129,7 @@ end
 {"author": { "name": "David" }}
 ```
 
-#### Merge values
+**Merge values:**
 
 ```rb
 hash = { author: { name: "David" } }
@@ -651,7 +1146,7 @@ end
 "post": { "title": "Merge HOWTO", "author": { "name": "David" } }
 ```
 
-#### Define key format standard
+**Define key format standard:**
 
 ```rb
 # initializer/jbuilder.rb
@@ -659,7 +1154,15 @@ end
 Jbuilder.key_format camelize: :lower
 ```
 
-### ActiveStorage
+---
+
+### Serializers
+
+<!-- TODO -->
+
+---
+
+## ActiveStorage
 
 > Rails depend on external applications to handle specific files like images, videos and PDF
 >
@@ -667,7 +1170,7 @@ Jbuilder.key_format camelize: :lower
 >- `ffmpeg` v3.4+ for video previews and `ffprobe` for video/audio analysis
 >- `poppler` or `muPDF` for PDF previews
 
-#### ActiveStorage setup
+**ActiveStorage setup:**
 
 In order to work properly it's also required to add to the gemfile a gem specifically to handle active_record variants
 
@@ -680,7 +1183,7 @@ bin/rails active_storage:install
 bin/rails db:migrate
 ```
 
-#### Configuring S3 for ActiveStorage
+### Configuring S3 for ActiveStorage
 
 ```rb
 bundle add aws-sdk-s3
@@ -727,7 +1230,7 @@ config.active_storage.service = :amazon
 
 However it's possible to upload files in any environment as long as you specify on the specific config file.
 
-#### Attaching Files to Records
+### Attaching Files to Records
 
 To add attachments to a specific model we must use method within the model we want to keep the attachment related to
 
@@ -795,7 +1298,7 @@ OR
 )
 ```
 
-#### Removing file
+### Removing file
 
 ```rb
 # Synchronously destroy the avatar and actual resource files.
@@ -807,11 +1310,11 @@ user.avatar.purge_later
 
 To learn more about ActiveStorage, check here: <https://guides.rubyonrails.org/active_storage_overview.html>
 
-#### Encrypted attachments
+### Encrypted attachments
 
 <https://alisepehri.medium.com/preview-for-amazon-s3-client-side-encrypted-active-storage-files-8e3ba55accb8>
 
-#### variants
+### variants
 
 ```rb
 # app/views/blogs/show.html.erb
@@ -831,204 +1334,29 @@ end
 <%= image_tag blog.display_picture.variant(:thumb) %>
 ```
 
-### Validations
+---
 
-#### Validate with custom method
+## Logger
 
-```rb
-class Example < ApplicationRecord
-  validate :custom_validation
+### Customized Logger
 
-  private
-    def custom_validation
-         errors.add(:custom_validation, "There's some custom error message you created here") if some_condition_are_not_fulfilled
-    end
-end
-```
+## Patterns
 
-#### Validate with context
+### Strategy
 
-```rb
-class Example < ApplicationRecord
-    validates :name, presence: true, on: :custom_context
-end
+<!-- TODO -->
 
-class Example::NamesController < ApplicationController
-  def create
-    @example = Example.assign_attributes(example_names_params)
-    if @example.valid?(:custom_context)
-      @example.save!
-    end 
-    
-    private
-      def example_names_params
-        params.require(:example).permit(:name)
-      end
-  end
-end
-```
+### Presenters
 
-#### Validate associations
+<!-- TODO -->
 
-```rb
-class Exercise < ApplicationRecord
-    has_one :example
+### Service classes
 
-    validates_associated :example
-end
+<!-- TODO -->
 
-class ExercisesController < ApplicationController
-  def new
-    @example = @exercise.build_example
-  end
+### Adapter
 
-  def create
-    @exercise.build_example(example_params) 
-
-    if @exercise.valid?(:custom_context)
-      @exercise.save!
-    else
-      render :new, status: :not_acceptable
-    end 
-    
-    private
-      def example_params
-        params.require(:example).permit(:name, :description, :etc)
-      end
-  end
-end
-```
-
-#### Save based on context
-
-```rb
-class Example < ApplicationRecord
-    validates :name, presence: true, on: :custom_context
-end
-
-class Example::NamesController < ApplicationController
-  def new
-    @example = Example.new
-  end
-
-  def create
-    @example = Example.assign_attributes(example_names_params)
-
-    if @example.save!(on: :custom_context)
-      redirect_to example_path(@example)
-    else
-      render :new, status: :not_acceptable
-    end 
-    
-    private
-      def example_names_params
-        params.require(:example).permit(:name)
-      end
-  end
-end
-```
-
-### Routes
-
-#### Members
-
-```rb
-resource :availability, only: [:new, :create] do
-  member do
-    get "/:booking_appointment_cache_id/edit", to: "availabilities#edit", as: :edit
-    patch "/:booking_appointment_cache_id", to: "availabilities#update"
-  end
-end
-```
-
-#### Constraints
-
-```rb
-constraints lambda { |request| Clinic.exists? subdomain: request.subdomain } do
-  devise_for :staff_members, controllers: {
-    registrations: 'staff_members/registrations',
-    passwords: 'staff_members/passwords',
-  }
-
-  scope module: :public do
-    get 'c/:token', to: 'appointments/confirms#show', as: :confirmed_appointment
-    post 'c/:token', to: 'appointments/confirms#update', as: :confirm_appointment
-  end
-
-  resources :appointments, only: [] do
-    scope module: :appointments do
-        resource :export, only: [:show]
-      end
-    end
-end
-```
-
-#### Extending router
-
-```rb
-module LegacyRoutes
-  def self.extended(router)
-    router.instance_exec do
-    end
-  end
-end
-```
-
-### Jobs
-
-### Testing
-
-#### Accessing test console
-
-```shell
-rails c -e test
-```
-
-#### Setup database on test environment
-
-```shell
-rails db:drop RAILS_ENV=test
-rails db:create RAILS_ENV=test
-rails db:migrate RAILS_ENV=test
-rails db:seed RAILS_ENV=test
-```
-
-### Initializers
-
-#### Inflections
-
-The inflection initializer allow you to define terminologies, plurals and etc..
-
-##### Allowing a Acronym
-
-```rb
-# config/initializers/inflections.rb
-
-ActiveSupport::Inflector.inflections(:en) do |inflect|
-  inflect.acronym 'SMS'
-end
-```
-
-##### Allowing irregular plural
-
-```rb
-# config/initializers/inflections.rb
-
-ActiveSupport::Inflector.inflections(:en) do |inflect|
-  inflect.irregular 'person', 'people'
-end
-
-## PUMA
-
-### Check PUMA PORTS
-
-```shell
-sudo netstat -ntlp | grep LISTEN
-```
-
-### Logger
-
-#### Customized Logger
+<!-- TODO -->
 
 ### Singletons
 
@@ -1064,9 +1392,9 @@ end
 
 Form objects in Rails are used to handle complex forms that interact with multiple models or when you need to encapsulate form-specific behavior that doesn't belong in the models themselves.
 
-> Form objects in Rails are related to the `Command Pattern`. The Command Pattern is a behavioral design pattern that encapsulates a request as an object, thereby allowing for parameterization of clients with different requests, queueing of requests, and logging of the requests. It also provides support for undoable operations.
+> Form objects in Rails are related to the `Command Pattern`. The Command Pattern is a behavioral design pattern that encapsulates a request as an object, thereby allowing for parameterization of clients with different requests, queueing of requests, and logging of the requests. It also provides support for not doable operations.
 
-#### Form definition
+### Form definition
 
 ```rb
 # app/forms/user_profile_form.rb
@@ -1145,427 +1473,32 @@ class UsersController < ApplicationController
 end
 ```
 
-### Importmaps and Bootstraps without nodeJS
-
-<https://dev.to/coorasse/rails-7-bootstrap-5-and-importmaps-without-nodejs-4g8>
-
-- Create standard clean app
-- Install `boostrap` gem and `sassc-rails`
-
-### Kill PUMA
-
-```shell
-lsof -wni tcp:3000
-```
-
-## Rails 8
-
-### User Authentication
-
-[How to Setup Authentication in Rails 8](https://medium.com/@azzenabidi/how-to-setup-authentication-in-rails-8-33295a31c356)
-
-On Rails 8 there's this idea that authentication must be dealt  in house, avoiding to use gems like devise for instance, so they implemented a authentication generator that get all the hard work done
-
-```sh
-rails g authentication
-```
-
-**Output:**
-
-```mono
-invoke  erb
-      create    app/views/passwords/new.html.erb
-      create    app/views/passwords/edit.html.erb
-      create    app/views/sessions/new.html.erb
-      create  app/models/session.rb
-      create  app/models/user.rb
-      create  app/models/current.rb
-      create  app/controllers/sessions_controller.rb
-      create  app/controllers/concerns/authentication.rb
-      create  app/controllers/passwords_controller.rb
-      create  app/channels/application_cable/connection.rb
-      create  app/mailers/passwords_mailer.rb
-      create  app/views/passwords_mailer/reset.html.erb
-      create  app/views/passwords_mailer/reset.text.erb
-      create  test/mailers/previews/passwords_mailer_preview.rb
-      insert  app/controllers/application_controller.rb
-       route  resources :passwords, param: :token
-       route  resource :session
-        gsub  Gemfile
-      bundle  install --quiet
-    generate  migration CreateUsers email_address:string!:uniq password_digest:string! --force
-       rails  generate migration CreateUsers email_address:string!:uniq password_digest:string! --force 
-      invoke  active_record
-      create    db/migrate/20241120214018_create_users.rb
-    generate  migration CreateSessions user:references ip_address:string user_agent:string --force
-       rails  generate migration CreateSessions user:references ip_address:string user_agent:string --force 
-      invoke  active_record
-      create    db/migrate/20241120214019_create_sessions.rb
-```
-
-As you can see it creates all the good stuff already
-
-> I guess the highlight from the generator is the creation of Authentication concern that attaches to the Application controller, if you look further on this concern you will notice very interesting things like the usage of the Current from CurrentAttributes and Session model usage to hold session information, that is something else. The idea to have a table to hold session was something that always came to my mind, it's a great way to hold session stuff like last access and ip_address, it also matches the usage of session id with cookies
-
-### Further considerations
-
-I had two problems using straight out of the box generator, first when it creates the User model it defines the email field as `email_address` I don't get why, because, the method used on the `sessions_controller` generated uses `authenticated_by` and it expects the fields to be `email` and `password`. Another problem I got was on the terminal it complained about params not permitted, so I had to create e default strong_params:
-
-```rb
-  private
-    def session_params
-      params.require(:session).permit(:email, :password)
-    end
-```
-
-## Sidekiq
-
-### Running Sidekiq
-
-```shell
-bundle exec sidekiq
-```
-
-But you can run sidekiq also using custom configs using flag `-C` and config file path
-
-```yml
-# config/sidekiq.yml
-
-development:
-  :concurrency: 5
-  :queues:
-    - [critical]
-    - [high]
-    - [renderer]
-    - [default]
-    - [low]
-    - [backfill]
-production:
-  :concurrency: <%= ENV.fetch("SIDEKIQ_CONCURRENCY") { 3 } %>
-  :queues:
-    - [critical, 10]
-    - [high, 5]
-    - [default, 2]
-
-max_retries: <%= ENV.fetch("SIDEKIQ_MAX_RETRIES") { 25 } %>
-
-```
-
-```shell
-bundle exec sidekiq -C config/sidekiq.yml
-```
-
-### Flushing Sidekiq JOBS
-
-```rb
-# Open Rails console
-rails c
-
-# Connect to Redis
-redis = Redis.new(host: 'localhost', port: 6379)
-
-# Flush all Redis databases
-redis.flushall
-
-# Or flush the current Redis database
-# redis.flushdb
-
-# Delete specific Sidekiq keys
-redis.keys("sidekiq:*").each do |key|
-  redis.del(key)
-end
-
-# OR
-
-Sidekiq.redis(&:flushdb)
-```
-
-### Sidekiq cleaning
-
-```sh
-require 'sidekiq/api'
-
-# 1. Clear retry set
-
-Sidekiq::RetrySet.new.clear
-
-# 2. Clear scheduled jobs 
-
-Sidekiq::ScheduledSet.new.clear
-
-# 3. Clear 'Processed' and 'Failed' jobs
-
-Sidekiq::Stats.new.reset
-
-# 3. Clear 'Dead' jobs statistics
-
-Sidekiq::DeadSet.new.clear
-
-# Stats
-
-stats = Sidekiq::Stats.new
-stats.queues
-# {"production_mailers"=>25, "production_default"=>1}
-
-# Queue
-
-queue = Sidekiq::Queue.new('queue_name')
-queue.count
-queue.clear
-queue.each { |job| job.item } # hash content
-
-# Redis Access
-
-Sidekiq.redis { |redis| redis.keys }
-```
-
-[Credits for @wbotelhos](https://gist.github.com/wbotelhos/fb865fba2b4f3518c8e533c7487d5354)
-
-## Redis
-
-Developers often look for systems that would increase the speed and performance of their projects. One popular system like that is Redis. It is an open-source, in-memory database used as a cache and message broker. It is also known as a data structure server.
-
-What makes it unique compared to relational database systems is the ability to store high-level data types, such as maps, lists, and sets. It also offers an easy-to-use interface, atomic manipulation of data, and exceptional performance.
-
-### Install Redis
-
-```shell
-sudo apt install redis
-gem install redis
-```
-
-### Check Redis status
-
-```shell
-redis-cli ping
-```
-
-```shell
-systemctl status redis
-```
-
-### Starting Redis with specific Port
-
-```shell
-redis-server --port 6380 --daemonize yes
-```
-
-### Making Redis starts on boot
-
-```shell
-sudo systemctl enable redis-server 
-```
-
-### Restarting Redis
-
-```shell
-/etc/init.d/redis-server restart
-```
-
-OR
-
-```shell
-sudo systemctl restart redis-server
-```
-
-### Stop Redis
-
-```shell
-sudo systemctl stop redis
-```
-
-### Redis Configuration File
-
-The default Redis configuration file is located in `/etc/redis/redis.conf` directory. To change Redis server to listen a particular IP address, you need to edit the `/etc/redis/redis.conf` file.
-
-```shell
-sudo nano /etc/redis/redis.conf
-```
-
-> Locate the line `bind 127.0.0.1 ::1`.
-
-```mono
-################################## NETWORK #####################################
-
-# By default, if no "bind" configuration directive is specified, Redis listens
-# for connections from all available network interfaces on the host machine.
-# It is possible to listen to just one or multiple selected interfaces using
-# the "bind" configuration directive, followed by one or more IP addresses.
-# Each address can be prefixed by "-", which means that redis will not fail to
-# start if the address is not available. Being not available only refers to
-# addresses that does not correspond to any network interface. Addresses that
-# are already in use will always fail, and unsupported protocols will always BE
-# silently skipped.
-#
-# Examples:
-#
-# bind 192.168.1.100 10.0.0.1     # listens on two specific IPv4 addresses
-# bind 127.0.0.1 ::1              # listens on loopback IPv4 and IPv6
-# bind * -::*                     # like the default, all available interfaces
-#
-# ~~~ WARNING ~~~ If the computer running Redis is directly exposed to the
-# internet, binding to all the interfaces is dangerous and will expose the
-# instance to everybody on the internet. So by default we uncomment the
-# following bind directive, that will force Redis to listen only on the
-# IPv4 and IPv6 (if available) loopback interface addresses (this means Redis
-# will only be able to accept client connections from the same host that it is
-# running on).
-#
-# IF YOU ARE SURE YOU WANT YOUR INSTANCE TO LISTEN TO ALL THE INTERFACES
-# COMMENT OUT THE FOLLOWING LINE.
-#
-# You will also need to set a password unless you explicitly disable protected
-# mode.
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-bind 127.0.0.1 -::1
-```
-
-Change the IP address by entering the values of the connections you want the Redis server to listen for.
-
-To add multiple IP addresses, simply separate the IP addresses with a single space:
-
-```mono
-bind 70.25.220.238 70.25.220.239
-```
-
-### Redis on console
-
-```rb
-# irb
-require 'redis'
-
-redis = Redis.new # Default params
-
-OR
-
-redis = Redis.new(host: "10.0.1.1", port: 6380, db: 15) # Optional params
-```
-
-### Redis usage
-
-redis.set "KEY_NAME", "VALUE"
-
-#### Set
-
-```rb
-redis.set "Test", "This is a test string"
-```
-
-#### Get
-
-```rb
-redis.get "Test"
-```
-
-### Redis as cache
-
-**Within the gemfile add:**
-
-```gemfile
-gem "redis-rails"
-```
-
-**Config Redis on project:**
-
-- Original:
-
-```rb
-# config/environments/development.rb
-
-# Enable/disable caching. By default caching is disabled.
-# Run rails dev:cache to toggle caching.
-  if Rails.root.join('tmp', 'caching-dev.txt').exist?
-    config.action_controller.perform_caching = true
-
-    config.cache_store = :memory_store
-    config.public_file_server.headers = {
-      'Cache-Control' => "public, max-age=#{2.days.to_i}"
-    }
-  else
-    config.action_controller.perform_caching = false
-
-    config.cache_store = :null_store
-  end
-```
-
-- Modified:
-
-```rb
-config.action_controller.perform_caching = true
-
-config.cache_store = :redis_store, {
- host: "localhost",
- port: 6379,
- db: 15,
- namespace: "028redis"
-}
-
-```
-
-- `memory_store` limits the amount of cache to the server cache limitations, therefore it won't allow usage of multiple host and multiple processes
-- `host` will be the address corresponding to the server and localhost on development
-- `namespace` allow us to segregate the usage of database usage in different applications, lets says you have multiple apps using the `db: 0` so in that case needs to use namespace to avoid problems
-
-**Festalab config in prod:**
-
-```rb
-  # Use a different cache store in production.
-
-  config.cache_store = :redis_cache_store, {
-    url: ENV['AWS_REDIS_CACHE_URL'],
-    read_timeout: 0.2,
-    connect_timeout: 30,
-    write_timeout: 0.2
-  }
-```
-
-### View usage
-
-```erb
-<h1>Test redis</h1>
-<p>Here there's a cache test to explain redis usage as cache</p>
-
-<% cache 'testing-cache-key', expire_in: Time.now + 1.hour do %>
-  <%= w%[ testing_value_01, testing_value_02, testing_value_03, testing_value_04].sample %>
-<% end %>
-```
-
-- On that example we gonna create a cache that expires in one hour, if no value is assigned or expired it will assign a random sample value form the array
-
-### Monitoring Redis
-
-to have an monitor to check redis log we use the CLI
-
-```shell
-redis-cli monitor
-```
-
 ## Kredis
 
 Kredis is a higher level wrapper for your redis database which allow you to store more complex data-structure on your redis.
 
-### Configuring Kredis
+### **Configuring Kredis:**
 
 within your project run
 
-```rb
+```sh
 bundle add kredis
 rails kredis:install
 ```
 
 after kredis is install it will create a YAML file `config/redis/shared.yml`
 
-```mono
+```tree
 config
 └── redis
     └── shared.yml
 ```
 
-#### Custom or Additional configs
+**Custom or Additional configs:**
 
 Additional configurations can be added under `config/redis/*.yml` and referenced when a type is created. For example, `Kredis.string("mystring", config: :strings)` would lookup `config/redis/strings.yml`.
 
-### Kredis basic usage example
+**Usage:**
 
 **Creating record:**
 
@@ -1595,11 +1528,9 @@ irb(main):002:0> str
 irb(main):003:0> str.set "Some sentence as example here"
   Kredis Proxy (0.5ms)  SET exampleString ["Some sentence as example here"] 
 => "OK"
-```
 
-OR
+# OR
 
-```rb
 irb(main):004:0> str.value = "Another sentence as example here"
   Kredis Proxy (0.3ms)  SET exampleString ["Another sentence as example here"] 
 => "OK"
@@ -1613,7 +1544,7 @@ irb(main):005:0> str.value
 => "Some sentence as example here"
 ```
 
-### Kredis within ActiveRecords
+**Kredis within ActiveRecords:**
 
 That's where kredis really shines, it also give us the ability to create data-structures on redis within ActiveRecord models, kredis give us various methods that allow creation of these structures, such an unique list.
 
@@ -1883,6 +1814,14 @@ rails webpacker
 | rails webpacker:clean          | Remove old compiled webpacks                    |
 | rails webpacker:clobber        | Removes the webpack compiled output directory   |
 
+## ESbuild
+
+<!-- TODO -->
+
+---
+
+## Importmaps
+
 ## React with in Rails project
 
 ### Configuration
@@ -1988,9 +1927,11 @@ document.addEventListener('DOMContentLoaded', () => {
 })
 ```
 
-## RSPEC
+## Testing Frameworks
 
-### Installing RSPEC
+### Rspec
+
+**Rspec installation:**
 
 ```Gemfile
 group :development, :test do
@@ -1999,7 +1940,7 @@ group :development, :test do
 end
 ```
 
-rubocop has a lib for rspec
+rubocop has a lib for Rspec
 
 ```Gemfile
 ...
@@ -2011,23 +1952,23 @@ end
 
 ```
 
-#### Generate RSPEC required files
+**Setup Rspec:**
 
 ```shell
 rails g rspec:install
 ```
 
-### Using rspec generators
+#### Rspec generators
 
 ```sh
 rails g rspec:model User
 ```
 
-### Mock and Doubles
+#### Mock and Doubles
 
 Mocking with RSpec is done with the `rspec-mocks` gem. If you have rspec as a dependency in your Gemfile, you already have rspec-mocks available.
 
-#### Doubles
+**Doubles:**
 
 A double is a simplified object that take place from an actual model
 
@@ -2041,7 +1982,7 @@ Or you can give your double a identifier
 feed = double("feed")
 ```
 
-##### Method stubs
+**Method stubs:**
 
 To stub methods in RSPEC is used `allow()` and `receive()` methods
 
@@ -2210,6 +2151,13 @@ irb(main):003:0> Gem::LearningCreateGem.methods
 <https://railsbytes.com/public/templates>
 
 ## GEMS
+
+### Bootstrap
+
+<https://dev.to/coorasse/rails-7-bootstrap-5-and-importmaps-without-nodejs-4g8>
+
+- Create standard clean app
+- Install `boostrap` gem and `sassc-rails`
 
 ### Devise
 
@@ -2399,6 +2347,8 @@ end
 | `config.parent_controller`              | Parent controller for Devise controllers.                                                                                                           | `"ApplicationController"`            |
 | `config.sign_in_after_reset_password`   | Automatically sign in after a password reset.                                                                                                        | `true`                               |
 
+---
+
 ### JWT
 
 The gem 'jwt' lets you securely encode and verify tokens, ensuring data integrity in stateless applications, is regarded as the best way to handle authentication on APIs
@@ -2497,6 +2447,7 @@ headers: {
 ```
 
 > `<token>` must be replaced by the token itself
+---
 
 ### Annotate
 
@@ -2603,6 +2554,8 @@ end
 bundle exec annotate
 ```
 
+---
+
 ### Factory Bot
 
 **`factory_bot_rails` gem install:**
@@ -2625,7 +2578,9 @@ Setup the required config on rails_helper
 ```rb
 # spec/rails_helper.rb
 RSpec.configure do |config|
+  # ...
   config.include FactoryBot::Syntax::Methods
+  # ...
 end
 ```
 
@@ -2634,7 +2589,7 @@ end
 If correctly configured factories should created automatically when a model or a controller is created, however factory bot also add a generator to create factories
 
 ```sh
-rails generate factory_bot:model User first_name:string last_name:string email:string
+rails g factory_bot:model User first_name:string last_name:string email:string
 ```
 
 **Example:**
@@ -2657,6 +2612,8 @@ RSpec.describe User, type: :model do
   let(:another_user) { create(:user) }
 end
 ```
+
+---
 
 ### Faker
 
@@ -2681,6 +2638,8 @@ FactoryBot.define do
   end
 end
 ```
+
+---
 
 ### Flipper
 
@@ -2717,6 +2676,7 @@ Flipper.enable_percentage_of_actors :search, 2
 ```
 
 > For more specifications for usage, see: <https://www.flippercloud.io/docs>
+---
 
 ### SimpleCov
 
@@ -2736,7 +2696,9 @@ require 'simplecov'
 SimpleCov.start 'rails' # or use SimpleCov.start for a generic setup
 ```
 
-As the tests suite runs a report will be generated in the coverage/ directory.
+As the tests suite runs a report will be generated in the coverage/ directory
+
+---
 
 ### Guard
 
@@ -2770,6 +2732,7 @@ bundle exec guard
 ```
 
 > Yes it will stays open on terminal to ensure the files force suite run as it gets changed
+---
 
 ### Database Cleaner
 
@@ -2841,6 +2804,7 @@ end
 | `:null_strategy` | Does nothing. Useful when testing configurations that don’t require cleaning.                                                                 |
 
 ---
+---
 
 ### Audited
 
@@ -2894,6 +2858,8 @@ user.revision_at(Date.parse("2016-01-01"))
 ```
 
 For mor advanced usage check: <https://github.com/collectiveidea/audited>
+
+---
 
 ### Paranoia
 
@@ -2956,6 +2922,8 @@ client.really_destroy!(update_destroy_attributes: false)
 # => client
 ```
 
+---
+
 ### MailCatcher
 
 MailCatcher runs a super simple SMTP server which catches any message sent to it to display in a web interface. Run mailcatcher, set your favorite app to deliver to smtp://127.0.0.1:1025 instead of your default SMTP server, then check out <http://127.0.0.1:1080> to see the mail.
@@ -2963,6 +2931,8 @@ MailCatcher runs a super simple SMTP server which catches any message sent to it
 ```shell
 gem install mailcatcher
 ```
+
+---
 
 ### Nokogiri
 
@@ -3006,6 +2976,8 @@ options = options = {
 doc = Nokogiri::HTML(URI.open(url, options))
 ```
 
+---
+
 ### Foreman
 
 > If you are using esbuild it already has foreman out of the box, so you just need to run `bin/dev` which uses the `Procfile.dev` that exists on the root folder
@@ -3035,6 +3007,8 @@ To start Foreman simple run the command
 ```shell
 foreman start
 ```
+
+---
 
 ### Rubocop
 
@@ -3071,6 +3045,8 @@ You can add custom rules for cops, for that be sure to create a `.rubocop.yml` f
 Check the default configs below
 [RuboCop’s default configuration](https://github.com/rubocop/rubocop/blob/master/config/default.yml)
 
+---
+
 ### Brakeman
 
 Brakeman: Is a free vulnerability scanner specifically designed for Ruby on Rails applications. It statically analyzes Rails application code to find security issues at any stage of development
@@ -3086,6 +3062,8 @@ end
 ```shell
 bundle exec brakeman
 ```
+
+---
 
 ### pg_search
 
@@ -3186,11 +3164,76 @@ Patient.search("Jane")
   ]
 ```
 
+---
+
 ### Scenic
 
 <https://github.com/scenic-views/scenic>
 
 > Handling SQL views within rails
+---
+
+## Rails 8
+
+### User Authentication
+
+[How to Setup Authentication in Rails 8](https://medium.com/@azzenabidi/how-to-setup-authentication-in-rails-8-33295a31c356)
+
+On Rails 8 there's this idea that authentication must be dealt  in house, avoiding to use gems like devise for instance, so they implemented a authentication generator that get all the hard work done
+
+```sh
+rails g authentication
+```
+
+**Output:**
+
+```mono
+invoke  erb
+      create    app/views/passwords/new.html.erb
+      create    app/views/passwords/edit.html.erb
+      create    app/views/sessions/new.html.erb
+      create  app/models/session.rb
+      create  app/models/user.rb
+      create  app/models/current.rb
+      create  app/controllers/sessions_controller.rb
+      create  app/controllers/concerns/authentication.rb
+      create  app/controllers/passwords_controller.rb
+      create  app/channels/application_cable/connection.rb
+      create  app/mailers/passwords_mailer.rb
+      create  app/views/passwords_mailer/reset.html.erb
+      create  app/views/passwords_mailer/reset.text.erb
+      create  test/mailers/previews/passwords_mailer_preview.rb
+      insert  app/controllers/application_controller.rb
+       route  resources :passwords, param: :token
+       route  resource :session
+        gsub  Gemfile
+      bundle  install --quiet
+    generate  migration CreateUsers email_address:string!:uniq password_digest:string! --force
+       rails  generate migration CreateUsers email_address:string!:uniq password_digest:string! --force 
+      invoke  active_record
+      create    db/migrate/20241120214018_create_users.rb
+    generate  migration CreateSessions user:references ip_address:string user_agent:string --force
+       rails  generate migration CreateSessions user:references ip_address:string user_agent:string --force 
+      invoke  active_record
+      create    db/migrate/20241120214019_create_sessions.rb
+```
+
+As you can see it creates all the good stuff already
+
+> I guess the highlight from the generator is the creation of Authentication concern that attaches to the Application controller, if you look further on this concern you will notice very interesting things like the usage of the Current from CurrentAttributes and Session model usage to hold session information, that is something else. The idea to have a table to hold session was something that always came to my mind, it's a great way to hold session stuff like last access and ip_address, it also matches the usage of session id with cookies
+
+### Further considerations
+
+I had two problems using straight out of the box generator, first when it creates the User model it defines the email field as `email_address` I don't get why, because, the method used on the `sessions_controller` generated uses `authenticated_by` and it expects the fields to be `email` and `password`. Another problem I got was on the terminal it complained about params not permitted, so I had to create e default strong_params:
+
+```rb
+  private
+    def session_params
+      params.require(:session).permit(:email, :password)
+    end
+```
+
+---
 
 ## Gists
 
@@ -3208,6 +3251,8 @@ These links only will work for the project owner
 
 - [RubyOnRails Snippets](https://gist.github.com/LucasBarretto86/06abfb8a034fc43be29df34ebeb85bab)
 - [Local fonts in `asset_path` and CORS adjustment](https://gist.github.com/LucasBarretto86/e1699059e596b7ebffb5b40ac6909d6b)
+
+---
 
 ## Snippets
 
@@ -3329,45 +3374,11 @@ end
 rails assets:precompile
 ```
 
-### Helpers
-
-#### ApplicationHelper
-
-```rb
-def dom_id_for_view(prefix: nil, suffix: nil)
-  "id=#{[prefix || controller_name, suffix || action_name].compact.join("-")}"
-end
-
-def dom_class_for_view(options = {})
-  default_class = "#{[options[:prefix] || controller_name, options[:suffix] || action_name].compact.join("-")}"
-  "class=#{options[:class] || default_class }"
-end
-```
-
-### locale dynamic configs
-
-Within the locale folder on the project it's possible to create an additional file to assist dynamic formatting for the class `I18n.t` and `I18n.l`
-
-```rb
-## config/locales/en.rb
-{
-  en: {
-    date: {
-      formats: {
-        short_month_day_year: lambda { "%b, #{ _1.day.ordinalize} %Y" }
-      }
-    }
-  }
-}
-```
-
-An error occurred while installing pg (1.2.3), and Bundler cannot continue.
-
-```shell
-sudo apt install postgresql-contrib libpq-dev
-```
-
 ## Concepts
+
+<!-- TODO -->
+
+---
 
 ## Issues
 
@@ -3413,6 +3424,8 @@ Command Error: /home/barretto86/.asdf/installs/ruby/3.3.0/lib/ruby/gems/3.3.0/ge
 wget http://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1f-1ubuntu2.22_amd64.deb
 sudo dpkg -i libssl1.1_1.1.1f-1ubuntu2.22_amd64.deb
 ```
+
+---
 
 ## References
 
