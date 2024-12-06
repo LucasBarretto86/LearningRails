@@ -28,10 +28,12 @@
       - [Setup channel](#setup-channel)
     - [YAML Credentials](#yaml-credentials)
     - [Generators](#generators)
-      - [Models generator](#models-generator)
-      - [executing SQL](#executing-sql)
-        - [executing](#executing)
-        - [Getting values, Select Value](#getting-values-select-value)
+      - [Scaffold](#scaffold)
+      - [Models](#models)
+      - [controllers](#controllers)
+    - [executing SQL](#executing-sql)
+      - [executing](#executing)
+      - [Getting values, Select Value](#getting-values-select-value)
     - [Hotwire](#hotwire)
     - [API](#api)
       - [Jbuilder](#jbuilder)
@@ -107,13 +109,6 @@
     - [`graphiql-rails` initial configuration](#graphiql-rails-initial-configuration)
     - [Mounting GraphQl engine to routes](#mounting-graphql-engine-to-routes)
     - [Generating ObjectTypes](#generating-objecttypes)
-  - [RSPEC](#rspec)
-    - [Installing RSPEC](#installing-rspec)
-      - [Generate RSPEC required files](#generate-rspec-required-files)
-    - [Setup generators](#setup-generators)
-    - [Mock and Doubles](#mock-and-doubles)
-      - [Doubles](#doubles)
-        - [Method stubs](#method-stubs)
   - [Webpack](#webpack)
     - [Run dev server](#run-dev-server)
   - [Webpacker](#webpacker)
@@ -131,19 +126,35 @@
       - [Implement a component within a view folder](#implement-a-component-within-a-view-folder)
       - [Tree for pack folders folders views](#tree-for-pack-folders-folders-views)
       - [Import to the app pack an external component](#import-to-the-app-pack-an-external-component)
+  - [RSPEC](#rspec)
+    - [Installing RSPEC](#installing-rspec)
+      - [Generate RSPEC required files](#generate-rspec-required-files)
+    - [Using rspec generators](#using-rspec-generators)
+    - [Mock and Doubles](#mock-and-doubles)
+      - [Doubles](#doubles)
+        - [Method stubs](#method-stubs)
+  - [GEM Creation](#gem-creation)
+    - [GEM generator](#gem-generator)
+    - [GEM code implement](#gem-code-implement)
+    - [How to test GEM code on development](#how-to-test-gem-code-on-development)
+  - [Rails Template](#rails-template)
   - [GEMS](#gems)
+    - [Devise](#devise)
+      - [Creating the User Model with Devise](#creating-the-user-model-with-devise)
+      - [Setup routes with Devise](#setup-routes-with-devise)
+      - [Configurations and Concern reference table](#configurations-and-concern-reference-table)
     - [JWT](#jwt)
       - [What is JWT?](#what-is-jwt)
     - [Annotate](#annotate)
     - [Factory Bot](#factory-bot)
-      - [`factory_bot_rails` gem install](#factory_bot_rails-gem-install)
-      - [Factory config for RSPEC](#factory-config-for-rspec)
-      - [Factory creation](#factory-creation)
+    - [Faker](#faker)
     - [Flipper](#flipper)
       - [Add Flipper to gemfile](#add-flipper-to-gemfile)
       - [run Flipper generator](#run-flipper-generator)
       - [Flipper Usage](#flipper-usage)
     - [SimpleCov](#simplecov)
+    - [Guard](#guard)
+    - [Database Cleaner](#database-cleaner)
     - [Audited](#audited)
       - [Install gem `audited`](#install-gem-audited)
       - [Setup `audited`](#setup-audited)
@@ -159,12 +170,7 @@
       - [Install pg\_search](#install-pg_search)
       - [Setup multisearch](#setup-multisearch)
       - [Adding search attribute to model](#adding-search-attribute-to-model)
-    - [scenic](#scenic)
-  - [GEM Creation](#gem-creation)
-    - [GEM generator](#gem-generator)
-    - [GEM code implement](#gem-code-implement)
-    - [How to test GEM code on development](#how-to-test-gem-code-on-development)
-  - [Rails Template](#rails-template)
+    - [Scenic](#scenic)
   - [Gists](#gists)
     - [Private](#private)
     - [Public](#public)
@@ -463,29 +469,49 @@ OR
 rails g
 ```
 
-#### Models generator
+#### Scaffold
+
+```sh
+rails generate scaffold Post title:string body:text
+```
+
+#### Models
+
+**Simple model:**
 
 ```shell
 rails g model Airline name:string image_url:string slug:string
 ```
 
-Model with reference:
+**Model with reference:**
 
 ```shell
 rails g model Review title:string description:string score:integer airline:belongs_to
 ```
 
-Model with polymorphic
+**Model with reference to a different table:**
+
+```sh
+rails g model Post author:references_to{foreign_key:users} content:text
+```
+
+**Model with polymorphic:**
 
 ```shell
 rails g model Image position:integer description:string imageable:belongs_to{polymorphic}
 ```
 
-#### executing SQL
+#### controllers
+
+```sh
+rails g controller API::V1::Session create destroy
+```
+
+### executing SQL
 
 Rails allow us to execute or get values from SQL
 
-##### executing
+#### executing
 
 ```rb
 ActiveRecord::Base.connection.execute('SELECT NOW();')
@@ -497,7 +523,7 @@ irb(main):003:0> ActiveRecord::Base.connection.execute('SELECT NOW();')
 => #<PG::Result:0x00007f5129693e18 status=PGRES_TUPLES_OK ntuples=1 nfields=1 cmd_tuples=1>   
 ```
 
-##### Getting values, Select Value
+#### Getting values, Select Value
 
 ```rb
 ActiveRecord::Base.connection.select_value("SQL QUERY")
@@ -1808,128 +1834,6 @@ rails generate graphql:object Note id:ID! title:String! body:String!
 
 *Note that `!` means that field os required to the query*
 
-## RSPEC
-
-### Installing RSPEC
-
-```shell
-gem install rspec
-```
-
-Adding to the project
-
-Add on gem file and run bundle
-
-```Gemfile
-group :devlopment, :test do
-  ...
-
-  gem "rspec"
-  gem "rspec-rails"
-end
-```
-
-rubocop has a lib for rspec
-
-```shell
-gem install rubocop-rspec
-```
-
-#### Generate RSPEC required files
-
-```shell
-rails g rspec:install
-```
-
-### Setup generators
-
-```rb
-# application.rb
-
-# LUCAS: Add configuration to generate spec and factories files as we use generators
-config.generators do |generator|
-  generator.test_framework :rspec
-  generator.fixture_replacement :factory_bot, suffix_factory: 'factory'
-end
-```
-
-### Mock and Doubles
-
-Mocking with RSpec is done with the `rspec-mocks` gem. If you have rspec as a dependency in your Gemfile, you already have rspec-mocks available.
-
-#### Doubles
-
-A double is a simplified object that take place from an actual model
-
-```rb
-feed = double
-```
-
-Or you can give your double a identifier
-
-```rb
-feed = double("feed")
-```
-
-##### Method stubs
-
-To stub methods in RSPEC is used `allow()` and `receive()` methods
-
-```rb
-allow(feed).to receive(:fetch).and_return("imagine I'm a JSON string")
-```
-
-**Output:**
-
-```mono
-feed.fetch
-=> "imagine I'm a JSON string"
-```
-
-The `and_return()` method is optional, if not added the method stubbed will return `nil`
-
-On stubs you can also use real objects
-
-```rb
-comment = double("comment")
-expect(Comment).to receive(:find).and_return(comment)
-```
-
-**Stub a method within another method:**
-
-```rb
-# method
-  def sync_balance
-    ..
-    
-    [available, pending] = Balance.retrieve(account_id)
-
-    update_columns(
-      available: cents_to_dollars(available),
-      pending: cents_to_dollars(pending)
-    )
-  end
-```
-
-```rb
-# Tests 
-it "#sync_balance" do
-  allow(Thorn::Stripe::Balance).to receive(:retrieve).and_return(
-    {
-      amount_available: 10000,
-      amount_pending: 5000
-    }
-  )
-
-  ledger.sync_balance
-
-  expect(ledger.reload.gateway_available.to_i).to eq 100
-  expect(ledger.reload.gateway_pending.to_i).to eq 50
-end
-```
-
-> In that scenario we the method `retrieve` from the class `Thorn::Stripe::Balance` is called within the method we are testing from the `ledger` object `sync_balance`.
-
 ## Webpack
 
 Implementing webpack-cli and dev-server
@@ -2084,7 +1988,416 @@ document.addEventListener('DOMContentLoaded', () => {
 })
 ```
 
+## RSPEC
+
+### Installing RSPEC
+
+```Gemfile
+group :development, :test do
+  ...
+  gem "rspec-rails"
+end
+```
+
+rubocop has a lib for rspec
+
+```Gemfile
+...
+
+group :development do
+  ...
+  gem install rubocop-rspec
+end
+
+```
+
+#### Generate RSPEC required files
+
+```shell
+rails g rspec:install
+```
+
+### Using rspec generators
+
+```sh
+rails g rspec:model User
+```
+
+### Mock and Doubles
+
+Mocking with RSpec is done with the `rspec-mocks` gem. If you have rspec as a dependency in your Gemfile, you already have rspec-mocks available.
+
+#### Doubles
+
+A double is a simplified object that take place from an actual model
+
+```rb
+feed = double
+```
+
+Or you can give your double a identifier
+
+```rb
+feed = double("feed")
+```
+
+##### Method stubs
+
+To stub methods in RSPEC is used `allow()` and `receive()` methods
+
+```rb
+allow(feed).to receive(:fetch).and_return("imagine I'm a JSON string")
+```
+
+**Output:**
+
+```mono
+feed.fetch
+=> "imagine I'm a JSON string"
+```
+
+The `and_return()` method is optional, if not added the method stubbed will return `nil`
+
+On stubs you can also use real objects
+
+```rb
+comment = double("comment")
+expect(Comment).to receive(:find).and_return(comment)
+```
+
+**Stub a method within another method:**
+
+```rb
+# method
+  def sync_balance
+    ..
+    
+    [available, pending] = Balance.retrieve(account_id)
+
+    update_columns(
+      available: cents_to_dollars(available),
+      pending: cents_to_dollars(pending)
+    )
+  end
+```
+
+```rb
+# Tests 
+it "#sync_balance" do
+  allow(Thorn::Stripe::Balance).to receive(:retrieve).and_return(
+    {
+      amount_available: 10000,
+      amount_pending: 5000
+    }
+  )
+
+  ledger.sync_balance
+
+  expect(ledger.reload.gateway_available.to_i).to eq 100
+  expect(ledger.reload.gateway_pending.to_i).to eq 50
+end
+```
+
+> In that scenario we the method `retrieve` from the class `Thorn::Stripe::Balance` is called within the method we are testing from the `ledger` object `sync_balance`.
+
+## GEM Creation
+
+### GEM generator
+
+to generate basic gem structure run
+
+```rb
+bundle gem your_gem_name
+```
+
+Gem naming convention:
+
+- Use dashes and extensions but keep in mind that every dash represents a structure (folder, module)
+  - For example if we have a gem name like  gem-structure-demo_notifier, it will generate a structure like `gem/structure/demo_notifier` and its class or module will have a name like module/class `Gem::Structure::DemoNotifier`
+- Don’t use uppercase letters
+
+**Creation process example:**
+
+```shell
+Creating gem 'gem-learning_create_gem'...
+Do you want to generate tests with your gem?
+Future `bundle gem` calls will use your choice. This setting can be changed anytime with `bundle config gem.test`.
+Enter a test framework. rspec/minitest/test-unit/(none): minitest
+Do you want to set up continuous integration for your gem? Supported services:
+* CircleCI:       https://circleci.com/
+* GitHub Actions: https://github.com/features/actions
+* GitLab CI:      https://docs.gitlab.com/ee/ci/
+
+Future `bundle gem` calls will use your choice. This setting can be changed anytime with `bundle config gem.ci`.
+Enter a CI service. github/gitlab/circle/(none): github
+Do you want to license your code permissively under the MIT license?
+This means that any other developer or company will be legally allowed to use your code for free as long as they admit you created it. You can read more about the MIT license at https://choosealicense.com/licenses/mit. y/(n): y
+MIT License enabled in config
+Do you want to include a code of conduct in gems you generate?
+Codes of conduct can increase contributions to your project by contributors who prefer collaborative, safe spaces. You can read more about the code of conduct at contributor-covenant.org. Having a code of conduct means agreeing to the responsibility of enforcing it, so be sure that you are prepared to do that. Be sure that your email address is specified as a contact in the generated code of conduct so that people know who to contact in case of a violation. For suggestions about how to enforce codes of conduct, see https://bit.ly/coc-enforcement. y/(n): n
+Do you want to include a changelog?
+A changelog is a file which contains a curated, chronologically ordered list of notable changes for each version of a project. To make it easier for users and contributors to see precisely what notable changes have been made between each release (or version) of the project. Whether consumers or developers, the end users of software are human beings who care about what's in the software. When the software changes, people want to know why and how. see https://keepachangelog.com y/(n): y
+Changelog enabled in config
+Do you want to add a code linter and formatter to your gem? Supported Linters:
+* RuboCop:       https://rubocop.org
+* Standard:      https://github.com/testdouble/standard
+
+Future `bundle gem` calls will use your choice. This setting can be changed anytime with `bundle config gem.linter`.
+Enter a linter. rubocop/standard/(none): rubocop
+RuboCop enabled in config
+Initializing git repo in /home/barretto86/Projects/RubyMineProjects/gem-learning_create_gem
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint: 
+hint:  git config --global init.defaultBranch <name>
+hint: 
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint: 
+hint:  git branch -m <name>
+      create  gem-learning_create_gem/Gemfile
+      create  gem-learning_create_gem/lib/gem/learning_create_gem.rb
+      create  gem-learning_create_gem/lib/gem/learning_create_gem/version.rb
+      create  gem-learning_create_gem/sig/gem/learning_create_gem.rbs
+      create  gem-learning_create_gem/gem-learning_create_gem.gemspec
+      create  gem-learning_create_gem/Rakefile
+      create  gem-learning_create_gem/README.md
+      create  gem-learning_create_gem/bin/console
+      create  gem-learning_create_gem/bin/setup
+      create  gem-learning_create_gem/.gitignore
+      create  gem-learning_create_gem/test/test_helper.rb
+      create  gem-learning_create_gem/test/gem/test_learning_create_gem.rb
+      create  gem-learning_create_gem/.github/workflows/main.yml
+      create  gem-learning_create_gem/LICENSE.txt
+      create  gem-learning_create_gem/CHANGELOG.md
+      create  gem-learning_create_gem/.rubocop.yml
+Gem 'gem-learning_create_gem' was successfully created. For more information on making a RubyGem visit https://bundler.io/guides/creating_gem.html
+```
+
+### GEM code implement
+
+The code the gem will use, must be written on the generated file: `/lib/gem/learning_create_gem.rb`
+
+```rb
+# frozen_string_literal: true
+
+require_relative "learning_create_gem/version"
+
+module Gem
+  module LearningCreateGem
+    class Error < StandardError; end
+      # Your code here
+  end
+end
+```
+
+### How to test GEM code on development
+
+To test our gem code as we development it we must use `irb` and require `rubygems` and our gem path as well `./lib/gem/learning_create_gem`
+
+```rb
+user@machine-name: irb
+irb(main):001:0> require 'rubygems'
+=> false
+irb(main):002:0> require './lib/gem/learning_create_gem'
+=> true
+irb(main):003:0> Gem::LearningCreateGem.methods
+```
+
+## Rails Template
+
+<https://railsbytes.com/public/templates>
+
 ## GEMS
+
+### Devise
+
+**Devise gem installation:**
+
+```Gemfile
+gem "devise" 
+```
+
+```sh
+bundle exec rails g devise:install
+```
+
+**Devise turbo setup:**
+
+After run the install task a initializer will be created on `config/initializers/devise.rb`
+
+To setup devise we need to uncomment the line:
+
+```rb
+Devise.setup do |config|
+  # ...
+
+  config.navigational_formats = ['*/*', :html, :turbo_stream]
+
+  # ...
+end
+```
+
+> This line adds `turbo_stream` as a navigational format. Turbo Streams are a part of Turbo, which lets you send server-rendered HTML and render pages without using much JavaScript. You need to add this for Devise 4.8.1 to work with Rails 7; otherwise, you'd get an undefined method user_url error.
+
+#### Creating the User Model with Devise
+
+```sh
+bundle exec rails g devise user
+```
+
+This generator will produce:
+
+```rb
+# frozen_string_literal: true
+
+class DeviseCreateUsers < ActiveRecord::Migration[7.0]
+  def change
+    create_table :users do |t|
+      ## Database authenticatable
+      t.string :email,              null: false, default: ""
+      t.string :encrypted_password, null: false, default: ""
+
+      ## Recoverable
+      t.string   :reset_password_token
+      t.datetime :reset_password_sent_at
+
+      ## Rememberable
+      t.datetime :remember_created_at
+
+      ## Trackable
+      # t.integer  :sign_in_count, default: 0, null: false
+      # t.datetime :current_sign_in_at
+      # t.datetime :last_sign_in_at
+      # t.string   :current_sign_in_ip
+      # t.string   :last_sign_in_ip
+
+      ## Confirmable
+      # t.string   :confirmation_token
+      # t.datetime :confirmed_at
+      # t.datetime :confirmation_sent_at
+      # t.string   :unconfirmed_email # Only if using reconfirmable
+```
+
+And also the model User:
+
+```rb
+class User < ApplicationRecord
+# Include default devise modules. Others available are:
+# :confirmable, :lockable, :timeoutable, :trackable and :omniauthable
+devise :database_authenticatable, :registerable,
+       :recoverable, :rememberable, :validatable
+end
+```
+
+> - **database_authenticatable:** Users can authenticate themselves with a login and password field. Their encrypted password will be stored in your database.
+> - **registerable:** Users can register themselves and can edit or delete their accounts.
+> - **recoverable:** Users can reset their password and recover their accounts if they forget their credentials.
+> - **rememberable:** This module remembers a user's sessions by saving the information in a browser cookie.
+> - **validatable:** This module provides validations for the user's email and password fields.
+
+**Changing validatable parameters:**
+
+Regarding the `validatable` concern from react, you will notice that your application will automatically validate the password to be at least six characters, even though you haven’t defined any custom validations in your model.
+This configurations comes from the devise initializer, so if you want to change some of this configurations you need to change the `devise.rb`
+
+```rb
+  # ==> Configuration for :validatable
+  # Range for password length.
+  config.password_length = 6..128
+```
+
+#### Setup routes with Devise
+
+As you generate the User model with devise you will also notice that it updated the routes file:
+
+```rb
+Rails.application.routes.draw do
+  devise_for :users
+  # ....
+end
+```
+
+> This is a useful method that defines all the required routes related to user authentication like `/users/sign_in`, `/users/sign_out`, and `/users/password/new`.
+> Devise takes care of all of that for you and even keeps the routes file clean.
+
+**Devise routes overwrite:**
+
+```rb
+Rails.application.routes.draw do
+  devise_for :users, skip: [:sessions], controllers: {
+    registrations: 'users/registrations',
+    passwords: 'users/passwords',
+  }
+end
+```
+
+> By overriding the standard devise controller you can add customized logics, in this example registration and password are been override to create custom views and session controller is skipped, because the session management in this snipped will handled different through an API
+
+Devise also allow us to overwrite the de default routes it creates for the user:
+
+```rb
+Rails.application.routes.draw do
+  devise_for :users, path: "auth", path_names: {
+    sign_in: "login",
+    sign_out: "logout",
+    sign_up: "signup"
+  }, controllers: {
+    sessions: "users/sessions",
+    registrations: "users/registrations"
+  }, skip: [:confirmations]
+end
+
+```
+
+#### Configurations and Concern reference table
+
+**Devise Concerns for User Model:**
+
+| **Concern**                 | **Description**                                                                                                                                       | **Methods/Features Added**                                                                                             |
+|-----------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------|
+| `:database_authenticatable` | Handles email/password authentication using a database.                                                                                             | - `authenticate`, `valid_password?`, `password=`                                                                       |
+| `:registerable`             | Adds functionality for user registration.                                                                                                           | - `create`, `update`, `destroy` methods                                                                               |
+| `:recoverable`              | Handles password recovery via reset tokens and email notifications.                                                                                 | - `send_reset_password_instructions`, `reset_password`                                                                |
+| `:rememberable`             | Adds "Remember Me" functionality, saving authentication tokens to cookies for persistent login.                                                    | - `remember_me!`, `forget_me!`, `remember_token`                                                                      |
+| `:trackable`                | Tracks user sign-in stats like sign-in count, timestamps, and IP address.                                                                           | - Updates `current_sign_in_at`, `last_sign_in_at`, `sign_in_count`                                                     |
+| `:validatable`              | Validates email and password format and presence by default.                                                                                        | - `email`, `password` validations (customizable)                                                                      |
+| `:confirmable`              | Requires users to confirm their email address before being fully authenticated.                                                                     | - `send_confirmation_instructions`, `confirm`, `confirmed?`, `confirmation_token`                                     |
+| `:lockable`                 | Locks an account after a specified number of failed sign-in attempts.                                                                               | - `lock_access!`, `unlock_access!`, `locked_at`, `unlock_token`                                                       |
+| `:timeoutable`              | Logs users out after a specified period of inactivity.                                                                                              | - Checks session timeout on requests                                                                                   |
+| `:omniauthable`             | Adds support for OmniAuth for third-party authentication (e.g., Google, Facebook).                                                                 | - Adds OmniAuth callbacks (`from_omniauth`, etc.)                                                                      |
+| `:jwt_authenticatable`      | Handles authentication using JSON Web Tokens (JWT).                                                                                                | - Adds methods for generating and verifying JWTs (requires configuration for `jwt_secret_key`)                        |
+
+---
+
+**Devise Initializer (`config/initializers/devise.rb`):**
+
+| **Configuration**                        | **Description**                                                                                                                                       | **Default**                          |
+|------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------|
+| `config.mailer_sender`                   | Sender email address for Devise emails.                                                                                                              | `"please-change-me@config-initializers-devise.com"` |
+| `config.authentication_keys`            | Keys used for authentication (e.g., email, username).                                                                                                | `[:email]`                           |
+| `config.case_insensitive_keys`          | Keys that are case insensitive during authentication.                                                                                                 | `[:email]`                           |
+| `config.strip_whitespace_keys`          | Keys where leading/trailing whitespace is stripped.                                                                                                  | `[:email]`                           |
+| `config.skip_session_storage`           | Define storage for sensitive data like passwords.                                                                                                    | `[:http_auth]`                       |
+| `config.stretches`                      | Number of times to hash passwords for security.                                                                                                      | `12` (default for bcrypt)            |
+| `config.reconfirmable`                  | Require reconfirmation when a user changes their email.                                                                                              | `true`                               |
+| `config.remember_for`                   | Duration (in seconds) for "Remember Me" functionality.                                                                                               | `2.weeks`                            |
+| `config.extend_remember_period`         | Extend "Remember Me" duration after each user action.                                                                                                | `false`                              |
+| `config.timeout_in`                     | Inactivity timeout duration for session expiry (used with `:timeoutable`).                                                                           | `30.minutes`                         |
+| `config.lock_strategy`                  | Lock strategy for `:lockable` (e.g., `:failed_attempts`).                                                                                             | `:failed_attempts`                   |
+| `config.unlock_strategy`                | Unlock strategy for `:lockable` (e.g., `:email`, `:time`, `:both`).                                                                                   | `:both`                              |
+| `config.maximum_attempts`               | Maximum failed attempts before locking an account.                                                                                                   | `5`                                  |
+| `config.reset_password_within`          | Time duration for a valid password reset token.                                                                                                      | `6.hours`                            |
+| `config.sign_out_via`                   | HTTP method(s) allowed for signing out (e.g., `:delete`, `:get`).                                                                                     | `:delete`                            |
+| `config.omniauth_path_prefix`           | Path prefix for OmniAuth callbacks.                                                                                                                  | `'/users/auth'`                      |
+| `config.scoped_views`                   | Enable separate views per Devise model scope (e.g., `Admin`, `User`).                                                                                 | `false`                              |
+| `config.navigational_formats`           | Formats considered navigational (e.g., `:html`).                                                                                                     | `[:html]`                            |
+| `config.jwt`                            | JWT configurations (e.g., `secret_key`, `expiration_time`, `dispatch_requests`).                                                                      | Requires manual setup                |
+| `config.pepper`                         | Pepper value added to password hashing for additional security.                                                                                       | `nil`                                |
+| `config.secret_key`                     | Secret key for Devise. Automatically generated if using Rails secrets.                                                                               | Auto-generated                       |
+| `config.parent_controller`              | Parent controller for Devise controllers.                                                                                                           | `"ApplicationController"`            |
+| `config.sign_in_after_reset_password`   | Automatically sign in after a password reset.                                                                                                        | `true`                               |
 
 ### JWT
 
@@ -2094,7 +2407,7 @@ The gem 'jwt' lets you securely encode and verify tokens, ensuring data integrit
 
 JSON Web Token a token that we generate so that the client can send on Authorization of Header every request, that token we use to cryptograph requests and authenticate an user
 
-Using JWT tokens involves encoding user data into a token, which is then sent in headers (e.g., Authorization: Bearer <token>) to authenticate API requests without storing session data on the server. This way, each request carries its own proof of identity.
+Using JWT tokens involves encoding user data into a token, which is then sent in headers (e.g., `Authorization: Bearer <token>`) to authenticate API requests without storing session data on the server. This way, each request carries its own proof of identity.
 
 **Gem Install:**
 
@@ -2292,7 +2605,7 @@ bundle exec annotate
 
 ### Factory Bot
 
-#### `factory_bot_rails` gem install
+**`factory_bot_rails` gem install:**
 
 Add factory_bot_rails to your Gemfile in :development, :test group
 
@@ -2305,46 +2618,33 @@ Add factory_bot_rails to your Gemfile in :development, :test group
 
 then run `bundle`
 
-#### Factory config for RSPEC
+**Factory config for RSPEC:**
 
-Create a file `spec/support/factory_bot.rb` and add the following configuration inside
+Setup the required config on rails_helper
 
 ```rb
+# spec/rails_helper.rb
 RSpec.configure do |config|
   config.include FactoryBot::Syntax::Methods
 end
 ```
 
-```shell
-mkdir spec/support/
-touch spec/support/factory_bot.rb
+**Factory creation:**
+
+If correctly configured factories should created automatically when a model or a controller is created, however factory bot also add a generator to create factories
+
+```sh
+rails generate factory_bot:model User first_name:string last_name:string email:string
 ```
-
-Uncomment the following line from `rails_helper.rb` so all files inside `spec/support` are loaded automatically by rspec
-
-```rb
-# Dir[Rails.root.join('spec', 'support', '**', '*.rb')].sort.each { |f| require f }
-```
-
-#### Factory creation
-
-Add factories folder inside spec folder if it doesn’t already exist. You can then create factories inside `spec/factories` folder.
-
-```shell
-mkdir spec/factories/
-```
-
-Create your factory within `spec/factories` folder
 
 **Example:**
 
 ```rb
 FactoryBot.define do
   factory :user do
-    first_name { 'John' }
-    last_name  { 'Doe' }
-    email { john@email_provider.com }
-    mobile_number { 7860945310 }
+    first_name { "MyString" }
+    last_name { "MyString" }
+    email { "MyString" }
   end
 end
 ```
@@ -2354,6 +2654,31 @@ end
 ```rb
 RSpec.describe User, type: :model do
   let(:user) { build(:user) }
+  let(:another_user) { create(:user) }
+end
+```
+
+### Faker
+
+**Faker installation:**
+
+```rb
+group :development, :test do
+  # ...
+  
+  gem "faker"
+end
+```
+
+**Usage:**
+
+```rb
+FactoryBot.define do
+  factory :user do
+    first_name {Faker::Name.name}
+    last_name {Faker::Name.last_name}
+    email {Faker::Internet.email}
+  end
 end
 ```
 
@@ -2395,6 +2720,128 @@ Flipper.enable_percentage_of_actors :search, 2
 
 ### SimpleCov
 
+`SimpleCov` is a Ruby gem used to measure code coverage in your applications. It helps identify how much of your code is executed when running tests. By analyzing the parts of your codebase that are covered by tests and those that aren't, it encourages better test coverage and helps identify untested code paths.
+
+```rb
+group :test do
+  gem 'simplecov', require: false
+end
+```
+
+**Setup simplecov:**
+
+```rb
+# spec/spec_helper.rb
+require 'simplecov'
+SimpleCov.start 'rails' # or use SimpleCov.start for a generic setup
+```
+
+As the tests suite runs a report will be generated in the coverage/ directory.
+
+### Guard
+
+`Guard` is a Ruby gem that automates tasks by watching for file changes. It is particularly useful for running tests, restarting servers, or performing any repetitive task whenever files in your project are modified.
+
+> Extensible through plugins like `guard-rspec`, `guard-minitest`, and others for tasks like running tests, reloading web servers, or compiling assets.
+
+```rb
+gem 'guard-rspec' # Example for RSpec
+```
+
+**Initializing Guard:**
+
+```sh
+bundle exec guard init rspec
+```
+
+> This creates a Guardfile with predefined configurations for RSpec.
+
+```mono
+guard :rspec, cmd: "bundle exec rspec" do
+  watch(%r{^spec/.+_spec\.rb$})
+  watch(%r{^app/(.+)\.rb$}) { |m| "spec/#{m[1]}_spec.rb" }
+end
+```
+
+**To start Guard:**
+
+```sh
+bundle exec guard
+```
+
+> Yes it will stays open on terminal to ensure the files force suite run as it gets changed
+
+### Database Cleaner
+
+ `Database Cleaner` is a gem for managing your test database. It ensures a clean state for your database before running tests, helping to avoid issues caused by leftover data from previous tests.
+
+**GPT: Rspec already manage isolate test suites? Why would I use DatabaseCleaner?**
+
+> RSpec isolates tests, but doesn't automatically clean the database.
+>
+> Use DatabaseCleaner for:
+>
+> - Faster, more reliable cleanup.
+> - Customizable cleaning strategies.
+> - Handling edge cases like multiple databases.
+> - It's especially useful in large test suites.
+> - Transaction management: RSpec's default transaction handling can fail in some edge cases, especially with multiple databases, external services, or non-ActiveRecord models.
+
+**Installing DatabaseCleaner:**
+
+```Gemfile
+group :test do
+  gem 'database_cleaner-active_record'
+end
+```
+
+**Setup:**
+
+```rb
+RSpec.configure do |config|
+  # ...
+  config.before(:suite) do
+    DatabaseCleaner.strategy = :transaction
+    DatabaseCleaner.clean_with(:truncation)
+  end
+
+  config.around(:each) do |example|
+    DatabaseCleaner.cleaning do
+      example.run
+    end
+  end
+
+  # ...
+end
+```
+
+**Database Cleaner configuration table:**
+
+| **Configuration**         | **Description**                                                                                                                                         | **Example**                                                                 |
+|----------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------|
+| `cleaner.strategy`         | Specifies the cleaning strategy (`:transaction`, `:truncation`, `:deletion`, `:null_strategy`). Determines how Database Cleaner resets the database.   | `DatabaseCleaner.strategy = :transaction`                                  |
+| `clean_with`               | Cleans the database immediately, using a specified strategy, regardless of current settings. Useful for ensuring a clean slate before tests run.        | `DatabaseCleaner.clean_with(:truncation)`                                  |
+| `allow_production`         | Allows Database Cleaner to run in a production environment (defaults to `false`). This is for extreme caution and should be avoided unless necessary.  | `DatabaseCleaner.allow_production = true`                                  |
+| `allow_remote_database_url`| Enables Database Cleaner to clean databases connected via remote URLs. Defaults to `false` for safety reasons.                                         | `DatabaseCleaner.allow_remote_database_url = true`                         |
+| `[:active_record].strategy`| Sets the strategy for Active Record (or other ORMs). Database Cleaner supports multiple ORMs, and you can configure each independently.               | `DatabaseCleaner[:active_record].strategy = :deletion`                     |
+| `start`                    | Initializes Database Cleaner before test execution begins. Ensures the cleaner is prepared to clean between tests.                                     | `DatabaseCleaner.start`                                                    |
+| `clean`                    | Cleans the database according to the selected strategy. Called after each test or test suite.                                                         | `DatabaseCleaner.clean`                                                    |
+| `cleaning`                 | Combines `start` and `clean` into a single block for convenience.                                                                                     | `DatabaseCleaner.cleaning { ...test code... }`                             |
+| `orm`                      | Configures which ORM Database Cleaner should target. Common ORMs include `:active_record`, `:mongo_mapper`, `:mongoid`, etc.                         | `DatabaseCleaner[:active_record].strategy = :transaction`                  |
+
+---
+
+**Strategies Overview:**
+
+| **Strategy**    | **Description**                                                                                                                                 |
+|------------------|-------------------------------------------------------------------------------------------------------------------------------------------------|
+| `:transaction`   | Wraps each test in a database transaction. Rollback occurs automatically at the end of the test. Fastest but not compatible with some setups.  |
+| `:truncation`    | Removes all data from the tables by executing `TRUNCATE` statements. Slower than `:transaction`, but more robust.                              |
+| `:deletion`      | Deletes data using `DELETE` statements. Slower than `:truncation` but supports databases where `TRUNCATE` isn’t available.                    |
+| `:null_strategy` | Does nothing. Useful when testing configurations that don’t require cleaning.                                                                 |
+
+---
+
 ### Audited
 
 This change is used to create audits for models in a very simple way
@@ -2402,10 +2849,11 @@ This change is used to create audits for models in a very simple way
 #### Install gem `audited`
 
 ```gemfile
-# for rails 5 or above
+gem "audited"
 
-gem "audited", "~> 5.0"
+# OR
 
+bundle add audited
 ```
 
 #### Setup `audited`
@@ -2454,9 +2902,8 @@ Gem used to create soft delete for models
 #### Install gem `paranoia`
 
 ```gemfile
-# for rails 5 or above
 
-gem "paranoia", "~> 2.2"
+gem "paranoia"
 ```
 
 #### Setup `paranoia`
@@ -2593,11 +3040,11 @@ foreman start
 
 ```Gemfile
 group :development do
-  ...
+  # ...
 
-  gem "rubocop", require: false
-  gem "rubocop-performance", require: false
   gem "rubocop-rails", require: false
+  gem "rubocop-performance", require: false
+  gem "rubocop-discourse", require: false
 
   #  For minitest
   gem "rubocop-minitest", require: false 
@@ -2630,9 +3077,9 @@ Brakeman: Is a free vulnerability scanner specifically designed for Ruby on Rail
 
 ```Gemfile
 group :development do
-  ...
+  # ...
 
-  gem 'brakeman', '>= 4.0', require: false
+  gem 'brakeman'
 end
 ```
 
@@ -2739,120 +3186,11 @@ Patient.search("Jane")
   ]
 ```
 
-### scenic
+### Scenic
 
 <https://github.com/scenic-views/scenic>
 
 > Handling SQL views within rails
-
-## GEM Creation
-
-### GEM generator
-
-to generate basic gem structure run
-
-```rb
-bundle gem your_gem_name
-```
-
-Gem naming convention:
-
-- Use dashes and extensions but keep in mind that every dash represents a structure (folder, module)
-  - For example if we have a gem name like  gem-structure-demo_notifier, it will generate a structure like `gem/structure/demo_notifier` and its class or module will have a name like module/class `Gem::Structure::DemoNotifier`
-- Don’t use uppercase letters
-
-**Creation process example:**
-
-```shell
-Creating gem 'gem-learning_create_gem'...
-Do you want to generate tests with your gem?
-Future `bundle gem` calls will use your choice. This setting can be changed anytime with `bundle config gem.test`.
-Enter a test framework. rspec/minitest/test-unit/(none): minitest
-Do you want to set up continuous integration for your gem? Supported services:
-* CircleCI:       https://circleci.com/
-* GitHub Actions: https://github.com/features/actions
-* GitLab CI:      https://docs.gitlab.com/ee/ci/
-
-Future `bundle gem` calls will use your choice. This setting can be changed anytime with `bundle config gem.ci`.
-Enter a CI service. github/gitlab/circle/(none): github
-Do you want to license your code permissively under the MIT license?
-This means that any other developer or company will be legally allowed to use your code for free as long as they admit you created it. You can read more about the MIT license at https://choosealicense.com/licenses/mit. y/(n): y
-MIT License enabled in config
-Do you want to include a code of conduct in gems you generate?
-Codes of conduct can increase contributions to your project by contributors who prefer collaborative, safe spaces. You can read more about the code of conduct at contributor-covenant.org. Having a code of conduct means agreeing to the responsibility of enforcing it, so be sure that you are prepared to do that. Be sure that your email address is specified as a contact in the generated code of conduct so that people know who to contact in case of a violation. For suggestions about how to enforce codes of conduct, see https://bit.ly/coc-enforcement. y/(n): n
-Do you want to include a changelog?
-A changelog is a file which contains a curated, chronologically ordered list of notable changes for each version of a project. To make it easier for users and contributors to see precisely what notable changes have been made between each release (or version) of the project. Whether consumers or developers, the end users of software are human beings who care about what's in the software. When the software changes, people want to know why and how. see https://keepachangelog.com y/(n): y
-Changelog enabled in config
-Do you want to add a code linter and formatter to your gem? Supported Linters:
-* RuboCop:       https://rubocop.org
-* Standard:      https://github.com/testdouble/standard
-
-Future `bundle gem` calls will use your choice. This setting can be changed anytime with `bundle config gem.linter`.
-Enter a linter. rubocop/standard/(none): rubocop
-RuboCop enabled in config
-Initializing git repo in /home/barretto86/Projects/RubyMineProjects/gem-learning_create_gem
-hint: Using 'master' as the name for the initial branch. This default branch name
-hint: is subject to change. To configure the initial branch name to use in all
-hint: of your new repositories, which will suppress this warning, call:
-hint: 
-hint:  git config --global init.defaultBranch <name>
-hint: 
-hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
-hint: 'development'. The just-created branch can be renamed via this command:
-hint: 
-hint:  git branch -m <name>
-      create  gem-learning_create_gem/Gemfile
-      create  gem-learning_create_gem/lib/gem/learning_create_gem.rb
-      create  gem-learning_create_gem/lib/gem/learning_create_gem/version.rb
-      create  gem-learning_create_gem/sig/gem/learning_create_gem.rbs
-      create  gem-learning_create_gem/gem-learning_create_gem.gemspec
-      create  gem-learning_create_gem/Rakefile
-      create  gem-learning_create_gem/README.md
-      create  gem-learning_create_gem/bin/console
-      create  gem-learning_create_gem/bin/setup
-      create  gem-learning_create_gem/.gitignore
-      create  gem-learning_create_gem/test/test_helper.rb
-      create  gem-learning_create_gem/test/gem/test_learning_create_gem.rb
-      create  gem-learning_create_gem/.github/workflows/main.yml
-      create  gem-learning_create_gem/LICENSE.txt
-      create  gem-learning_create_gem/CHANGELOG.md
-      create  gem-learning_create_gem/.rubocop.yml
-Gem 'gem-learning_create_gem' was successfully created. For more information on making a RubyGem visit https://bundler.io/guides/creating_gem.html
-```
-
-### GEM code implement
-
-The code the gem will use, must be written on the generated file: `/lib/gem/learning_create_gem.rb`
-
-```rb
-# frozen_string_literal: true
-
-require_relative "learning_create_gem/version"
-
-module Gem
-  module LearningCreateGem
-    class Error < StandardError; end
-      # Your code here
-  end
-end
-```
-
-### How to test GEM code on development
-
-To test our gem code as we development it we must use `irb` and require `rubygems` and our gem path as well `./lib/gem/learning_create_gem`
-
-```rb
-user@machine-name: irb
-irb(main):001:0> require 'rubygems'
-=> false
-irb(main):002:0> require './lib/gem/learning_create_gem'
-=> true
-irb(main):003:0> Gem::LearningCreateGem.methods
-```
-
-## Rails Template
-
-<https://railsbytes.com/public/templates>
 
 ## Gists
 
