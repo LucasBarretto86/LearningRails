@@ -280,7 +280,22 @@ Since he have added a file on the project we need also to add it to .gitignore i
 
 #### Dotenv Credentials
 
-<!-- TODO -->
+**Installing required gem:**
+
+```sh
+gem "dotenv-rails"
+```
+
+After we just need to create the files, it follows the pattern
+
+`.env.<environment>`
+
+**Example:**
+
+`.env.development`
+`.env.test`
+
+> This envs shouldn't be consider for production environment, would be much safer to use some secret services like
 
 ---
 
@@ -391,12 +406,6 @@ rails g model Airline name:string image_url:string slug:string
 
 ```shell
 rails g model Review title:string description:string score:integer airline:belongs_to
-```
-
-**Model with reference to a different table:**
-
-```sh
-rails g model Post author:references_to{foreign_key:users} content:text
 ```
 
 **Model with polymorphic:**
@@ -2154,10 +2163,57 @@ irb(main):003:0> Gem::LearningCreateGem.methods
 
 ### Bootstrap
 
-<https://dev.to/coorasse/rails-7-bootstrap-5-and-importmaps-without-nodejs-4g8>
+> By default, Rails 7 provides a new option `--css=bootstrap`, but this adds both `jsbundling-rails`, `cssbundling-rails`, a `package.json` and `esbuild`. So if you intend to add bootstrap using only importmaps, you have to add it manually
 
-- Create standard clean app
-- Install `boostrap` gem and `sassc-rails`
+**Installing Bootstrap:**
+
+```sh
+bundle add bootstrap
+
+# OR
+
+gem 'bootstrap'
+```
+
+You will also need to add `sassc-rails` to the Gemfile, this will allow us to compile bootstrap from SCSS without node.
+
+**Setup Bootstrap:**
+
+**1. import bootstrap on the main application.scss:**
+
+```scss
+/* app/assets/stylesheets/application.scss */
+
+@import "bootstrap";
+```
+
+**2. Add precompiled bootstrap on assets initializer:**
+
+```rb
+# config/initializers/assets.rb
+
+# ...
+
+Rails.application.config.assets.precompile += %w( bootstrap.min.js popper.js )
+
+# ...
+```
+
+**3. Pin bootstrap and dependencies on importmap config:**
+
+```rb
+# config/importmap.rb
+pin "popper", to: 'popper.js', preload: true
+pin "bootstrap", to: 'bootstrap.min.js', preload: true
+```
+
+**4. import bootstrap dependencies on the main application javascript:**
+
+```js
+// app/javascript/application.js
+import "popper"
+import "bootstrap"
+```
 
 ### Devise
 
