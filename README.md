@@ -2163,7 +2163,9 @@ irb(main):003:0> Gem::LearningCreateGem.methods
 
 ### Bootstrap
 
-> By default, Rails 7 provides a new option `--css=bootstrap`, but this adds both `jsbundling-rails`, `cssbundling-rails`, a `package.json` and `esbuild`. So if you intend to add bootstrap using only importmaps, you have to add it manually
+> By default, Rails 7 provides a new option `--css=bootstrap`, but this adds both `jsbundling-rails`, `cssbundling-rails`, a `package.json` and `esbuild`. So if you intend to add bootstrap using only importmaps, you have to add it manually.
+
+[Reference](https://dev.to/renuo/rails-7-bootstrap-5-and-importmaps-without-nodejs-4g8)
 
 **Installing Bootstrap:**
 
