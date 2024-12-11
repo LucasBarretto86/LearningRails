@@ -50,6 +50,8 @@
     - [Strategy](#strategy)
     - [Presenters](#presenters)
     - [Service classes](#service-classes)
+    - [Observer](#observer)
+      - [Observers vs Service Class](#observers-vs-service-class)
     - [Adapter](#adapter)
     - [Singletons](#singletons)
     - [Form Object](#form-object)
@@ -95,6 +97,7 @@
     - [How to test GEM code on development](#how-to-test-gem-code-on-development)
   - [Rails Template](#rails-template)
   - [GEMS](#gems)
+    - [Observer](#observer-1)
     - [Bootstrap](#bootstrap)
     - [Devise](#devise)
       - [Creating the User Model with Devise](#creating-the-user-model-with-devise)
@@ -1363,6 +1366,152 @@ end
 
 <!-- TODO -->
 
+### Observer
+
+Observer are a built-in feature of rails, however on Rails 4+ you need to install it manually [setup rails observers](#observer-1)
+
+In Rails, an observer is a design pattern that separates the logic of reacting to changes in a model from the model itself. Observers "observe" specific models and respond to their lifecycle callbacks or other changes. This helps keep your models slim and adheres to the Single Responsibility Principle (SRP) by delegating some responsibilities to separate classes.
+
+**Example:**
+
+```rb
+# app/models/course.rb
+class Course < ApplicationRecord
+  has_many :lessons, -> { order(:position) }, dependent: :destroy
+end
+
+# app/models/lesson.rb
+class Lesson < ApplicationRecord
+  belongs_to :course
+end
+
+# app/models/course_observer.rb
+class CourseObserver < ActiveRecord::Observer
+  observe :lesson
+
+  def after_destroy(lesson)
+    # Get the course associated with the destroyed lesson
+    course = lesson.course
+
+    # Reorder the remaining lessons' positions
+    course.lessons.order(:position).each_with_index do |lesson, index|
+      lesson.update_column(:position, index + 1)
+    end
+  end
+```
+
+#### Observers vs Service Class
+
+Here's a direct comparison between **Observer** and **Service Class** to help you decide based on your application's needs:
+
+**Observer:**
+
+An **Observer** watches for changes in a model and performs actions in response. Observers are part of Rails but have become less common in modern applications.
+
+**Pros:**
+
+- **Decoupling**: Moves logic out of the model while still being tied to its lifecycle.
+- **Automatic Trigger**: Runs automatically when specific changes happen, such as creating, updating, or deleting a record.
+- **Simplicity**: Good for small, narrowly scoped operations (e.g., sending notifications after a user is created).
+
+**Cons:**
+
+- **Hidden Dependencies**: Observers can make the code harder to trace because the behavior isn't explicitly called in the model or controller.
+- **Testing Complexity**: Can complicate testing due to indirect triggers.
+- **Less Flexible**: Observers are tightly bound to model lifecycle callbacks and harder to reuse outside that context.
+
+**Use Case:**
+
+Use observers when you want to **react to model changes** in a simple way and don't anticipate significant complexity or reuse.
+
+---
+
+**Service Class:**
+
+A **Service Class** encapsulates business logic and is explicitly called when needed. It’s not tied to a specific model lifecycle.
+
+**Pros:**
+
+- **Explicit**: Logic is easy to find and track since it’s not hidden in callbacks.
+- **Testable**: Isolated and easy to test independently of models.
+- **Reusable**: Can be used in multiple contexts (e.g., from controllers, jobs, or rake tasks).
+- **SOLID Principle**: Follows the Single Responsibility Principle by keeping logic outside the models and controllers.
+
+**Cons:**
+
+- **More Verbose**: Requires creating and organizing extra classes.
+- **Explicit Invocation**: Needs to be manually called, so it relies on disciplined implementation.
+
+**Use Case:**
+
+Use service classes when the logic is **complex**, **cross-cutting**, or needs to be **reused** in multiple places.
+
+```rb
+# app/services/rearrange_lesson_position_service.rb
+class RearrangeLessonPositionsService
+  def self.call(course:)
+    course.lessons.order(:number).each.with_index(1) do |lesson, index|
+      lesson.update_columns(number: index) # Avoids validations if unnecessary
+    end
+  end
+end
+
+# You’d invoke it explicitly, e.g., in a controller or a `after_destroy_commit` callback:
+
+# app/models/lesson.rb (Not recommended)
+class Lesson < ApplicationRecord
+  after_destroy_commit -> { RearrangeLessonPositionsService.call(course: course) }
+end
+
+# app/controllers/lessons_controller.rb
+class LessonsController < ApplicationController
+  before_action :set_course
+  before_action :set_lesson, only: [:show, :update, :destroy]
+
+# ...
+
+  def destroy
+     ActiveRecord::Base.transaction do
+      if @lesson.destroy
+        # Call the service to rearrange lesson positions
+        RearrangeLessonPositionsService.call(course: @course)
+        render json: { message: "Lesson removed and course rearranged" }, status: :ok
+      else
+        # If lesson destruction fails, raise an exception to trigger rollback
+        raise ActiveRecord::Rollback, "Lesson destruction failed"
+      end
+    end
+  rescue ActiveRecord::Rollback
+    render json: { error: "Something went wrong" }, status: :unprocessed_entity
+  end
+end
+```
+
+---
+
+**Comparison:**
+
+| Feature                   | Observer                           | Service Class                    |
+| :------------------------ |:---------------------------------- | :--------------------------------|
+| **Decoupling**            | Partial (still lifecycle-bound)    | Full (independent of lifecycle)  |
+| **Reusability**           | Limited                            | High                             |
+| **Traceability**          | Hard to trace behavior             | Explicit invocation              |
+| **Testing**               | More complex                       | Easier                           |
+| **Complexity**            | Best for simple cases              | Handles complex logic well       |
+| **Best Practice?**        | Rare in modern apps                | Standard in modern apps          |
+
+---
+
+**Real-World Best Practice:**
+
+In modern Rails apps, **service classes** are the preferred approach because:
+
+- They keep code modular and maintainable.
+- They promote explicitness, which aids debugging and testing.
+- They follow modern design patterns aligned with SOLID principles.
+
+Observers are considered **legacy** or niche tools for simpler cases where automatic triggers are enough and the logic is minimal. If you expect growth or complexity, service classes are a better investment.
+
 ### Adapter
 
 <!-- TODO -->
@@ -1371,7 +1520,7 @@ end
 
 Singleton is a design pattern that ensures that a class has only one instance and provides a global point of access to that instance.
 
-Basically are objects that gets instantiated once on the application and remains globally available without needing to be instancianted again coz it keeps available throughout the runtime of the application, so when you use it you will always get the same instance, instead of keep creating garbage.
+Basically are objects that gets instantiated once on the application and remains globally available without needing to be instantiated again because it keeps available throughout the runtime of the application, so when you use it you will always get the same instance, instead of keep creating garbage.
 
 **Example:**
 
@@ -2160,6 +2309,38 @@ irb(main):003:0> Gem::LearningCreateGem.methods
 <https://railsbytes.com/public/templates>
 
 ## GEMS
+
+### Observer
+
+**Installation:**
+
+```sh
+gem "rails-observers"
+```
+
+**Configuration:**
+
+```rb
+# config/application.rb
+
+config.active_record.observers = [:course_observer, :lesson_observer, ...other_observers]
+```
+
+**Examples of observers:**
+
+```rb
+# app/observers/course_observer.rb
+class CourseObserver < ActiveRecord::Observer
+  observe :course
+  # Define callbacks for Course model
+end
+
+# app/observers/lesson_observer.rb
+class LessonObserver < ActiveRecord::Observer
+  observe :lesson
+  # Define callbacks for Lesson model
+end
+```
 
 ### Bootstrap
 
