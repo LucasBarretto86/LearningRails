@@ -4,6 +4,8 @@
   - [Installation](#installation)
   - [Configurations](#configurations)
     - [Database (schema vs structure.sql)](#database-schema-vs-structuresql)
+    - [Environments](#environments)
+      - [Development](#development)
     - [Credentials and ENVs](#credentials-and-envs)
       - [Rails credentials](#rails-credentials)
       - [Custom YAML Credentials](#custom-yaml-credentials)
@@ -58,7 +60,6 @@
     - [Form definition](#form-definition)
       - [Usage](#usage)
   - [Kredis](#kredis)
-    - [**Configuring Kredis:**](#configuring-kredis)
   - [Docker](#docker)
     - [Creating `Dockerfile.dev`](#creating-dockerfiledev)
     - [Creating docker-compose files](#creating-docker-compose-files)
@@ -78,6 +79,7 @@
         - [Most important commands to check webpacker health](#most-important-commands-to-check-webpacker-health)
   - [ESbuild](#esbuild)
   - [Importmaps](#importmaps)
+  - [Kamal](#kamal)
   - [React with in Rails project](#react-with-in-rails-project)
     - [Configuration](#configuration)
       - [Installing react into the project with webpacker](#installing-react-into-the-project-with-webpacker)
@@ -97,14 +99,19 @@
     - [How to test GEM code on development](#how-to-test-gem-code-on-development)
   - [Rails Template](#rails-template)
   - [GEMS](#gems)
-    - [Observer](#observer-1)
+    - [Rails observers](#rails-observers)
     - [Bootstrap](#bootstrap)
+      - [Modern way with Importmaps](#modern-way-with-importmaps)
+      - [Bootstrap](#bootstrap-1)
+      - [Bootstrap through CDN](#bootstrap-through-cdn)
     - [Devise](#devise)
       - [Creating the User Model with Devise](#creating-the-user-model-with-devise)
       - [Setup routes with Devise](#setup-routes-with-devise)
       - [Configurations and Concern reference table](#configurations-and-concern-reference-table)
+    - [Devise JWT](#devise-jwt)
     - [JWT](#jwt)
       - [What is JWT?](#what-is-jwt)
+    - [mini\_racer](#mini_racer)
     - [Annotate](#annotate)
     - [Factory Bot](#factory-bot)
     - [Faker](#faker)
@@ -127,13 +134,12 @@
     - [Rubocop](#rubocop)
     - [Brakeman](#brakeman)
     - [pg\_search](#pg_search)
-      - [Install pg\_search](#install-pg_search)
-      - [Setup multisearch](#setup-multisearch)
-      - [Adding search attribute to model](#adding-search-attribute-to-model)
+    - [searchkick](#searchkick)
     - [Scenic](#scenic)
   - [Rails 8](#rails-8)
     - [User Authentication](#user-authentication)
     - [Further considerations](#further-considerations)
+  - [ElasticSearch](#elasticsearch)
   - [Gists](#gists)
     - [Private](#private)
     - [Public](#public)
@@ -196,6 +202,26 @@ Mature database representation
   # ...
     config.active_record.schema_format = :sql
   end
+```
+
+---
+
+### Environments
+
+#### Development
+
+**Rendering partials paths on Browser inspector:**
+
+Rails has a neat config for `development.rb` environment, it annotates partials and views files names on the browser inspector, to use we just need to change the following like:
+
+```rb
+# config/environments/development.rb
+# ...
+
+# Annotate rendered view with file names.
+config.action_view.annotate_rendered_view_with_filenames = true
+
+# ...
 ```
 
 ---
@@ -1186,7 +1212,7 @@ Jbuilder.key_format camelize: :lower
 
 In order to work properly it's also required to add to the gemfile a gem specifically to handle active_record variants
 
-```gemfile
+```Gemfile
 gem "image_processing", ">= 1.2"
 ```
 
@@ -1635,7 +1661,7 @@ end
 
 Kredis is a higher level wrapper for your redis database which allow you to store more complex data-structure on your redis.
 
-### **Configuring Kredis:**
+**Configuring Kredis:**
 
 within your project run
 
@@ -1980,6 +2006,10 @@ rails webpacker
 
 ## Importmaps
 
+## Kamal
+
+<!-- TODO -->
+
 ## React with in Rails project
 
 ### Configuration
@@ -2310,7 +2340,7 @@ irb(main):003:0> Gem::LearningCreateGem.methods
 
 ## GEMS
 
-### Observer
+### Rails observers
 
 **Installation:**
 
@@ -2344,6 +2374,10 @@ end
 
 ### Bootstrap
 
+#### Modern way with Importmaps
+
+#### Bootstrap
+
 > By default, Rails 7 provides a new option `--css=bootstrap`, but this adds both `jsbundling-rails`, `cssbundling-rails`, a `package.json` and `esbuild`. So if you intend to add bootstrap using only importmaps, you have to add it manually.
 
 [Reference](https://dev.to/renuo/rails-7-bootstrap-5-and-importmaps-without-nodejs-4g8)
@@ -2369,6 +2403,8 @@ You will also need to add `sassc-rails` to the Gemfile, this will allow us to co
 
 @import "bootstrap";
 ```
+
+Yes needs to change from `application.css` to `application.scss` because bootstrap works with partials, thats why we need `sassc-rails`
 
 **2. Add precompiled bootstrap on assets initializer:**
 
@@ -2397,6 +2433,17 @@ pin "bootstrap", to: 'bootstrap.min.js', preload: true
 import "popper"
 import "bootstrap"
 ```
+
+#### Bootstrap through CDN
+
+We don't necessarily need to add gem os or external sources to use simple stuff from bootstrap we just need to add the CDN files
+
+```erb
+  <link rel="stylesheet" href="https://cdn.skypack.dev/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js" defer></script>
+```
+
+> We put that on the layout we want to use bootstrap
 
 ### Devise
 
@@ -2509,6 +2556,14 @@ end
 > This is a useful method that defines all the required routes related to user authentication like `/users/sign_in`, `/users/sign_out`, and `/users/password/new`.
 > Devise takes care of all of that for you and even keeps the routes file clean.
 
+**Devise controller overwrite:**
+
+```sh
+rails generate devise:controllers users -c=sessions registrations passwords
+```
+
+> This will produce controller for sessions, registrations and passwords, under scope of `controller/users`, instead of using devise default controllers
+
 **Devise routes overwrite:**
 
 ```rb
@@ -2526,7 +2581,7 @@ Devise also allow us to overwrite the de default routes it creates for the user:
 
 ```rb
 Rails.application.routes.draw do
-  devise_for :users, path: "auth", path_names: {
+  devise_for :users, path: "", path_names: {
     sign_in: "login",
     sign_out: "logout",
     sign_up: "signup"
@@ -2535,7 +2590,16 @@ Rails.application.routes.draw do
     registrations: "users/registrations"
   }, skip: [:confirmations]
 end
+```
 
+> In this example I want endpoint to respond to `/login`, thats why we keep the `path:` with empty string
+
+**Set sign_in route as root:**
+
+```rb
+devise_scope :user do
+  root to: "devise/sessions#new"
+end
 ```
 
 #### Configurations and Concern reference table
@@ -2588,6 +2652,126 @@ end
 
 ---
 
+### Devise JWT
+
+When you already have devise setup, it might a lot easier to handle JWT using devise implementation
+
+**Setup Devise JWT:**
+
+**1. Add devise jwt gem:**
+
+```Gemfile
+gem 'devise-jwt'
+```
+
+**2. Setup JWT Secret Key:**
+
+To be able to encrypt and decrypt the JWT we will need to setup a ENV on `.env` or using `Rails credentials`
+
+- On console generate a fingerprint with `SecureRandom.hex(64)`
+
+```sh
+# For development
+EDITOR="nano" bin/rails credentials:edit --environment development
+
+# For production
+EDITOR="nano" bin/rails credentials:edit
+```
+
+```yml
+devise:
+  jwt_secret_key: your_generated_key_here
+```
+
+> If using dotenv set .env like this:
+>
+> ```mono
+> DEVISE_JWT_SECRET_KEY=your_generated_key_here
+> ```
+
+**3. Add JWT configuration to devise initializer:**
+
+```rb
+# config/initializers/devise.rb
+Devise.setup do |config|
+#  ...
+  
+  config.jwt do |jwt|
+    jwt.secret = Rails.application.credentials.devise[:jwt_secret_key] || ENV['DEVISE_JWT_SECRET_KEY']
+    jwt.dispatch_requests = [
+      ['POST', %r{^/sign-in$}]
+    ]
+    jwt.revocation_requests = [
+       ['DELETE', %r{^/sign-out$}] # This will be necessary if you have logout requirement on your API, stateless API don't need it just expire tokens by expiration
+    ]
+    jwt.expiration_time = 1.day.to_i
+  end
+end
+```
+
+> Notice that the endpoints needs to represent the endpoints you are using
+
+**4. Update User model:**
+
+```rb
+# app/models/user.rb
+
+class User < ApplicationRecord
+  devise :database_authenticatable, :registerable,
+         :recoverable, :rememberable, :validatable,
+         :jwt_authenticatable, jwt_revocation_strategy: JwtDenylist
+end
+```
+
+> Notice that jwt_revocation_strategy only is required if you have needs to create a endpoint for logout
+> Stateless APIS doesn't need this, because they rely only on expiration to invalidate tokens
+
+**5. Implement revocation strategy (Optional):**
+
+1. Generate a Denylist model:
+
+  ```sh
+  rails generate model JwtDenylist jti:string:index exp:datetime
+  rails db:migrate
+  ```
+
+2. Define the Denylist class: Update app/models/jwt_denylist.rb
+
+  ```rb
+  class JwtDenylist < ApplicationRecord
+    include Devise::JWT::RevocationStrategies::Denylist
+
+    self.table_name = 'jwt_denylists'
+  end
+  ```
+
+3. Create a custom SessionsController to handle JWT authentication:
+
+   ```rb
+    # app/controllers/users/sessions_controller.rb
+
+    class Users::SessionsController < Devise::SessionsController
+      private
+
+      def respond_with(resource,_opts = {})
+        render json: { message: 'Logged in successfully', user: resource }, status: :ok
+      end
+
+      def respond_to_on_destroy
+        jwt_payload = JWT.decode(request.headers['Authorization'].split.last, Rails.application.credentials.devise[:jwt_secret_key]).first
+        current_user = User.find(jwt_payload['sub'])
+        if current_user
+          render json: { message: 'Logged out successfully' }, status: :ok
+        else
+          render json: { message: 'Logout failed' }, status: :unauthorized
+        end
+      end
+    end
+
+   ```
+
+---
+
 ### JWT
 
 The gem 'jwt' lets you securely encode and verify tokens, ensuring data integrity in stateless applications, is regarded as the best way to handle authentication on APIs
@@ -2602,6 +2786,10 @@ Using JWT tokens involves encoding user data into a token, which is then sent in
 
 ```sh
 bundle add 'jwt'
+
+# OR on Gemfile
+
+gem "jwt" 
 ```
 
 **How to use:**
@@ -2626,12 +2814,10 @@ end
 
 **2. Create required ENV:**
 
-Notice that `JWT_SECRET_KEY` is ENV, this is use as a 'Salt' on the incryption and decryption, to create a fingerprint to define this ENV we can run
+Notice that `JWT_SECRET_KEY` is ENV, this is use as a 'Salt' on the encryption and decryption, to create a fingerprint to define this ENV we can run
 
 ```rb
-require 'securerandom'
-
-fingerprint = SecureRandom.hex(64) # Generates a 128-character hexadecimal string
+SecureRandom.hex(64) # Generates a 128-character hexadecimal string
 ```
 
 That fingerprint you save as a credential or as ENV
@@ -2688,6 +2874,30 @@ headers: {
 > `<token>` must be replaced by the token itself
 ---
 
+### mini_racer
+
+Minimal, modern embedded V8 for Ruby, it provides a minimal two way bridge between the V8 JavaScript engine and Ruby, it has an adapter for `execjs` so it can be used directly with Rails projects to minify assets, run babel or compile CoffeeScript.
+
+The thing is if you have an app that uses importmaps and you don't want to rely on full nodejs installation, mini_racer is an lightweight alternative, when you need transpile or other good stuff from node in runtime. This is used on development only, because production works with assets precompiled, so it doesn't need to process stuff from node, in case is need would be best to use nodejs itself.
+
+**Installation for mini_racer:**
+
+```rb
+group :development, :test do
+  gem "mini_racer"
+end
+```
+
+**Setup if you care using docker:**
+
+```Dockerfile
+# Install base packages
+# For mini_racer: libv8-dev
+RUN apt-get update -qq && \
+    apt-get install --no-install-recommends -y curl libjemalloc2 libvips libv8-dev && \
+    rm -rf /var/lib/apt/lists /var/cache/apt/archives
+```
+
 ### Annotate
 
 Annotate is a great gem that add comments form the table structure into a models and others
@@ -2741,7 +2951,7 @@ if Rails.env.development?
       'exclude_tests'               => 'true',       # Exclude test files from annotation
       'exclude_fixtures'            => 'true',       # Exclude fixture files from annotation
       'exclude_factories'           => 'true',       # Exclude factory files from annotation
-      'exclude_serializers'         => 'false',      # Include serializers in annotation
+      'exclude_serializers'         => 'true',       # Exclude serializers in annotation
       'exclude_scaffolds'           => 'true',       # Exclude scaffold files from annotation
       'exclude_controllers'         => 'true',       # Exclude controller files from annotation
       'exclude_helpers'             => 'true',       # Exclude helper files from annotation
@@ -2932,10 +3142,38 @@ end
 ```rb
 # spec/spec_helper.rb
 require 'simplecov'
-SimpleCov.start 'rails' # or use SimpleCov.start for a generic setup
+
+# changed_files = `git diff --name-only $(git merge-base main HEAD)`.split("\n")
+
+SimpleCov.start 'rails' do
+  # Here is where you would add_filter to exclude dirs that you don't want to be analyzed
+
+  # To specify file ensure it will track changes
+
+  # track_files(changed_files.select { |f| f.end_with?(".rb") }.join(" "))
+  
+  # Optionally, you can exclude files you don't want to track
+  
+  # add_filter '/config/'
+  # add_filter '/spec/'
+  # add_filter '/test/'
+  
+  # OR
+
+  # add_filter %w[app/views lib/rails lib/templates bin coverage log test vendor node_modules db doc public storage tmp]
+  
+  # Set minimum coverage (optional)
+  # minimum_coverage 90
+
+  # Set branch verification
+  # enable_coverage :branch
+  # primary_coverage :branch, # default is :line
+end
 ```
 
 As the tests suite runs a report will be generated in the coverage/ directory
+
+You can check many more configuration [here](https://github.com/simplecov-ruby/simplecov?tab=readme-ov-file)
 
 ---
 
@@ -3306,20 +3544,22 @@ bundle exec brakeman
 
 ### pg_search
 
-#### Install pg_search
+PG search is the best option for `full-text search`, if you have a different database consider to use [`searchkick`](#searchkick)
+
+**Install pg_search:**
 
 ```shell
 bundle add pg_search
 ```
 
-#### Setup multisearch
+**Setup multisearch:**
 
 ```shell
 rails g pg_search:migration:multisearch
 rails db:migrate
 ```
 
-#### Adding search attribute to model
+**Adding search attribute to model:**
 
 ```rb
 # frozen_string_literal: true
@@ -3405,6 +3645,90 @@ Patient.search("Jane")
 
 ---
 
+### searchkick
+
+Requires [ElasticSearch](#elasticsearch) installation
+
+**Install searchkick:**
+
+```Gemfile
+gem "elasticsearch", "< 7.14"
+gem "searchkick"
+```
+
+**Setup:**
+
+```rb
+class Product < ApplicationRecord
+  searchkick
+
+  # OR To specify search language
+
+  searchkick language: "english"
+end
+```
+
+After adding the helper into the model we need to run a indexing task
+
+```sh
+bin/rails searchkick:reindex CLASS=Product
+```
+
+**Searching:**
+
+```rb
+# Simple search:
+Product.search("search_term")
+
+# Use options for more complex searches
+Product.search("laptop", fields: [:name, :description], where: { category: "electronics", price: { lt: 1000 } }, order: { price: :asc })
+
+# Use pagination for large results:
+products = Product.search("laptop", page: params[:page], per_page: 20)
+```
+
+**Adding custom indexing:**
+
+```rb
+class Product < ApplicationRecord
+  searchkick
+  def search_data
+    {
+      name: name,
+      description: description,
+      name_english: name_translations[:en],
+      name_french: name_translations[:fr],
+      stock_status: in_stock? ? "in_stock" : "out_of_stock" # derived field
+    }
+  end
+end
+
+# Search examples:
+
+Product.search("term", fields: [:name_english])
+
+Product.search("laptop", where: { stock_status: "in_stock" })
+```
+
+> Avoid indexing sensitive or irrelevant fields to minimize storage and improve query performance.
+
+**In Production:**
+
+1. Use managed ElasticSearch services for production, such as:
+   - Elastic Cloud
+   - AWS OpenSearch
+2. Set environment variables for ElasticSearch configuration:
+
+  ```rb
+  Searchkick.client = Elasticsearch::Client.new(url: ENV['ELASTICSEARCH_URL'])
+  ```
+
+**Regular Maintenance:**
+
+```sh
+rails searchkick:reindex:all
+```
+
 ### Scenic
 
 <https://github.com/scenic-views/scenic>
@@ -3474,6 +3798,122 @@ I had two problems using straight out of the box generator, first when it create
 
 ---
 
+## ElasticSearch
+
+If you want to use Self hosted implementation it will be for free, however if you use cloud services it will incur in costs
+
+**Compose Installation:**
+
+```yml
+services:
+  app:
+    container_name: my-app_c
+    depends_on:
+      - elasticsearch
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/rails
+      - ./db:/rails/db
+
+    environment:
+      - RAILS_ENV=development
+      - ELASTICSEARCH_URL=http://elasticsearch:9200 # reference ElasticSearch URL inside the container
+
+    networks:
+      - app-network
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.10.0
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node  # Configures ElasticSearch to run as a single-node cluster
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m  # Memory settings for ElasticSearch (adjust as needed)
+    ports:
+      - "9200:9200"  # Expose port for external access (if needed)
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data  # Persists data on your host machine
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9200"] # Check if service is running smoothly
+      interval: 30s
+      retries: 3
+      start_period: 10s
+      timeout: 10s
+    restart: always  # Ensures ElasticSearch restarts if it crashes
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  elasticsearch_data:
+    driver: local
+  db:
+```
+
+**Check Installation:**
+
+```sh
+curl -X GET "localhost:9200/"
+```
+
+**Output:**
+
+```sh
+{
+  "name" : "e2ebda27fa8e",
+  "cluster_name" : "docker-cluster",
+  "cluster_uuid" : "4K1B2koZQiWn0rt7LGyFjw",
+  "version" : {
+    "number" : "7.10.0",
+    "build_flavor" : "default",
+    "build_type" : "docker",
+    "build_hash" : "51e9d6f22758d0374a0f3f5c6e8f3a7997850f96",
+    "build_date" : "2020-11-09T21:30:33.964949Z",
+    "build_snapshot" : false,
+    "lucene_version" : "8.7.0",
+    "minimum_wire_compatibility_version" : "6.8.0",
+    "minimum_index_compatibility_version" : "6.0.0-beta1"
+  },
+  "tagline" : "You Know, for Search"
+```
+
+**Check docker service:**
+
+```sh
+docker logs elasticsearch
+```
+
+**Check current status:**
+
+```sh
+host:9200/_cluster/health?pretty"
+```
+
+**Output:**
+
+```sh
+{
+  "cluster_name" : "docker-cluster",
+  "status" : "green",
+  "timed_out" : false,
+  "number_of_nodes" : 1,
+  "number_of_data_nodes" : 1,
+  "active_primary_shards" : 0,
+  "active_shards" : 0,
+  "relocating_shards" : 0,
+  "initializing_shards" : 0,
+  "unassigned_shards" : 0,
+  "delayed_unassigned_shards" : 0,
+  "number_of_pending_tasks" : 0,
+  "number_of_in_flight_fetch" : 0,
+  "task_max_waiting_in_queue_millis" : 0,
+  "active_shards_percent_as_number" : 100.0
+}
+```
+
 ## Gists
 
 ### Private
@@ -3539,7 +3979,6 @@ end
 class ApplicationController < ActionController::Base 
   include SetCurrentAttributes
 end
-
 ```
 
 #### Adding Current variables on Mailer previews
