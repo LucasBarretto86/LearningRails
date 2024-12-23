@@ -48,17 +48,25 @@
     - [variants](#variants)
   - [Logger](#logger)
     - [Customized Logger](#customized-logger)
-  - [Patterns](#patterns)
-    - [Strategy](#strategy)
-    - [Presenters](#presenters)
-    - [Service classes](#service-classes)
-    - [Observer](#observer)
+  - [Design Patterns](#design-patterns)
+    - [Strategy pattern](#strategy-pattern)
+      - [Interface based strategies](#interface-based-strategies)
+      - [Class based strategies](#class-based-strategies)
+    - [Presenters pattern](#presenters-pattern)
+    - [Decorators pattern](#decorators-pattern)
+      - [Presenters vs Decorators](#presenters-vs-decorators)
+    - [Service Class pattern](#service-class-pattern)
+    - [Observer pattern](#observer-pattern)
       - [Observers vs Service Class](#observers-vs-service-class)
-    - [Adapter](#adapter)
-    - [Singletons](#singletons)
-    - [Form Object](#form-object)
-    - [Form definition](#form-definition)
+    - [Adapter pattern](#adapter-pattern)
+    - [Singleton pattern](#singleton-pattern)
+    - [Form Object pattern](#form-object-pattern)
+      - [Form definition](#form-definition)
       - [Usage](#usage)
+    - [Repository pattern (Not common in Rails)](#repository-pattern-not-common-in-rails)
+      - [Entity](#entity)
+      - [Repository](#repository)
+      - [Database setup and persistency](#database-setup-and-persistency)
   - [Kredis](#kredis)
   - [Docker](#docker)
     - [Creating `Dockerfile.dev`](#creating-dockerfiledev)
@@ -1196,7 +1204,82 @@ Jbuilder.key_format camelize: :lower
 
 ### Serializers
 
-<!-- TODO -->
+To manage serializer on a Rails API, first we need to add a gem:
+
+```Gemfile
+  gem "active_model_serializers"
+```
+
+With this gem installed we are able to generate serializers for our models:
+
+```sh
+rails g serializer User
+```
+
+And  this file will be produced:
+
+```rb
+# app/serializers/user_serializer.rb
+
+class UserSerializer < ActiveModel::Serializer
+  attributes :id
+end
+```
+
+**Serializers  configurations:**
+
+Serializer are basic data structures that are streamed with a response, to enforce response format to json, instead of keep Parsing it to json in the controllers we can add a initializer to setup a configuration:
+
+```rb
+# config/initializers/active_model_serializers.rb
+
+ActiveModelSerializers.config.adapter = :json         # Sets the JSON adapter (default structure)
+ActiveModelSerializers.config.default_includes = '**' # Includes nested associations recursively: ('*' only direct association, '**' deeper associations)
+ActiveModelSerializers.config.root = false            # Disables root key in serialized responses
+```
+
+> `ActiveModelSerializers.config.root = false`
+> Enforce responses to be like this:
+>
+> ```json
+> {
+>  "id": 1,
+>  "title": "Sample Survey"
+> }
+>
+> Instead of:
+> 
+> ```json
+> {
+>   "survey": {
+>   "id": 1,
+>   "title": "Sample Survey"
+> }
+>}
+>```
+
+**Conditional associations:**
+
+To avoid associations redundancy when relations starts to get to complex, we can add a conditional that would allow us to specify if a association should be also rendered or not. Here's a simple example:
+
+```rb
+class SurveySerializer < ActiveModel::Serializer
+  attributes :id, :title, :description
+
+  has_many :questions, if: -> { instance_options[:include_questions] }
+end
+
+# Usage:
+class SurveysController < ApplicationController
+# ...
+  def index
+    @surveys = Survey.all
+    
+    render json: @survey, serializer: SurveySerializer, include_questions: true
+  end
+# ...
+end
+```
 
 ---
 
@@ -1378,23 +1461,362 @@ end
 
 ### Customized Logger
 
-## Patterns
+## Design Patterns
 
-### Strategy
+### Strategy pattern
 
-<!-- TODO -->
+The Strategy Pattern is a behavioral design pattern that allows you to define a family of algorithms or behaviors, encapsulate them, and make them interchangeable. In simpler terms, you can switch between different behaviors or strategies without modifying the objects that use them.
 
-### Presenters
+In a Rails application, the Strategy Pattern can be used to handle varying behaviors or algorithms in a modular and flexible way.
 
-<!-- TODO -->
+**When to Use the Strategy Pattern:**
 
-### Service classes
+- When you have multiple algorithms for a specific task and want to allow the client to choose between them at runtime. (Payment getaways for instance)
+- When the behavior of a class should be easily interchangeable.
+- When you want to avoid multiple conditional statements (if/else, case) for selecting different behaviors in your code.
 
-<!-- TODO -->
+**When Not to Use the Strategy Pattern:**
 
-### Observer
+- When there are only a few behaviors or algorithms, and the overhead of implementing multiple classes seems unnecessary.
+- When the strategies are unlikely to change or grow, the flexibility of the Strategy Pattern may add unnecessary complexity.
 
-Observer are a built-in feature of rails, however on Rails 4+ you need to install it manually [setup rails observers](#observer-1)
+#### Interface based strategies
+
+**1. Defining strategy interface:**
+
+```rb
+# app/strategies/discount_strategy.rb
+module DiscountStrategy
+  def apply_discount(cart)
+    raise NotImplementedError, "Subclasses must implement this method"
+  end
+end
+```
+
+**2. Creating specific strategy:**
+
+```rb
+# app/strategies/percentage_discount.rb
+class PercentageDiscount
+  include DiscountStrategy
+
+  def initialize(percentage)
+    @percentage = percentage
+  end
+
+  def apply_discount(cart)
+    discount_amount = cart.total_price * (@percentage / 100.0)
+    cart.total_price -= discount_amount
+  end
+end
+
+class FixedAmountDiscount
+  include DiscountStrategy
+  
+  def initialize(amount)
+    @amount = amount
+  end
+
+  def apply_discount(cart)
+    cart.total_price -= @amount
+  end
+end
+```
+
+**3. Implementing strategies:**
+
+```rb
+# app/models/shopping_cart.rb
+class ShoppingCart
+  attr_accessor :items, :total_price, :discount_strategy
+
+  def initialize
+    @items = []
+    @total_price = 0
+    @discount_strategy = nil
+  end
+
+  def add_item(item, price)
+    @items << { item: item, price: price }
+    @total_price += price
+  end
+
+  def apply_discount
+    if @discount_strategy
+      @discount_strategy.apply_discount(self)
+    else
+      Rails.logger.info("No discount applied.")
+    end
+  end
+end
+```
+
+**4. Usage:**
+
+```rb
+# Create a cart and add items
+
+cart = ShoppingCart.new
+cart.add_item(1000)
+cart.add_item(500)
+
+# Apply a percentage discount (e.g., 10%)
+
+cart.discount_strategy = PercentageDiscount.new(10)
+cart.apply_discount
+puts "Total after percentage discount: #{cart.total_price}"  # 1350
+
+# Apply a fixed discount (e.g., $200)
+
+cart.discount_strategy = FixedAmountDiscount.new(200)
+cart.apply_discount
+puts "Total after fixed discount: #{cart.total_price}"  # 1150
+
+```
+
+#### Class based strategies
+
+**1. Define a Base Class:**
+
+```rb
+# discount_strategy.rb (Base Class)
+class DiscountStrategy
+  def apply_discount(cart)
+    raise NotImplementedError, "Each strategy must implement the apply_discount method"
+  end
+end
+
+```
+
+**2. Create strategies:**
+
+```rb
+# percentage_discount.rb
+class PercentageDiscount < DiscountStrategy
+  def initialize(percentage)
+    @percentage = percentage
+  end
+
+  def apply_discount(cart)
+    discount = cart.total_price * (@percentage / 100.0)
+    cart.total_price -= discount
+  end
+end
+
+# fixed_discount.rb
+class FixedAmountDiscount < DiscountStrategy
+  def initialize(amount)
+    @amount = amount
+  end
+
+  def apply_discount(cart)
+    cart.total_price -= @amount
+  end
+end
+
+```
+
+**3. Implementing strategies:**
+
+```rb
+# shopping_cart.rb
+class ShoppingCart
+  attr_accessor :items, :total_price, :discount_strategy
+
+  def initialize
+    @items = []
+    @total_price = 0
+    @discount_strategy = nil
+  end
+
+  def add_item(price)
+    @items << price
+    @total_price += price
+  end
+
+  def apply_discount
+    if @discount_strategy
+      @discount_strategy.apply_discount(self)
+    end
+  end
+end
+
+```
+
+**4. Usage:**
+
+```rb
+# Create a cart and add items
+cart = ShoppingCart.new
+cart.add_item(1000)
+cart.add_item(500)
+
+# Apply a percentage discount (e.g., 10%)
+cart.discount_strategy = PercentageDiscount.new(10)
+cart.apply_discount
+puts "Total after percentage discount: #{cart.total_price}"  # 1350
+
+# Apply a fixed discount (e.g., $200)
+cart.discount_strategy = FixedAmountDiscount.new(200)
+cart.apply_discount
+puts "Total after fixed discount: #{cart.total_price}"  # 1150
+```
+
+### Presenters pattern
+
+The Presenter Pattern is primarily focused on preparing data to be displayed in a view. Its main job is to format or transform the data before it is shown to the user.
+
+**Create presenter class:**
+
+```rb
+# app/presenters/user_profile_presenter.rb
+class UserProfilePresenter
+  def initialize(user)
+    @user = user
+  end
+
+  def full_name
+    "#{@user.first_name} #{@user.last_name}"
+  end
+
+  def formatted_birthdate
+    @user.birthdate.strftime("%B %d, %Y")
+  end
+
+  def address
+    "#{@user.address.street}, #{@user.address.city}, #{@user.address.state}"
+  end
+end
+
+```
+
+**Instantiating presenter:**
+
+```rb
+# app/controllers/users_controller.rb
+class UsersController < ApplicationController
+  def show
+    @user = User.find(params[:id])
+    @user_profile_presenter = UserProfilePresenter.new(@user)
+  end
+end
+
+```
+
+**Usage:**
+
+```erb
+<!-- app/views/users/show.html.erb -->
+<h1>User Profile</h1>
+
+<p><strong>Full Name:</strong> <%= @user_profile_presenter.full_name %></p>
+<p><strong>Birthdate:</strong> <%= @user_profile_presenter.formatted_birthdate %></p>
+<p><strong>Address:</strong> <%= @user_profile_presenter.address %></p>
+
+```
+
+### Decorators pattern
+
+The Decorator Pattern, on the other hand, is used to extend or modify the behavior of an object dynamically. It's used when you need to add extra functionality to an object, typically without modifying the object itself.
+
+**Creating decorator:**
+
+```rb
+# app/decorators/user_decorator.rb
+class UserDecorator
+  def initialize(user)
+    @user = user
+  end
+
+  def age
+    ((Time.zone.now - @user.birthdate) / 1.year.seconds).to_i
+  end
+end
+```
+
+**Using:**
+
+```rb
+# In the controller or somewhere else
+user = User.find(params[:id])
+user_decorator = UserDecorator.new(user)
+user_age = user_decorator.age
+```
+
+#### Presenters vs Decorators
+
+| Presenter                                          | Decorator                                                    |
+|:-------------------------------------------------- | :----------------------------------------------------------- |
+| Formats and prepares data for views                | Adds functionality or modifies behavior of an object         |
+| Presentation logic (view-specific)                 | Extends or modifies model behavior                           |
+| No, it only uses the model’s data                  | Yes, it wraps and enhances the model                         |
+| When you need to present data in a specific way    | When you want to add functionality to objects dynamically    |
+| Formatting a user's name, address, etc.            | Calculating additional attributes like age, adding behavior  |
+
+---
+
+### Service Class pattern
+
+A Service Class is a design pattern used to extract complex logic from controllers, models, and views into a dedicated class. It allows you to better organize your business logic by keeping it separate from the rest of the application. Service classes are especially useful for actions that don't belong naturally in a controller or model.
+
+**Creating a service class:**
+
+```rb
+# app/services/user_registration_service.rb
+class UserRegistrationService
+  def initialize(user_params)
+    @user_params = user_params
+  end
+
+  def call
+    user = User.new(@user_params)
+    
+    if user.save
+      send_welcome_email(user)
+      return user
+    else
+      return nil
+    end
+  end
+
+  private
+
+  def send_welcome_email(user)
+    # Assume you have a method to send email in your application
+    UserMailer.welcome_email(user).deliver_later
+  end
+end
+
+```
+
+**Using service class:**
+
+```rb
+# app/controllers/users_controller.rb
+class UsersController < ApplicationController
+  def create
+    user_registration_service = UserRegistrationService.new(user_params)
+    @user = user_registration_service.call
+
+    if @user
+      redirect_to @user, notice: "User successfully registered!"
+    else
+      render :new, alert: "Registration failed!"
+    end
+  end
+
+  private
+
+  def user_params
+    params.require(:user).permit(:first_name, :last_name, :email, :password)
+  end
+end
+
+```
+
+### Observer pattern
+
+Observer are a built-in feature of rails, however on Rails 4+ you need to install it manually [setup rails observers](#rails-observers)
 
 In Rails, an observer is a design pattern that separates the logic of reacting to changes in a model from the model itself. Observers "observe" specific models and respond to their lifecycle callbacks or other changes. This helps keep your models slim and adheres to the Single Responsibility Principle (SRP) by delegating some responsibilities to separate classes.
 
@@ -1538,11 +1960,11 @@ In modern Rails apps, **service classes** are the preferred approach because:
 
 Observers are considered **legacy** or niche tools for simpler cases where automatic triggers are enough and the logic is minimal. If you expect growth or complexity, service classes are a better investment.
 
-### Adapter
+### Adapter pattern
 
 <!-- TODO -->
 
-### Singletons
+### Singleton pattern
 
 Singleton is a design pattern that ensures that a class has only one instance and provides a global point of access to that instance.
 
@@ -1572,13 +1994,13 @@ private
 end
 ```
 
-### Form Object
+### Form Object pattern
 
 Form objects in Rails are used to handle complex forms that interact with multiple models or when you need to encapsulate form-specific behavior that doesn't belong in the models themselves.
 
 > Form objects in Rails are related to the `Command Pattern`. The Command Pattern is a behavioral design pattern that encapsulates a request as an object, thereby allowing for parameterization of clients with different requests, queueing of requests, and logging of the requests. It also provides support for not doable operations.
 
-### Form definition
+#### Form definition
 
 ```rb
 # app/forms/user_profile_form.rb
@@ -1656,6 +2078,232 @@ class UsersController < ApplicationController
   end
 end
 ```
+
+### Repository pattern (Not common in Rails)
+
+**Repository Pattern** is a design pattern that abstracts the data access logic from the business logic, providing a clear separation of concerns. In Ruby, although this isn't common on rails, because rails encourages **ActiveRecord** to act as the repository, in more complex scenarios, the repository pattern can be useful.
+
+> A famous framework that uses this pattern is [**Hanami**](https://hanamirb.org/)
+
+#### Entity
+
+Entities represent your domain model
+
+```rb
+class User
+  attr_accessor :id, :name, :email
+
+  def initialize(id: nil, name:, email:)
+    @id = id
+    @name = name
+    @email = email
+  end
+end
+
+```
+
+#### Repository
+
+The repository abstracts the data source. It could be an SQL database, an in-memory store, or an API.
+
+```rb
+class UserRepository
+  def initialize(data_source)
+    @data_source = data_source
+  end
+
+  def find_by_id(id)
+    user_data = @data_source.find { |user| user[:id] == id }
+    build_user(user_data) if user_data
+  end
+
+  def save(user)
+    if user.id
+      existing_user = @data_source.find { |u| u[:id] == user.id }
+      existing_user[:name] = user.name
+      existing_user[:email] = user.email
+    else
+      user.id = (@data_source.map { |u| u[:id] }.max || 0) + 1
+      @data_source << { id: user.id, name: user.name, email: user.email }
+    end
+    user
+  end
+
+  private
+
+  def build_user(data)
+    User.new(id: data[:id], name: data[:name], email: data[:email])
+  end
+end
+```
+
+**Repository usage:**
+
+```rb
+# Fake in-memory data source
+data_source = [
+  { id: 1, name: "Alice", email: "alice@example.com" },
+  { id: 2, name: "Bob", email: "bob@example.com" }
+]
+
+repository = UserRepository.new(data_source)
+
+# Find a user
+user = repository.find_by_id(1)
+puts user.name # Output: Alice
+
+# Save a new user
+new_user = User.new(name: "Charlie", email: "charlie@example.com")
+repository.save(new_user)
+puts data_source.inspect
+```
+
+**Inheritance and Interface:**
+
+To enforce a consistency through all repositories in large applications you can go with Inheritance or Interfaces.
+
+**Inheritance:**
+
+```rb
+# Interface to set standard implementation for all repositories
+
+class BaseRepository
+  def find_by_id(_id)
+    raise NotImplementedError, "Subclasses must implement this method"
+  end
+
+  def save(_entity)
+    raise NotImplementedError, "Subclasses must implement this method"
+  end
+end
+
+
+# The usage in a EntityRepository
+
+class UserRepository < BaseRepository
+  def initialize(data_source)
+    @data_source = data_source
+  end
+
+  def find_by_id(id)
+    # Implementation...
+  end
+
+  def save(user)
+    # Implementation...
+  end
+end
+
+```
+
+**Interface:**
+
+```rb
+module RepositoryInterface
+  def find_by_id(id)
+    raise NotImplementedError, "#{self.class} must implement #find_by_id"
+  end
+
+  def save(entity)
+    raise NotImplementedError, "#{self.class} must implement #save"
+  end
+end
+
+class UserRepository
+  include RepositoryInterface
+
+  def find_by_id(id)
+    # Implementation...
+  end
+
+  def save(entity)
+    # Implementation...
+  end
+end
+
+```
+
+#### Database setup and persistency
+
+The Repository Pattern in Ruby abstracts away the direct interaction with the database. When it comes to SQL connections and queries, the repository typically uses a data access layer (e.g., libraries like pg, Sequel, or Active Record) to manage connections and execute SQL.
+
+**Using `pg`: Direct queries**
+
+```rb
+require 'pg'
+
+class DatabaseConnection
+  def self.connection
+    @connection ||= PG.connect(dbname: 'example_db')
+  end
+end
+
+# Handle persistency
+
+class UserRepository
+  def find_by_id(id)
+    result = DatabaseConnection.connection.exec_params(
+      "SELECT * FROM users WHERE id = $1 LIMIT 1", [id]
+    ).first
+    build_user(result) if result
+  end
+
+  def save(user)
+    if user.id
+      DatabaseConnection.connection.exec_params(
+        "UPDATE users SET name = $1, email = $2 WHERE id = $3",
+        [user.name, user.email, user.id]
+      )
+    else
+      result = DatabaseConnection.connection.exec_params(
+        "INSERT INTO users (name, email) VALUES ($1, $2) RETURNING id",
+        [user.name, user.email]
+      ).first
+      user.id = result['id'].to_i
+    end
+    user
+  end
+end
+
+# Example usage
+repository = UserRepository.new
+
+# Find a user
+user = repository.find_by_id(1)
+puts user.name if user
+
+# Save a new user
+new_user = User.new(name: 'Charlie', email: 'charlie@example.com')
+repository.save(new_user)
+```
+
+**Using `Sequel`: SQL Abstraction**
+
+> Sequel is a lightweight Ruby ORM and query builder. A repository can use it to simplify query handling.
+
+```rb
+require 'sequel'
+
+DB = Sequel.connect('postgres://localhost/example_db')
+
+class UserRepository
+  def find_by_id(id)
+    row = DB[:users].where(id: id).first
+    build_user(row) if row
+  end
+
+  def save(user)
+    if user.id
+      DB[:users].where(id: user.id).update(name: user.name, email: user.email)
+    else
+      user.id = DB[:users].insert(name: user.name, email: user.email)
+    end
+    user
+  end
+end
+```
+
+---
 
 ## Kredis
 
