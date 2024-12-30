@@ -1,0 +1,70 @@
+version: '3.8'
+
+# Keep in mind that docker-compose isn't common on production environment, but it can be used for very small projects, or for staging environment
+
+# Production Environment Practices:
+# Orchestration Tools:
+# - In production, Docker Compose is often replaced by more robust orchestration tools such as:
+#   - Kubernetes: The most popular orchestration tool for managing containerized applications at scale. It handles scaling, load balancing, deployments, and more.
+#   - Docker Swarm: A simpler alternative to Kubernetes that is built into Docker and offers container orchestration at a smaller scale.
+# - Cloud Providers:
+#   - Amazon ECS (Elastic Container Service), Google Cloud Run, or Azure App Service can be used to run Docker containers in production.
+#     These services handle most of the orchestration and scaling for you.
+# - Dedicated Servers or Virtual Machines:
+#   - Some companies still run Docker containers manually on dedicated VMs or on managed services, but in these cases, container
+#     orchestration (like Kubernetes or Docker Swarm) is often still used to handle container scaling, monitoring, and management.
+
+services:
+  rails:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: example-app_c
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      RAILS_ENV: 'production'
+      DB_HOST: 'postgres'
+      DB_USERNAME: 'postgres'
+      DB_PASSWORD: 'postgres'
+      REDIS_URL: 'redis://redis:6379/0'
+    ports:
+      - '3000:3000'
+    volumes:
+      - .:/rails
+      - ./db:/rails/db
+    command: bash -c "rm -f tmp/pids/server.pid && bundle exec rails s -b '0.0.0.0'"
+    networks:
+      - app_network
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:16
+    container_name: example-app_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: example_app_production  # Customize DB name for production
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - app_network
+    restart: unless-stopped
+
+  redis:
+    image: redis:alpine
+    ports:
+      - '6380:6379'  # Custom port to avoid conflict with host Redis
+    volumes:
+      - redis_data:/data
+    networks:
+      - app_network
+    restart: unless-stopped
+
+volumes:
+  db_data:
+  redis_data:
+
+networks:
+  app_network:

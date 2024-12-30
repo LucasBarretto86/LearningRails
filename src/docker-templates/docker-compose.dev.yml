@@ -1,0 +1,69 @@
+version: '3.8'
+
+services:
+  rails:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    # setup container name, normally is easier to use the app name with a suffix like db, example: lucas-barretto-com_c
+    container_name: example-app_c
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      RAILS_ENV: 'development'
+      DB_HOST: 'postgres'
+      DB_USERNAME: 'postgres'
+      DB_PASSWORD: 'postgres'
+    ports:
+      - '3000:3000'
+    volumes:
+      - .:/rails
+      - ./db:/rails/db
+    #
+    # Be sure to setup database.yml:
+
+    # default: &default
+    #   adapter: postgresql
+    #   <% if ENV["DB_HOST"] %>
+    #   host: <%= ENV['DB_HOST'] %>
+    #   username: <%= ENV['DB_USERNAME'] %>
+    #   password: <%= ENV['DB_PASSWORD'] %>
+    #   <% end %>
+    #   encoding: unicode
+    #   # For details on connection pooling, see Rails configuration guide
+    #   # https://guides.rubyonrails.org/configuring.html#database-pooling
+    #   pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+
+    networks:
+      - app_network
+
+  postgres:
+    image: postgres:16
+    # setup container name, normally is easier to use the app name with a suffix like db, example: lucas-barretto-com_db
+    container_name: example-app_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - app_network
+    restart: unless-stopped
+
+  redis:
+    image: redis:alpine
+    ports:
+      #  In this case i use 6380/6379, because I have redis on my host machine too, so it throw error, the default value would be: 6379:6379
+      - '6380:6379'
+    volumes:
+      - redis_data:/data
+    networks:
+      - app_network
+
+volumes:
+  db_data:
+  redis_data:
+
+networks:
+  app_network:

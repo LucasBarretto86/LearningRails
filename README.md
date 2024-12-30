@@ -10,6 +10,7 @@
       - [Rails credentials](#rails-credentials)
       - [Custom YAML Credentials](#custom-yaml-credentials)
       - [Dotenv Credentials](#dotenv-credentials)
+    - [Setup subdomains](#setup-subdomains)
   - [Initializers](#initializers)
     - [Inflections](#inflections)
       - [Allowing a Acronym](#allowing-a-acronym)
@@ -73,10 +74,6 @@
     - [Creating docker-compose files](#creating-docker-compose-files)
     - [Build and Running Container for development](#build-and-running-container-for-development)
   - [GraphQL](#graphql)
-    - [Adding gem `graphiql-rails`](#adding-gem-graphiql-rails)
-    - [`graphiql-rails` initial configuration](#graphiql-rails-initial-configuration)
-    - [Mounting GraphQl engine to routes](#mounting-graphql-engine-to-routes)
-    - [Generating ObjectTypes](#generating-objecttypes)
   - [Webpack](#webpack)
     - [Run dev server](#run-dev-server)
   - [Webpacker](#webpacker)
@@ -136,6 +133,7 @@
     - [Paranoia](#paranoia)
       - [Install gem `paranoia`](#install-gem-paranoia)
       - [Setup `paranoia`](#setup-paranoia)
+    - [graphiql-rails](#graphiql-rails)
     - [MailCatcher](#mailcatcher)
     - [Nokogiri](#nokogiri)
     - [Foreman](#foreman)
@@ -333,6 +331,82 @@ After we just need to create the files, it follows the pattern
 `.env.test`
 
 > This envs shouldn't be consider for production environment, would be much safer to use some secret services like
+
+### Setup subdomains
+
+**1. First we need to setup the routes:**
+
+```rb
+# config/routes.rb
+
+Rails.application.routes.draw do
+  constraints subdomain: "blog" do
+    namespace :blog do
+      resources :posts
+    end
+  end
+
+  # Default routes for the main domain
+  root to: 'home#index'
+end
+```
+
+**2. Setup local hosts on the applications:**
+
+```rb
+# config/environments/development.rb
+Rails.application.configure do
+# ...
+  # Lucas: Adding specific host
+  config.hosts << ".lvh.me"
+  config.action_dispatch.tld_length = 1
+# ...
+end
+```
+
+> **Why is `lvh.me` special?**
+>
+> `lvh.me` is configured to resolve all subdomains to `127.0.0.1` or `0.0.0.0`. This allows you to simulate subdomains locally without needing to edit your hosts file.
+> You can use any subdomain, like blog.lvh.me, api.lvh.me, etc., and it will always point to your local machine.
+> Therefore you don't need to manually change `/etc/hosts`
+
+**3. Setup production for subdomains:**
+
+```rb
+# config/environments/production.rb
+
+Rails.application.configure do
+  # Set TLD length (e.g., example.com = 2, example.co.uk = 3)
+  config.action_dispatch.tld_length = 2
+end
+```
+
+Keep in mind that subdomains on production are configured through DNS wildcards
+
+1. Access Your DNS Provider: Log in to the DNS management dashboard of your domain registrar or hosting provider.
+2. Add a Wildcard A Record:
+   - Type: A (Address Record)
+   - Name: * (Wildcard subdomain)
+   - Value: The IP address of your server.
+3. Save the Record: Propagation may take a few minutes to several hours.
+
+**4. Manage subdomains on controller:**
+
+You can now access subdomain data in Rails using `request.subdomain`:
+
+```rb
+class ApplicationController < ActionController::Base
+  before_action :set_subdomain
+
+  private
+
+  def set_subdomain
+    @current_subdomain = request.subdomain
+  end
+end
+```
+
+> Alternatively we can use CurrentAttributes to store subdomain
 
 ---
 
@@ -2542,60 +2616,23 @@ docker-compose -f docker-compose.dev.yml up --build
 
 ## GraphQL
 
-### Adding gem `graphiql-rails`
-
-To add graphQL gem go to the Gemfile and add:
+**Installing GraphQL:**
 
 ```Gemfile
-group :development do
-  ...
-
-  gem 'graphiql-rails'
-end
-
-...
-
 gem 'graphql', ' ~> 1.9.18'
 ```
 
-then run the bundler
-
-```shell
+```sh
 bundle install
 ```
 
-### `graphiql-rails` initial configuration
-
-As long as the gem is installed `graphiql-rails` will provide specfic generators configure your project to graphql
-
-Run the generator unless you want to config your project manually
-
-```shell
-rails g graphql:install
-```
-
-### Mounting GraphQl engine to routes
-
-Before you can test the GraphQL endpoint, you need to mount the GraphiQL engine to the routes file so you can access the GraphiQL in-browser IDE. To do this open the routes file located at `config/routes.rb`:
-
-```rb
-Rails.application.routes.draw do
-  if Rails.env.development?
-    mount GraphiQL::Rails::Engine, at: "/graphiql", graphql_path: "graphql#execute"
-  end
-
-  post "/graphql", to: "graphql#execute"
-  # For details on the DSL available within this file, see https://guides.rubyonrails.org/routing.html
-end
-```
-
-### Generating ObjectTypes
+**Generating ObjectTypes:**
 
 ```shell
 rails generate graphql:object Note id:ID! title:String! body:String!
 ```
 
-*Note that `!` means that field os required to the query*
+> *Note that `!` means that field os required to the query*
 
 ## Webpack
 
@@ -4049,9 +4086,46 @@ client.really_destroy!(update_destroy_attributes: false)
 
 ---
 
+### graphiql-rails
+
+**Adding gem `graphiql-rails`:**
+
+To add graphQL gem go to the Gemfile and add:
+
+```Gemfile
+group :development do
+  # ...
+  gem 'graphiql-rails'
+end
+```
+
+**Setup `graphiql-rails`:**
+
+As long as the gem is installed `graphiql-rails` will provide specific generators configure your project to graphql
+
+Run the generator unless you want to config your project manually
+
+```shell
+rails g graphql:install
+```
+
+**Mounting GraphiQL engine to routes:**
+
+Before you can test the GraphQL endpoint, you need to mount the GraphiQL engine to the routes file so you can access the GraphiQL in-browser IDE. To do this open the routes file located at `config/routes.rb`:
+
+```rb
+Rails.application.routes.draw do
+  if Rails.env.development?
+    mount GraphiQL::Rails::Engine, at: "/graphiql", graphql_path: "graphql#execute"
+  end
+
+  post "/graphql", to: "graphql#execute"
+end
+```
+
 ### MailCatcher
 
-MailCatcher runs a super simple SMTP server which catches any message sent to it to display in a web interface. Run mailcatcher, set your favorite app to deliver to smtp://127.0.0.1:1025 instead of your default SMTP server, then check out <http://127.0.0.1:1080> to see the mail.
+MailCatcher runs a super simple SMTP server which catches any message sent to it to display in a web interface. Run `mailcatcher`, set your favorite app to deliver to smtp://127.0.0.1:1025 instead of your default SMTP server, then check out <http://127.0.0.1:1080> to see the mail.
 
 ```shell
 gem install mailcatcher
