@@ -68,6 +68,7 @@
       - [Entity](#entity)
       - [Repository](#repository)
       - [Database setup and persistency](#database-setup-and-persistency)
+  - [Materialized views](#materialized-views)
   - [Kredis](#kredis)
   - [Docker](#docker)
     - [Creating `Dockerfile.dev`](#creating-dockerfiledev)
@@ -107,8 +108,8 @@
     - [Rails observers](#rails-observers)
     - [Bootstrap](#bootstrap)
       - [Modern way with Importmaps](#modern-way-with-importmaps)
-      - [Bootstrap](#bootstrap-1)
       - [Bootstrap through CDN](#bootstrap-through-cdn)
+    - [Tailwind](#tailwind)
     - [Devise](#devise)
       - [Creating the User Model with Devise](#creating-the-user-model-with-devise)
       - [Setup routes with Devise](#setup-routes-with-devise)
@@ -2379,6 +2380,59 @@ end
 
 ---
 
+## Materialized views
+
+In Rails, a materialized view is a database object that stores the results of a query as a physical table, unlike a regular view that dynamically computes the result every time it is queried. Materialized views can improve performance by caching the results of complex queries, especially for data that doesn't change frequently.
+
+**Example in SQL:**
+
+```sql
+CREATE MATERIALIZED VIEW products_summary AS
+SELECT category, COUNT(*) AS total_products
+FROM products
+GROUP BY category;
+```
+
+**Example in Rails:**
+
+```rb
+class CreateProductsSummaryView < ActiveRecord::Migration[6.0]
+  def change
+    execute <<-SQL
+      CREATE MATERIALIZED VIEW products_summary AS
+      SELECT category, COUNT(*) AS total_products
+      FROM products
+      GROUP BY category;
+    SQL
+  end
+end
+```
+
+```rb
+class ProductSummary < ActiveRecord::Base
+  self.table_name = 'products_summary'
+  # No need to define primary_key, since it's just a view
+  self.primary_key = nil
+  
+  # Optional: Adding custom refresh method
+  def self.refresh_view
+    connection.execute("REFRESH MATERIALIZED VIEW products_summary")
+  end
+end
+```
+
+**Usage:**
+
+```rb
+ProductSummary.all
+```
+
+**Refreshing view:**
+
+```rb
+ProductSummary.refresh_view
+```
+
 ## Kredis
 
 Kredis is a higher level wrapper for your redis database which allow you to store more complex data-structure on your redis.
@@ -3061,8 +3115,6 @@ end
 
 #### Modern way with Importmaps
 
-#### Bootstrap
-
 > By default, Rails 7 provides a new option `--css=bootstrap`, but this adds both `jsbundling-rails`, `cssbundling-rails`, a `package.json` and `esbuild`. So if you intend to add bootstrap using only importmaps, you have to add it manually.
 
 [Reference](https://dev.to/renuo/rails-7-bootstrap-5-and-importmaps-without-nodejs-4g8)
@@ -3129,6 +3181,27 @@ We don't necessarily need to add gem os or external sources to use simple stuff 
 ```
 
 > We put that on the layout we want to use bootstrap
+
+### Tailwind
+
+Tailwind works with Rails and importmaps seamlessly
+
+**1. Add tailwind required GEM:**
+
+```Gemfile
+gem "tailwindcss-rails"
+```
+
+**2. Runs tailwind generator:**
+
+```sh
+rails tailwindcss:install
+```
+
+it will produce the tailwind configuration files `tailwind.config.js` and `app/assets/stylesheets/application.tailwind.css`
+
+> `tailwind.config.js` is used to setup tailwind configurations
+> `app/assets/stylesheets/application.tailwind.css` is used to add css customizations
 
 ### Devise
 

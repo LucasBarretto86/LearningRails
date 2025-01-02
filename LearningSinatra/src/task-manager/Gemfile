@@ -1,0 +1,20 @@
+source 'https://rubygems.org' # Source of Ruby gems, using the default RubyGems.org.
+
+# Sinatra framework
+gem 'sinatra'               # Core web framework built on Rack
+gem 'sinatra-contrib'       # Extensions like sinatra/reloader, JSON support
+
+# Database (ActiveRecord as an example ORM)
+gem 'activerecord'          # ORM for database management
+gem 'sinatra-activerecord'  # Integration of ActiveRecord with Sinatra
+gem 'sqlite3'               # SQLite database driver
+gem 'rake'                  # Since we are using activerecord we use rake tasks to create models and manage database
+
+# Rack dependencies
+gem 'rack'                  # Rack core library: middleware interface for Ruby web applications
+gem 'rack-protection'       # Middleware to enhance security against common web vulnerabilities
+
+group :test do
+  gem 'rack-test'           # For testing Rack applications, simulates HTTP requests
+  gem 'rspec'               # RSpec for writing test cases
+end
