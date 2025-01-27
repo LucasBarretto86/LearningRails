@@ -38,6 +38,7 @@
   - [Query](#query)
     - [SQL through connection](#sql-through-connection)
   - [Hotwire](#hotwire)
+  - [View Components](#view-components)
   - [API](#api)
     - [Jbuilder](#jbuilder)
     - [Serializers](#serializers)
@@ -106,6 +107,7 @@
   - [Rails Template](#rails-template)
   - [GEMS](#gems)
     - [Rails observers](#rails-observers)
+    - [Rails view-component](#rails-view-component)
     - [Bootstrap](#bootstrap)
       - [Modern way with Importmaps](#modern-way-with-importmaps)
       - [Bootstrap through CDN](#bootstrap-through-cdn)
@@ -1152,6 +1154,18 @@ Real-world examples:
 - Forms with Validation
 
 <!-- TODO -->
+
+---
+
+## View Components
+
+ViewComponent was officially introduced in 2019 by GitHub as a gem, initially called ActionView::Component. It was created to address the challenges of managing complex Rails views and to promote reusable, testable, and encapsulated view components.
+
+The core idea behind ViewComponent is to provide a structured way to handle view logic, making it more maintainable and performant by moving away from the traditional partials-heavy approach.
+
+While ViewComponent isn't officially part of Rails core (like Active Record or Action View), its popularity and widespread use make it a de facto standard for complex UI needs in Rails projects
+
+To start creating view components we need to [setup view component gem](#view-component)
 
 ---
 
@@ -3109,6 +3123,20 @@ class LessonObserver < ActiveRecord::Observer
   observe :lesson
   # Define callbacks for Lesson model
 end
+```
+
+### Rails view-component
+
+**Install:**
+
+```Gemfile
+gem "view_component"
+```
+
+**Setup view component initializer (optional):**
+
+```rb
+
 ```
 
 ### Bootstrap

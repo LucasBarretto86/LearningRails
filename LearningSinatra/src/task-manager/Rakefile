@@ -1,3 +1,0 @@
-# Load the necessary gems
-require 'sinatra/activerecord/rake'
-require './app' # Adjust if your main application file has a different name
