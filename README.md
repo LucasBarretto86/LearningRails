@@ -4328,14 +4328,22 @@ group :development do
 end
 ```
 
+**Autocorrect offenses (only when it's safe):**
+
 ```shell
 bundle exec rubocop -a
 ```
 
-To enforce corrections
+**Autocorrect offenses (safe and unsafe):**
 
 ```shell
 bundle exec rubocop -A
+```
+
+**Autocorrect but only changed files:**
+
+```shell
+bundle exec rubocop -a $(git diff --name-only)
 ```
 
 Custom configs for rubocop
